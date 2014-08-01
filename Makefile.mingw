@@ -1,0 +1,63 @@
+#Customisable stuff here
+WIN32_COMPILER = gcc
+CYGDIR = C:/cygwin
+WIN32_DEV_DIR = ${CYGDIR}/var/win32-dev
+WIN32_PIDGIN_DIR = ${CYGDIR}/var/pidgin-2.9.0
+
+PIDGIN_LIBS = \
+	-L${WIN32_PIDGIN_DIR}/pidgin \
+	-lpidgin
+
+PIDGIN_CFLAGS = \
+	-I${WIN32_PIDGIN_DIR}/pidgin \
+	-I${WIN32_DEV_DIR}/gtk_2_0-2.14/include/gtk-2.0 \
+	-I${WIN32_DEV_DIR}/gtk_2_0-2.14/include/cairo \
+	-I${WIN32_DEV_DIR}/gtk_2_0-2.14/include/pango-1.0 \
+	-I${WIN32_DEV_DIR}/gtk_2_0-2.14/include/atk-1.0 \
+	-I${WIN32_DEV_DIR}/gtk_2_0-2.14/lib/gtk-2.0/include
+
+WIN32_CFLAGS = \
+	-DENABLE_NLS -DHAVE_ZLIB \
+	-I${WIN32_PIDGIN_DIR}/libpurple \
+	-I${WIN32_PIDGIN_DIR}/libpurple/win32 \
+	-I${WIN32_DEV_DIR}/gtk_2_0-2.14/include/glib-2.0 \
+	-I${WIN32_DEV_DIR}/gtk_2_0-2.14/include \
+	-I${WIN32_DEV_DIR}/gtk_2_0-2.14/include/glib-2.0 \
+	-I${WIN32_DEV_DIR}/gtk_2_0-2.14/lib/glib-2.0/include \
+	-I${WIN32_DEV_DIR}/json-glib-0.12.0 \
+	${PIDGIN_CFLAGS}
+
+WIN32_LIBS = \
+	-L${WIN32_PIDGIN_DIR}/libpurple -lpurple \
+	-L${WIN32_DEV_DIR}/gtk_2_0-2.14/lib \
+	-L${WIN32_DEV_DIR}/gtk_2_0-2.14/bin \
+	-L${WIN32_DEV_DIR}/json-glib-0.12.0/lib \
+	-lglib-2.0 -lgobject-2.0 -lintl -lws2_32 -L. -ljson-glib-1.0 -lzlib1 \
+	${PIDGIN_LIBS}
+
+FLIST_SOURCES = \
+        f-list.c \
+	f-list_admin.c \
+        f-list_autobuddy.c \
+        f-list_bbcode.c \
+        f-list_callbacks.c \
+        f-list_channels.c \
+        f-list_commands.c \
+        f-list_connection.c \
+        f-list_icon.c \
+        f-list_kinks.c \
+        f-list_profile.c \
+        f-list_json.c \
+        f-list_friends.c \
+        f-list_status.c \
+        f-list_rtb.c \
+        f-list_pidgin.c
+
+#Standard stuff here
+all: 	flist.dll
+
+clean:
+	rm -f flist.dll
+
+flist.dll:	${FLIST_SOURCES}
+	${WIN32_COMPILER} -Wall -I. -g -O2 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS}
