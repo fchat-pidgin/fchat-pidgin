@@ -260,6 +260,7 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
     const gchar *message;
     const gchar *channel;
     gchar *parsed;
+    gchar *full_message = NULL;
     gboolean show;
     PurpleMessageFlags flags;
 
@@ -276,12 +277,20 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
     show = flist_get_channel_show_chat(fla, channel);
     flags = (show ? PURPLE_MESSAGE_RECV : PURPLE_MESSAGE_INVISIBLE);
 
-    parsed = flist_bbcode_to_html(fla, convo, message);
+    if (strncmp(message, "/warn", 5) == 0)
+    {
+      full_message = g_strdup_printf("[b][color=red]Warning: %s[/color][/b]", &message[6]);
+      parsed = flist_bbcode_to_html(fla, convo, full_message);
+    }
+    else
+      parsed = flist_bbcode_to_html(fla, convo, message);
+
     purple_debug_info("flist", "Message: %s\n", parsed);
     if(show) {
         serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
     }
     g_free(parsed);
+    g_free(full_message);
     return TRUE;
 }
 
