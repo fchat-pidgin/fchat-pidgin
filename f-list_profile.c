@@ -195,9 +195,7 @@ static gboolean flist_process_profile(FListAccount *fla, JsonObject *root) {
             JsonObject *field_object = json_array_get_object_element(field_array, i);
             const gchar *field_name = json_object_get_string_member(field_object, "name");
             const gchar *field_value = json_object_get_string_member(field_object, "value");
-            gchar *tmp = purple_unescape_html(field_value);
-            g_hash_table_insert(profile, (gpointer) field_name, (gpointer) tmp);
-            g_free(tmp);
+            g_hash_table_insert(profile, (gpointer) field_name, (gpointer) field_value);
         }
 
         cur = cur->next;
@@ -269,11 +267,13 @@ void flist_get_profile(PurpleConnection *pc, const char *who) {
     if(!character) {
         purple_notify_user_info_add_pair(flp->profile_info, "Status", "Offline");
     } else {
-        gchar *parsed_message = flist_bbcode_to_html(fla, NULL, character->status_message);
+        gchar *clean_message = purple_unescape_html(character->status_message);
+        gchar *parsed_message = flist_bbcode_to_html(fla, NULL, clean_message);
         purple_notify_user_info_add_pair(flp->profile_info, "Status", flist_format_status(character->status));
         purple_notify_user_info_add_pair(flp->profile_info, "Gender", flist_format_gender(character->gender));
         purple_notify_user_info_add_pair(flp->profile_info, "Message", parsed_message);
         g_free(parsed_message);
+        g_free(clean_message);
     }
     purple_notify_user_info_add_pair(flp->profile_info, "Link", link);
     purple_notify_userinfo(pc, flp->character, flp->profile_info, NULL, NULL);
