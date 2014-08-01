@@ -18,7 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with F-List Pidgin.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define PURPLE_PLUGINS
+
+#ifndef PURPLE_PLUGINS
+  #define PURPLE_PLUGINS
+#endif
 
 #include "f-list.h"
 

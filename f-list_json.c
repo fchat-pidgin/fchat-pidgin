@@ -70,10 +70,10 @@ static gchar *http_request(const gchar *url, gboolean http11, gboolean post, con
 
         post = g_string_free(post_str, FALSE);
 
-        purple_debug_info("flist", "posting (len: %d): %s\n", strlen(post), post);
+        purple_debug_info("flist", "posting (len: %lu): %s\n", strlen(post), post);
 
         g_string_append(request_str, "Content-Type: application/x-www-form-urlencoded\r\n");
-        g_string_append_printf(request_str, "Content-Length: %d\r\n", strlen(post));
+        g_string_append_printf(request_str, "Content-Length: %lu\r\n", strlen(post));
         g_string_append(request_str, "\r\n");
 
         g_string_append(request_str, post);

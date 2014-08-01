@@ -179,11 +179,13 @@ void flist_pidgin_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGrou
 
 void flist_pidgin_remove_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group) {
     FListAccount *fla = pc->proto_data;
-    const gchar *identity;
+    const gchar* identity;
 
     g_return_if_fail(fla);
 
     identity = purple_buddy_get_name(buddy);
+
+    // TODO?
 }
 
 PurpleRoomlist *flist_get_roomlist(PurpleConnection *pc) {
