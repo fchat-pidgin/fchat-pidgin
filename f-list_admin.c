@@ -323,7 +323,7 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
         *error = g_strdup(_("You must enter a valid length of time."));
         return PURPLE_CMD_STATUS_WRONG_ARGS;
     }
-    
+
     json = json_object_new();
     json_object_set_string_member(json, "character", character);
     json_object_set_string_member(json, "reason", reason);

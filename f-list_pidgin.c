@@ -50,7 +50,7 @@ static gboolean flist_channel_activate(GtkIMHtml *imhtml, GtkIMHtmlLink *link) {
     }
 
     purple_debug_info("flist", "The FList channel URL is parsed. Host: %s Path: %s\n", host, path);
-    
+
     if(host && path) {
         gchar *host_fixed = g_strdup(purple_url_decode(host));
         gchar *path_fixed = g_strdup(purple_url_decode(path));
@@ -116,7 +116,7 @@ static gboolean flist_staff_activate(GtkIMHtml *imhtml, GtkIMHtmlLink *link) {
         g_free(host_fixed);
         g_free(path_fixed);
     }
-    
+
     return ret;
 }
 

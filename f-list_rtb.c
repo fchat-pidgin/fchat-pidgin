@@ -28,9 +28,9 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
     gint target_id; gboolean has_target_id;
     const gchar *type = json_object_get_string_member(root, "type");
     GString *message_str;
-   
+
     purple_debug_info(FLIST_DEBUG, "Processing RTB... (Character: %s) (Type: %s)\n", fla->character, type);
- 
+
     if(flist_str_equal(type, "friendrequest")) {
         flist_friends_received_request(fla);
         return TRUE;
@@ -43,10 +43,10 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
         flist_friends_removed_friend(fla);
         return TRUE;
     }
-    
+
     /* Past this point, we're going to build a message. */
     message_str = g_string_new(NULL);
-    
+
     if(flist_str_equal(type, "note")) {
         sender = json_object_get_string_member(root, "sender");
         subject = json_object_get_string_member(root, "subject");
@@ -114,7 +114,7 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
         /* We'll silently ignore this for now. */
         message = g_string_free(message_str, FALSE);
     }
- 
+
     g_free(message);
     return TRUE;
 }

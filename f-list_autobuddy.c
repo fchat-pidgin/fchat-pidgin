@@ -26,7 +26,7 @@ void flist_apply_filter(FListAccount *fla, GSList *candidates) {
     GSList *removed = NULL;
 
     filter_group = flist_get_filter_group(fla);
-    
+
     buddies = purple_find_buddies(fla->pa, NULL);
     cur = buddies;
     while(cur) {

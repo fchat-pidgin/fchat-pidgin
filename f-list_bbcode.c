@@ -193,7 +193,7 @@ static gboolean bbcode_parse_tag(const gchar *raw_tag, gsize raw_tag_len,
             return TRUE;
         }
     }
-    
+
     g_free(arg);
     return FALSE;
 }
@@ -221,7 +221,7 @@ gchar *flist_bbcode_to_html_real(FListAccount *fla, PurpleConversation *convo, c
         /* append the raw text before the tag */
         g_string_append_len(stack->ret, current, (gsize) (open - current));
         current = close;
-        
+
         if(bbcode_parse_tag(raw_tag, raw_tag_len, stack->tag, &tag, &tag_argument, &close_tag)) {
             if(!close_tag) { /* we have a new tag! push it onto the stack */
                 stack_tmp = g_new(BBCodeStack, 1);
@@ -275,7 +275,7 @@ gchar *flist_bbcode_strip(const gchar *bbcode) {
 gchar *flist_strip_crlf(const gchar *to_strip) {
     GString *ret = g_string_new(NULL);
     const gchar *start = to_strip;
-    
+
     while(*to_strip) {
         if(*to_strip == '\r' || *to_strip == '\n') {
             g_string_append_len(ret, start, to_strip - start);
@@ -284,7 +284,7 @@ gchar *flist_strip_crlf(const gchar *to_strip) {
         to_strip++;
     }
     g_string_append_len(ret, start, to_strip - start);
-    
+
     return g_string_free(ret, FALSE);
 }
 

@@ -327,10 +327,10 @@ void flist_channel_show_message(FListAccount *fla, const gchar *channel) {
     gboolean show_chat, show_ads;
     show_ads = flist_get_channel_show_ads(fla, channel);
     show_chat = flist_get_channel_show_chat(fla, channel);
-    
+
     chat = PURPLE_CONV_CHAT(purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa));
     if(!chat) return;
-    
+
     to_print = g_strdup_printf("We are currently [i]%s[/i] and [i]%s[/i].",
             show_chat ? "showing chat" : "[color=red]hiding chat[/color]",
             show_ads ? "showing ads" : "[color=red]hiding ads[/color]");
@@ -377,7 +377,7 @@ static GList *flist_actions(PurplePlugin *plugin, gpointer context) {
     if(fla && fla->proper_character) {
         if(fla->global_ops && g_hash_table_lookup(fla->global_ops, fla->proper_character)) {
             list = g_list_append(list, NULL); /* this adds a divider */
-            
+
             act = purple_plugin_action_new(_("Broadcast"), flist_broadcast_action);
             list = g_list_append(list, act);
 
@@ -434,7 +434,7 @@ GSList *flist_get_all_characters(FListAccount *fla) {
     GSList *ret = NULL;
     GHashTableIter iter;
     gpointer key, value;
-    
+
     g_hash_table_iter_init (&iter, fla->all_characters);
     while(g_hash_table_iter_next(&iter, &key, &value)) {
         ret = g_slist_prepend(ret, value);
@@ -451,7 +451,7 @@ void flist_close(PurpleConnection *pc) {
     if(fla->fd > 0) close(fla->fd);
     if(fla->ssl_con) purple_ssl_close(fla->ssl_con);
     if(fla->url_request) purple_util_fetch_url_cancel(fla->url_request);
-    
+
     if(fla->username) g_free(fla->username);
     if(fla->character) g_free(fla->character);
     if(fla->password) g_free(fla->password);
@@ -459,13 +459,13 @@ void flist_close(PurpleConnection *pc) {
 
     if(fla->ticket_request) flist_web_request_cancel(fla->ticket_request);
     if(fla->ticket_timer) purple_timeout_remove(fla->ticket_timer);
-    
+
     if(fla->fls_cookie) g_free(fla->fls_cookie);
     g_free(fla->rx_buf);
     if(fla->frame_buffer) g_byte_array_free(fla->frame_buffer, TRUE);
 
     if(fla->ping_timeout_handle) purple_timeout_remove(fla->ping_timeout_handle);
-    
+
     g_hash_table_destroy(fla->all_characters);
     if(fla->global_ops) g_hash_table_destroy(fla->global_ops);
 
@@ -473,13 +473,13 @@ void flist_close(PurpleConnection *pc) {
     if(fla->server_address) g_free(fla->server_address);
 
     if(fla->input_request) purple_request_close_with_handle((void*) pc);
-    
+
     flist_friends_unload(fla);
     flist_fetch_icon_cancel_all(fla);
     flist_global_kinks_unload(pc);
     flist_profile_unload(pc);
     flist_channel_subsystem_unload(fla);
-    
+
     g_free(fla);
 
     pc->proto_data = NULL;
@@ -514,29 +514,29 @@ void flist_login(PurpleAccount *pa) {
         purple_account_set_alias(pa, fla->character);
     }
 
-    
+
     /* login options */
     fla->server_address = g_strdup(purple_account_get_string(pa, "server_address", "chat.f-list.net"));
 //    fla->use_websocket_handshake = purple_account_get_bool(pa, "use_websocket_handshake", FALSE);
 
     fla->sync_bookmarks = purple_account_get_bool(pa, "sync_bookmarks", FALSE);
     fla->sync_friends = purple_account_get_bool(pa, "sync_friends", TRUE);
-    
+
     fla->secure = purple_account_get_bool(pa, "use_https", FALSE);
     if(!fla->secure) {
         fla->server_port = purple_account_get_int(pa, "server_port", FLIST_PORT);
     } else {
         fla->server_port = purple_account_get_int(pa, "server_port_secure", FLIST_PORT_SECURE);
     }
-    
+
     fla->debug_mode = purple_account_get_bool(pa, "debug_mode", FALSE);
-    
+
     flist_channel_subsystem_load(fla);
     flist_clear_filter(fla);
     flist_global_kinks_load(pc);
     flist_profile_load(pc);
     flist_friends_load(fla);
-    
+
     flist_ticket_timer(fla, 0);
     g_strfreev(ac_split);
 }
@@ -556,7 +556,7 @@ static GList *flist_status_types(PurpleAccount *account) {
     status = purple_status_type_new_with_attrs(PURPLE_STATUS_AWAY, "busy", _("Busy"),
         TRUE, TRUE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
     types = g_list_append(types, status);
-    
+
     status = purple_status_type_new_with_attrs(PURPLE_STATUS_AWAY, "away", _("Away"),
         TRUE, TRUE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
     types = g_list_append(types, status);
@@ -564,7 +564,7 @@ static GList *flist_status_types(PurpleAccount *account) {
     status = purple_status_type_new_with_attrs(PURPLE_STATUS_UNAVAILABLE, "dnd", _("Do Not Disturb"),
         TRUE, TRUE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
     types = g_list_append(types, status);
-    
+
     status = purple_status_type_new_with_attrs(PURPLE_STATUS_AWAY, "idle", _("Idle"),
         TRUE, FALSE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
     types = g_list_append(types, status);
@@ -687,19 +687,19 @@ static void plugin_init(PurplePlugin *plugin) {
 
 //    option = purple_account_option_bool_new("Sync Status Message", "sync_status_message", FALSE);
 //    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-    
+
     option = purple_account_option_string_new("Server Address", "server_address", "chat.f-list.net");
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_int_new("Server Port (Unsecure)", "server_port", FLIST_PORT);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-    
+
     option = purple_account_option_int_new("Server Port (Secure)", "server_port_secure", FLIST_PORT_SECURE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-    
+
     option = purple_account_option_bool_new("Use Secure Connections", "use_https", FALSE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-  
+
 //deprecated option
 //    option = purple_account_option_bool_new("Use WebSocket Handshake", "use_websocket_handshake", FALSE);
 //    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
@@ -709,10 +709,10 @@ static void plugin_init(PurplePlugin *plugin) {
 
     option = purple_account_option_bool_new("Download Bookmarks", "sync_bookmarks", FALSE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-    
+
     option = purple_account_option_bool_new("Debug Mode", "debug_mode", FALSE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-    
+
     str_to_gender = g_hash_table_new(g_str_hash, g_str_equal);
     gender_to_struct = g_hash_table_new(g_direct_hash, NULL);
     gender_list = NULL;
@@ -725,12 +725,12 @@ static void plugin_init(PurplePlugin *plugin) {
     gender_list = g_slist_reverse(gender_list);
     g_hash_table_insert(str_to_gender, (gpointer) gender_unknown.name, &gender_unknown);
     g_hash_table_insert(gender_to_struct, (gpointer) gender_unknown.gender, &gender_unknown);
-    
+
     str_to_channel_mode = g_hash_table_new(g_str_hash, g_str_equal);
     g_hash_table_insert(str_to_channel_mode, "both", GINT_TO_POINTER(CHANNEL_MODE_BOTH));
     g_hash_table_insert(str_to_channel_mode, "ads", GINT_TO_POINTER(CHANNEL_MODE_ADS_ONLY));
     g_hash_table_insert(str_to_channel_mode, "chat", GINT_TO_POINTER(CHANNEL_MODE_CHAT_ONLY));
-    
+
     status_list = NULL;
     status_list = g_slist_prepend(status_list, "online");
     status_list = g_slist_prepend(status_list, "looking");

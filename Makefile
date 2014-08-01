@@ -40,10 +40,10 @@ all: 	flist.so
 
 clean:
 	rm -f flist.so
-	
-install: 
+
+install:
 	cp flist.so ${PIDGIN_DIR}
-	
+
 flist.so:	${FLIST_SOURCES}
 	${LINUX_COMPILER} -Wall -I. -g -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
 

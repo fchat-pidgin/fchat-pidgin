@@ -45,9 +45,9 @@ static gchar *http_request(const gchar *url, gboolean http11, gboolean post, con
     GString *request_str = g_string_new(NULL);
     gchar *address = NULL, *page = NULL, *user = NULL, *password = NULL;
     int port;
-    
+
     purple_url_parse(url, &address, &port, &page, &user, &password);
-    
+
     g_string_append_printf(request_str, "%s /%s%s", (post ? "POST" : "GET"), page, (!post && req_table ? "?" : ""));
     if(req_table && !post) g_string_append_cgi(request_str, req_table);
     g_string_append_printf(request_str, " HTTP/%s\r\n", (http11 ? "1.1" : "1.0"));
@@ -55,39 +55,39 @@ static gchar *http_request(const gchar *url, gboolean http11, gboolean post, con
     if(user_agent) g_string_append_printf(request_str, "User-Agent: %s\r\n", user_agent);
     g_string_append_printf(request_str, "Accept: */*\r\n");
     g_string_append_printf(request_str, "Host: %s\r\n", address);
-    
+
     if(cookie_table) {
         g_string_append(request_str, "Cookie: ");
         g_string_append_cookies(request_str, cookie_table);
         g_string_append(request_str, "\r\n");
     }
-    
+
     if(post) {
         GString *post_str = g_string_new(NULL);
         gchar *post = NULL;
-        
+
         if(req_table) g_string_append_cgi(post_str, req_table);
-        
+
         post = g_string_free(post_str, FALSE);
-        
+
         purple_debug_info("flist", "posting (len: %d): %s\n", strlen(post), post);
 
         g_string_append(request_str, "Content-Type: application/x-www-form-urlencoded\r\n");
         g_string_append_printf(request_str, "Content-Length: %d\r\n", strlen(post));
         g_string_append(request_str, "\r\n");
-        
+
         g_string_append(request_str, post);
-        
+
         g_free(post);
     } else {
         g_string_append(request_str, "\r\n");
     }
-    
+
     if(address) g_free(address);
     if(page) g_free(page);
     if(user) g_free(user);
     if(password) g_free(password);
-    
+
     return g_string_free(request_str, FALSE);
 }
 
@@ -103,7 +103,7 @@ void flist_web_request_cancel(FListWebRequestData *req_data) {
 
 void flist_web_request_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message) {
     FListWebRequestData *req_data = user_data;
-    
+
     if(!url_text) {
         purple_debug_warning(FLIST_DEBUG, "Web Request failed with error message: %s\n", error_message);
         req_data->cb(req_data, req_data->user_data, NULL, error_message);
@@ -111,12 +111,12 @@ void flist_web_request_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, 
         JsonParser *parser;
         JsonNode *root;
         GError *err = NULL;
-        
+
         purple_debug_info(FLIST_DEBUG, "Web Request JSON Received: %s\n", url_text);
-        
+
         parser = json_parser_new();
         json_parser_load_from_data(parser, url_text, len, &err);
-        
+
         if(err) { /* not valid json */
             purple_debug_warning(FLIST_DEBUG, "Expected JSON Object, but did not parse with error message: %s\n", err->message);
             purple_debug_warning(FLIST_DEBUG, "Raw JSON: %s\n", url_text);

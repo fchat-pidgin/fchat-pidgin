@@ -284,7 +284,7 @@ struct FListRoomlistChannel_ {
 struct FListAccount_ {
     PurpleAccount *pa;
     PurpleConnection *pc;
-    
+
     GHashTable *global_ops; //hash table of global operators
     GHashTable *all_characters; //hash table of FListCharacter, all that are online
 
@@ -296,15 +296,15 @@ struct FListAccount_ {
     gchar *character;
     gchar *password;
     gchar *proper_character;
-    
+
     PurpleUtilFetchUrlData *url_request;
     gchar *fls_cookie;
     FListConnectionStatus connection_status;
-    
+
     /* for tickets */
     guint ticket_timer;
     FListWebRequestData *ticket_request;
-    
+
     /* connection data */
     PurpleSslConnection *ssl_con;
     gchar *rx_buf;
@@ -312,12 +312,12 @@ struct FListAccount_ {
     int fd;
     int input_handle;
     GByteArray *frame_buffer;
-    
+
     PurpleRoomlist *roomlist;
     gboolean input_request;
 
     guint ping_timeout_handle;
-    
+
     /* for the channel subsystem */
     GHashTable *chat_table; /* a hash table of open PurpleConvChat */
     GHashTable *chat_timestamp; /* the last time we attempted to join the chat */
@@ -341,12 +341,12 @@ struct FListAccount_ {
 
     /* profile subsystem */
     FListProfiles *flist_profiles;
-    
+
     /* friends subsystem */
     gboolean sync_bookmarks;
     gboolean sync_friends;
     FListFriends *flist_friends;
-    
+
     /* other options */
     gboolean debug_mode;
 };

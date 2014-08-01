@@ -40,7 +40,7 @@ static void flist_fetch_icon_cb(PurpleUtilFetchUrlData *url_data, gpointer data,
 
     checksum = "0"; /* what the fuck is this checksum supposed to be?? */
     character = fli->character;
-    
+
     if(err) {
         if(fli->convo) {
             PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_ANY, fli->convo, fla->pa);
@@ -86,15 +86,15 @@ static void flist_fetch_icon_cb(PurpleUtilFetchUrlData *url_data, gpointer data,
 static void flist_fetch_icon_real(FListAccount *fla, FListFetchIcon *fli) {
     gchar *character_lower;
     gchar *url;
-    
-    purple_debug_info(FLIST_DEBUG, "Fetching character icon... (Character: %s) (Convo: %s) (Secure: %s)\n", 
+
+    purple_debug_info(FLIST_DEBUG, "Fetching character icon... (Character: %s) (Convo: %s) (Secure: %s)\n",
         fli->character, fli->convo ? fli->convo : "none", fla->secure ? "yes" : "no");
 
     character_lower = g_utf8_strdown(fli->character, -1);
     url = g_strdup_printf("%sstatic.f-list.net/images/avatar/%s.png", fla->secure ? "https://" : "http://", purple_url_encode(character_lower));
     fli->url_data = purple_util_fetch_url_request(url, TRUE, USER_AGENT, TRUE, NULL, FALSE, flist_fetch_icon_cb, fli);
     fla->icon_requests = g_slist_prepend(fla->icon_requests, fli);
-    
+
     g_free(url);
     g_free(character_lower);
 }
@@ -105,7 +105,7 @@ void flist_fetch_icon(FListAccount *fla, const gchar *character) {
 
     fli->character = g_strdup(character);
     fli->fla = fla;
-    
+
     len = g_slist_length(fla->icon_requests);
     if(len < FLIST_MAX_ICON_REQUESTS) {
         flist_fetch_icon_real(fla, fli);
@@ -117,17 +117,17 @@ void flist_fetch_icon(FListAccount *fla, const gchar *character) {
 void flist_fetch_emoticon(FListAccount *fla, const gchar *smiley, const gchar *character, PurpleConversation *convo) {
     FListFetchIcon *fli;
     int len;
-    
+
     if(!purple_conv_custom_smiley_add(convo, smiley, "none", "0", TRUE)) {
         return; /* for some reason or another we can't add it */
     }
-    
+
     fli = g_new0(FListFetchIcon, 1);
     fli->character = g_strdup(character);
     fli->fla = fla;
     fli->convo = g_strdup(purple_conversation_get_name(convo));
     fli->smiley = g_strdup(smiley);
-    
+
     len = g_slist_length(fla->icon_requests);
     if(len < FLIST_MAX_ICON_REQUESTS) {
         flist_fetch_icon_real(fla, fli);

@@ -26,7 +26,7 @@ GCompareFunc flist_op_strcmp = (GCompareFunc) flist_strcmp;
 FListFlags flist_get_flags(FListAccount *fla, const gchar *channel, const gchar *identity) {
     FListFlags ret = 0;
     FListChannel *fchannel = channel ? flist_channel_find(fla, channel) : NULL;
-    
+
     if(fchannel && fchannel->owner && !flist_op_strcmp(fchannel->owner, identity)) {
         ret |= FLIST_FLAG_CHANNEL_FOUNDER;
     }
@@ -43,7 +43,7 @@ FListFlags flist_get_flags(FListAccount *fla, const gchar *channel, const gchar 
 static PurpleConvChatBuddyFlags flist_flags_lookup(FListAccount *fla, PurpleConversation *convo, const gchar *identity) {
     const gchar *channel = purple_conversation_get_name(convo);
     FListChannel *fchannel = flist_channel_find(fla, channel);
-    
+
     if(!fchannel) {
         purple_debug_error("flist", "Flags requested for %s in channel %s, but no channel was found.\n", identity, channel);
         return PURPLE_CBFLAGS_NONE;
@@ -57,7 +57,7 @@ static PurpleConvChatBuddyFlags flist_flags_lookup(FListAccount *fla, PurpleConv
     if(g_list_find_custom(fchannel->operators, identity, flist_op_strcmp)) {
         return PURPLE_CBFLAGS_HALFOP;
     }
-    
+
     return PURPLE_CBFLAGS_NONE;
 }
 
@@ -107,7 +107,7 @@ void flist_got_channel_title(FListAccount *fla, const gchar *channel, const gcha
     FListChannel *fchannel = flist_channel_find(fla, channel);
     PurpleGroup *g = flist_get_chat_group(fla);
     PurpleChat *b;
-    
+
     g_return_if_fail(title != NULL);
     g_return_if_fail(convo != NULL);
     g_return_if_fail(fchannel != NULL);
@@ -118,7 +118,7 @@ void flist_got_channel_title(FListAccount *fla, const gchar *channel, const gcha
     }
 
     purple_conversation_autoset_title(convo);
-    
+
     if(fchannel->title) g_free(fchannel->title);
     fchannel->title = g_strdup(title);
 }
@@ -127,17 +127,17 @@ static void flist_show_channel_topic(FListAccount *fla, const gchar *channel) {
     PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
     FListChannel *fchannel = flist_channel_find(fla, channel);
     gchar *escaped_description, *html_description;
-    
+
     g_return_if_fail(convo != NULL);
     g_return_if_fail(fchannel != NULL);
     g_return_if_fail(fchannel->topic != NULL); //TODO: better error handling than not showing anything.
-    
+
     escaped_description = purple_markup_escape_text(fchannel->topic, -1);
     html_description = flist_bbcode_to_html(fla, convo, escaped_description);
-    
+
     //message = g_strdup_printf("The description for %s is: %s", purple_conversation_get_title(convo), html_description);
     purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", html_description, PURPLE_MESSAGE_SYSTEM, time(NULL));
-    
+
     g_free(escaped_description);
     g_free(html_description);
 }
@@ -146,27 +146,27 @@ void flist_got_channel_topic(FListAccount *fla, const gchar *channel, const gcha
     PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
     FListChannel *fchannel = flist_channel_find(fla, channel);
     gchar *escaped_description, *stripped_description, *stripped_description_2, *unescaped_description;
-    
+
     g_return_if_fail(topic != NULL);
     g_return_if_fail(convo != NULL);
     g_return_if_fail(fchannel != NULL);
-    
+
     if(fchannel->topic) g_free(fchannel->topic);
     fchannel->topic = g_strdup(topic);
-    
+
     escaped_description = purple_markup_escape_text(fchannel->topic, -1);
     stripped_description = flist_bbcode_strip(escaped_description);
     stripped_description_2 = flist_strip_crlf(stripped_description);
     unescaped_description = purple_unescape_html(stripped_description_2);
-    
+
     purple_conv_chat_set_topic(PURPLE_CONV_CHAT(convo), NULL, unescaped_description);
     flist_show_channel_topic(fla, channel);
-    
+
     if(purple_conversation_get_data(convo, CHAT_SHOW_DISPLAY_STATUS)) {
         purple_conversation_set_data(convo, CHAT_SHOW_DISPLAY_STATUS, GINT_TO_POINTER(FALSE));
         flist_channel_show_message(fla, channel);
     }
-    
+
     g_free(escaped_description);
     g_free(stripped_description);
     g_free(stripped_description_2);
@@ -178,16 +178,16 @@ void flist_got_channel_userlist(FListAccount *fla, const gchar *channel, GList *
     FListChannel *fchannel = flist_channel_find(fla, channel);
     GList *cur;
     GList *flags = NULL;
-    
+
     g_return_if_fail(convo != NULL);
     g_return_if_fail(fchannel != NULL);
-    
+
     for(cur = userlist; cur; cur = cur->next) {
         flags = g_list_prepend(flags, GINT_TO_POINTER(flist_flags_lookup(fla, convo, cur->data)));
         g_hash_table_replace(fchannel->users, g_strdup(cur->data), NULL);
     }
     flags = g_list_reverse(flags);
-    
+
     purple_conv_chat_add_users(PURPLE_CONV_CHAT(convo), userlist, NULL, flags, FALSE);
 }
 
@@ -199,9 +199,9 @@ void flist_got_channel_user_joined(FListAccount *fla, const gchar *channel, cons
     g_return_if_fail(character != NULL);
     g_return_if_fail(fchannel != NULL);
     g_return_if_fail(convo != NULL);
-    
+
     g_hash_table_replace(fchannel->users, g_strdup(character), NULL);
-    
+
     flags = flist_flags_lookup(fla, convo, character);
     purple_conv_chat_add_user(PURPLE_CONV_CHAT(convo), character, NULL, flags, TRUE);
 }
@@ -210,11 +210,11 @@ void flist_got_channel_user_left(FListAccount *fla, const gchar *channel, const 
     PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
     FListChannel *fchannel = flist_channel_find(fla, channel);
     gchar *original_character;
-    
+
     g_return_if_fail(character != NULL);
     g_return_if_fail(fchannel != NULL);
     g_return_if_fail(convo != NULL);
-    
+
     if(g_hash_table_lookup_extended(fchannel->users, character, (void**) &original_character, NULL)) {
         purple_conv_chat_remove_user(PURPLE_CONV_CHAT(convo), original_character, message ? message : "left");
         g_hash_table_remove(fchannel->users, character);
@@ -223,7 +223,7 @@ void flist_got_channel_user_left(FListAccount *fla, const gchar *channel, const 
 
 void flist_got_channel_joined(FListAccount *fla, const gchar *name) {
     FListChannel *fchannel = g_new0(FListChannel, 1);
-    
+
     fchannel->name = g_strdup(name);
     fchannel->users = g_hash_table_new_full((GHashFunc) flist_str_hash, (GEqualFunc) flist_str_equal, g_free, NULL);
     fchannel->mode = CHANNEL_MODE_BOTH;
@@ -241,12 +241,12 @@ void flist_got_channel_mode(FListAccount *fla, const gchar *channel, const gchar
     PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
     FListChannel *fchannel = flist_channel_find(fla, channel);
     FListChannelMode fmode;
-    
+
     g_return_if_fail(fchannel != NULL);
     g_return_if_fail(convo != NULL);
-    
+
     fmode = flist_parse_channel_mode(mode);
-    
+
 }
 
 void flist_got_channel_oplist(FListAccount *fla, const gchar *channel, GList *ops) {
@@ -254,26 +254,26 @@ void flist_got_channel_oplist(FListAccount *fla, const gchar *channel, GList *op
     FListChannel *fchannel = flist_channel_find(fla, channel);
     GList *old_ops, *new_ops;
     gchar *old_owner;
-    
+
     g_return_if_fail(fchannel != NULL);
     g_return_if_fail(convo != NULL);
-    
+
     old_ops = fchannel->operators;
     old_owner = fchannel->owner;
     new_ops = NULL;
-    
+
     for(; ops; ops = ops->next) {
         gchar *identity = g_strdup(ops->data);
         new_ops = g_list_prepend(new_ops, identity);
     }
     new_ops = g_list_reverse(new_ops);
-    
+
     fchannel->operators = new_ops;
     fchannel->owner = new_ops ? g_strdup(new_ops->data) : NULL;
-    
+
     flist_update_users_chats_rank(fla->pc, old_ops);
     flist_update_users_chats_rank(fla->pc, fchannel->operators);
-    
+
     if(old_owner) g_free(old_owner);
     if(old_ops) flist_g_list_free_full(old_ops, g_free);
 }
@@ -309,18 +309,18 @@ static void flist_got_channel_demote(PurpleConnection *pc, PurpleConversation *c
 gboolean flist_process_CIU(PurpleConnection *pc, JsonObject *root) {
     const gchar *sender, *name, *title;
     GHashTable *data;
-    
+
     sender = json_object_get_string_member(root, "sender");
     name = json_object_get_string_member(root, "name");
     title = json_object_get_string_member(root, "title");
     g_return_val_if_fail(sender, TRUE);
     g_return_val_if_fail(name, TRUE);
-    
+
     if(!title) title = name;
-    
+
     data = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
     g_hash_table_insert(data, CHANNEL_COMPONENTS_NAME, g_strdup(name));
-    
+
     serv_got_chat_invite(pc, title, sender, NULL, data);
     return TRUE;
 }
@@ -347,7 +347,7 @@ gboolean flist_process_JCH(PurpleConnection *pc, JsonObject *root) {
     } else {
         flist_got_channel_user_joined(fla, channel, identity);
     }
-    
+
     if(title) {
         gchar *unescaped_title = purple_unescape_html(title);
         flist_got_channel_title(fla, channel, unescaped_title);
@@ -362,23 +362,23 @@ gboolean flist_process_kickban(PurpleConnection *pc, JsonObject *root, gboolean 
     FListAccount *fla = pc->proto_data;
     PurpleConversation *convo;
     const gchar *operator, *character, *channel;
-    
+
     channel = json_object_get_string_member(root, "channel");
     operator = json_object_get_string_member(root, "operator");
     character = json_object_get_string_member(root, "character");
-    
+
     g_return_val_if_fail(channel != NULL, TRUE);
     g_return_val_if_fail(character != NULL, TRUE);
-    
+
     convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, pa);
     if(!convo) {
         purple_debug(PURPLE_DEBUG_ERROR, "flist", "User %s was kicked or banned from channel %s, but we are not in this channel.\n", channel, character);
         return TRUE;
     }
-    
+
     if(!flist_strcmp(character, fla->proper_character)) { //we just got kicked
-        gchar *message = operator 
-                ? g_strdup_printf("You have been %s from the channel!", ban ? "kicked and banned" : "kicked") 
+        gchar *message = operator
+                ? g_strdup_printf("You have been %s from the channel!", ban ? "kicked and banned" : "kicked")
                 : g_strdup_printf("%s has %s you from the channel!", operator, ban ? "kicked and banned" : "kicked");
         purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "System", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
         g_free(message);
@@ -386,9 +386,9 @@ gboolean flist_process_kickban(PurpleConnection *pc, JsonObject *root, gboolean 
         serv_got_chat_left(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)));
         return TRUE;
     }
-    
-    gchar *message = g_strdup_printf("%s%s%s", 
-            ban ? "kicked and banned" : "kicked", 
+
+    gchar *message = g_strdup_printf("%s%s%s",
+            ban ? "kicked and banned" : "kicked",
             operator ? " by " : "",
             operator ? operator : "");
     flist_got_channel_user_left(fla, channel, character, message);
@@ -419,9 +419,9 @@ gboolean flist_process_COL(PurpleConnection *pc, JsonObject *root) {
         ops = g_list_prepend(ops, (gpointer)identity);
     }
     ops = g_list_reverse(ops);
-    
+
     flist_got_channel_oplist(fla, channel, ops);
-    
+
     g_list_free(ops);
 
     return TRUE;
@@ -430,16 +430,16 @@ gboolean flist_process_COL(PurpleConnection *pc, JsonObject *root) {
 gboolean flist_process_RMO(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     const gchar *channel, *mode;
-    
+
     channel = json_object_get_string_member(root, "channel");
     mode = json_object_get_string_member(root, "mode");
-    
+
     g_return_val_if_fail(channel != NULL, TRUE);
-    
+
     if(mode) {
         flist_got_channel_mode(fla, channel, mode);
     }
-    
+
     return TRUE;
 }
 
@@ -454,19 +454,19 @@ gboolean flist_process_ICH(PurpleConnection *pc, JsonObject *root) {
     channel = json_object_get_string_member(root, "channel");
     title = json_object_get_string_member(root, "title");
     mode = json_object_get_string_member(root, "mode");
-    
+
     g_return_val_if_fail(channel != NULL, TRUE);
-    
+
     if(title) {
         gchar *unescaped_title = purple_unescape_html(title);
         flist_got_channel_title(fla, channel, unescaped_title);
         g_free(unescaped_title);
     }
-    
+
     if(mode) {
         flist_got_channel_mode(fla, channel, mode);
     }
-    
+
     len = json_array_get_length(array);
     for(i = 0; i < len; i++) {
         JsonObject *user_object = json_array_get_object_element(array, i);
@@ -474,11 +474,11 @@ gboolean flist_process_ICH(PurpleConnection *pc, JsonObject *root) {
         users = g_list_prepend(users, (gpointer) identity);
     }
     users = g_list_reverse(users);
-    
+
     flist_got_channel_userlist(fla, channel, users);
-    
+
     g_list_free(users);
-    
+
     return TRUE;
 }
 
@@ -533,7 +533,7 @@ void flist_channel_print_error(PurpleConversation *convo, const gchar *message) 
 static void flist_who_single(FListAccount *fla, PurpleConversation *convo, FListCharacter *character, gboolean icon) {
     GString *message_str = g_string_new("");
     gchar *message, *parsed_message;
-    
+
     if(icon) {
         g_string_append_printf(message_str, "[icon]%s[/icon] ", character->name);
     } else {
@@ -545,10 +545,10 @@ static void flist_who_single(FListAccount *fla, PurpleConversation *convo, FList
     } else {
         g_string_append(message_str, flist_format_status(character->status));
     }
-    
+
     message = g_string_free(message_str, FALSE);
     parsed_message = flist_bbcode_to_html(fla, NULL, message);
-    
+
     purple_conversation_write(convo, NULL, parsed_message, PURPLE_MESSAGE_SYSTEM, time(NULL));
 
     g_free(message);
@@ -562,7 +562,7 @@ static gint flist_who_compare(gconstpointer a, gconstpointer b) {
 
 static void flist_who(FListAccount *fla, PurpleConversation *convo, GList *who, gboolean icons) {
     who = g_list_sort(who, flist_who_compare);
-    
+
     while(who) {
         FListCharacter *character = who->data;
         flist_who_single(fla, convo, character, icons);
@@ -576,14 +576,14 @@ PurpleCmdRet flist_channel_who_cmd(PurpleConversation *convo, const gchar *cmd, 
     const gchar *name = purple_conversation_get_name(convo);
     FListChannel *fchannel = flist_channel_find(fla, name);
     GList *chat_buddies, *list = NULL;
-    
+
     g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_STATUS_FAILED);
-    
+
     chat_buddies = purple_conv_chat_get_users(PURPLE_CONV_CHAT(convo));
     while(chat_buddies) {
         PurpleConvChatBuddy *buddy = chat_buddies->data;
         FListCharacter *character = flist_get_character(fla, purple_conv_chat_cb_get_name(buddy));
-        
+
         if(character) {
             list = g_list_prepend(list, character);
         } else {
@@ -592,9 +592,9 @@ PurpleCmdRet flist_channel_who_cmd(PurpleConversation *convo, const gchar *cmd, 
         chat_buddies = chat_buddies->next;
     }
     list = g_list_reverse(list);
-    
+
     flist_who(fla, convo, list, FALSE);
-    
+
     return PURPLE_CMD_RET_OK;
 }
 
@@ -606,9 +606,9 @@ PurpleCmdRet flist_channel_oplist_cmd(PurpleConversation *convo, const gchar *cm
     GString *str;
     gchar *to_print;
     GList *cur;
-    
+
     g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_STATUS_FAILED);
-    
+
     str = g_string_new(NULL);
     if(!fchannel->owner && !fchannel->operators) {
         g_string_append(str, "This channel has no operators.");
@@ -668,7 +668,7 @@ PurpleCmdRet flist_channel_op_deop_cmd(PurpleConversation *convo, const gchar *c
 PurpleCmdRet flist_channel_code_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     const gchar *name, *title;
     gchar *name_escaped, *title_escaped, *message;
-    
+
     name = purple_conversation_get_name(convo);
     title = purple_conversation_get_title(convo);
     name_escaped = purple_markup_escape_text(name, -1);
@@ -686,7 +686,7 @@ PurpleCmdRet flist_channel_code_cmd(PurpleConversation *convo, const gchar *cmd,
 PurpleCmdRet flist_channel_join_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     const gchar *channel = args[0];
-    GHashTable* components = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free); 
+    GHashTable* components = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
     g_hash_table_insert(components, CHANNEL_COMPONENTS_NAME, g_strdup(channel));
     serv_join_chat(pc, components);
     return PURPLE_CMD_STATUS_OK;
@@ -776,7 +776,7 @@ PurpleCmdRet flist_channel_show_topic_cmd(PurpleConversation *convo, const gchar
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc ? pc->proto_data : NULL;
     const gchar *channel;
-    
+
     g_return_val_if_fail(fla, PURPLE_CMD_STATUS_FAILED);
 
     channel = purple_conversation_get_name(convo);
@@ -790,13 +790,13 @@ PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *convo, const g
     FListAccount *fla = pc ? pc->proto_data : NULL;
     const gchar *channel;
     FListChannel *fchannel;
-    
+
     g_return_val_if_fail(fla, PURPLE_CMD_STATUS_FAILED);
-    
+
     channel = purple_conversation_get_name(convo);
     fchannel = flist_channel_find(fla, channel);
     g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_STATUS_FAILED);
-    
+
     if(!fchannel->topic) {
         purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", "The description for this channel is currently unset.", PURPLE_MESSAGE_SYSTEM, time(NULL));
     } else {
@@ -804,7 +804,7 @@ PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *convo, const g
         purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", escaped_topic, PURPLE_MESSAGE_SYSTEM, time(NULL));
         g_free(escaped_topic);
     }
-    
+
     return PURPLE_CMD_STATUS_OK;
 }
 

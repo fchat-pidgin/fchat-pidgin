@@ -35,7 +35,7 @@ const gchar *POSITIONS[7] = {"Always Top", "Usually Top", "Switch", "Usually Bot
 
 struct FListKinks_ {
     FListWebRequestData *global_kinks_request;
-    
+
     GHashTable *kinks_table;
     GList *kinks_list;
     GSList *filter_channel_choices;
@@ -43,7 +43,7 @@ struct FListKinks_ {
     GSList *filter_gender_choices;
     GSList *filter_role_choices;
     GSList *filter_position_choices;
-    
+
     gboolean local;
     gboolean looking;
     int kink1, kink2, kink3;
@@ -68,7 +68,7 @@ static int flist_kinkcmp(FListKink *kink1, FListKink *kink2) {
 static int flist_filter_get_genders(FListKinks *flk) {
     int ret = 0;
     GSList *cur = flk->filter_gender_choices; int index = 0;
-    
+
     while(cur) {
         if(flk->genders & (1 << index)) {
             FListGender gender = flist_parse_gender(g_slist_nth_data(flk->filter_gender_choices, index));
@@ -76,7 +76,7 @@ static int flist_filter_get_genders(FListKinks *flk) {
         }
         cur = cur->next; index++;
     }
-    
+
     return ret;
 }
 
@@ -85,7 +85,7 @@ static GSList *flist_get_filter_characters(FListAccount *fla, gboolean has_extra
     GSList *all, *cur;
     GSList *ret = NULL, *names = NULL;
     int genders = flist_filter_get_genders(flk);
-    
+
     /* get the initial list by filtering by gender and status */
     all = flist_get_all_characters(fla);
     cur = all;
@@ -97,7 +97,7 @@ static GSList *flist_get_filter_characters(FListAccount *fla, gboolean has_extra
         cur = g_slist_next(cur);
     }
     g_slist_free(all);
-    
+
     /* if there is a channel chosen, filter by that, too */
     if(fla->filter_channel) {
         PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, fla->filter_channel, fla->pa);
@@ -117,7 +117,7 @@ static GSList *flist_get_filter_characters(FListAccount *fla, gboolean has_extra
             purple_debug_info("flist", "We tried to filter on channel %s, but no channel was found.\n", fla->filter_channel);
         }
     }
-    
+
     /* if we have server-side results, filter by them last */
     if(has_extra) {
         GSList *tmp = NULL;
@@ -129,7 +129,7 @@ static GSList *flist_get_filter_characters(FListAccount *fla, gboolean has_extra
         }
         ret = flist_g_slist_intersect_and_free(ret, tmp);
     }
-    
+
     cur = ret;
     while(cur) {
         FListCharacter *character = cur->data;
@@ -137,7 +137,7 @@ static GSList *flist_get_filter_characters(FListAccount *fla, gboolean has_extra
         cur = g_slist_next(cur);
     }
     g_slist_free(ret);
-    
+
     return names;
 }
 
@@ -147,7 +147,7 @@ gboolean flist_process_FKS(PurpleConnection *pc, JsonObject *root) {
     JsonArray *characters;
     int i, len;
     GSList *character_list = NULL;
-    
+
     kink = json_object_get_string_member(root, "kinkid");
     characters = json_object_get_array_member(root, "characters");
 
@@ -158,7 +158,7 @@ gboolean flist_process_FKS(PurpleConnection *pc, JsonObject *root) {
     }
 
     purple_debug_info(FLIST_DEBUG, "There are %d results to our kink search.\n", g_slist_length(character_list));
-    
+
     flist_apply_filter(fla, flist_get_filter_characters(fla, TRUE, character_list));
 
     g_slist_free(character_list);
@@ -192,7 +192,7 @@ static void flist_filter_pack(PurpleRequestFieldGroup *group, const gchar *name,
 static int flist_filter_unpack(PurpleRequestFields *fields, const gchar *name, GSList *choices) {
     int ret = 0;
     int index = 0;
-    
+
     while(choices) {
         gchar *s = g_strdup_printf("%s%d", name, index);
         if(purple_request_fields_get_bool(fields, s)) {
@@ -208,31 +208,31 @@ static void flist_filter_done(FListAccount *fla) {
     FListKinks *flk = _flist_kinks(fla);
     JsonObject *json;
     JsonArray *kinks, *genders, *roles;
-        
+
     if(!flk->local) {
         const gchar *kink1, *kink2, *kink3;
         json = json_object_new();
         genders = json_array_new();
         roles = json_array_new();
         kinks = json_array_new();
-        
+
         kink1 = g_slist_nth_data(flk->filter_kink_choices, flk->kink1);
         kink2 = g_slist_nth_data(flk->filter_kink_choices, flk->kink2);
         kink3 = g_slist_nth_data(flk->filter_kink_choices, flk->kink3);
-        
+
         if(kink1) json_array_add_string_element(kinks, kink1);
         if(kink2) json_array_add_string_element(kinks, kink2);
         if(kink3) json_array_add_string_element(kinks, kink3);
 
         flist_filter_json_flags(genders, flk->filter_gender_choices, flk->genders);
         flist_filter_json_flags(roles, flk->filter_role_choices, flk->roles);
-        
+
         json_object_set_array_member(json, "kinks", kinks);
         json_object_set_array_member(json, "genders", genders);
         json_object_set_array_member(json, "roles", roles);
-        
+
         flist_request(fla->pc, FLIST_KINK_SEARCH, json);
-        
+
         /* unreference the json */
         json_array_unref(kinks);
         json_array_unref(genders);
@@ -241,14 +241,14 @@ static void flist_filter_done(FListAccount *fla) {
     } else {
         flist_apply_filter(fla, flist_get_filter_characters(fla, FALSE, NULL));
     }
-    
+
     purple_account_set_int(fla->pa, LAST_GENDERS, flk->genders);
     purple_account_set_int(fla->pa, LAST_KINK1, flk->kink1);
     purple_account_set_int(fla->pa, LAST_KINK2, flk->kink2);
     purple_account_set_int(fla->pa, LAST_KINK3, flk->kink3);
     purple_account_set_int(fla->pa, LAST_LOOKING, flk->looking);
     purple_account_set_int(fla->pa, LAST_ROLES, flk->roles);
-    
+
     fla->input_request = FALSE;
 }
 
@@ -274,9 +274,9 @@ static void flist_filter_dialog(FListAccount *fla, PurpleRequestFields *fields, 
 static void flist_filter3_cb(gpointer user_data, PurpleRequestFields *fields) {
     FListAccount *fla = user_data;
     FListKinks *flk = _flist_kinks(fla);
-    
+
     flk->roles = flist_filter_unpack(fields, "role", flk->filter_role_choices);
-    
+
     flist_filter_done(fla);
 }
 
@@ -284,20 +284,20 @@ static void flist_filter3(FListAccount *fla) {
     FListKinks *flk = _flist_kinks(fla);
     PurpleRequestFields *fields = purple_request_fields_new();
     PurpleRequestFieldGroup *group = purple_request_field_group_new("Options");
-    
+
     flist_filter_pack(group, "role", flk->filter_role_choices, flk->roles);
     purple_request_fields_add_group(fields, group);
-        
+
     flist_filter_dialog(fla, fields, G_CALLBACK(flist_filter3_cb));
 }
 
 static void flist_filter2_cb(gpointer user_data, PurpleRequestFields *fields) {
     FListAccount *fla = user_data;
     FListKinks *flk = _flist_kinks(fla);
-    
+
     flk->genders = flist_filter_unpack(fields, "gender", flk->filter_gender_choices);
-    
-    flk->local = !(flk->kink1 || flk->kink2 || flk->kink3);    
+
+    flk->local = !(flk->kink1 || flk->kink2 || flk->kink3);
     if(flk->local) { /* If this is a local search, we can't search for roles. */
         flist_filter_done(fla);
     } else { /* If this is not a local search, continue. */
@@ -309,10 +309,10 @@ static void flist_filter2(FListAccount *fla) {
     FListKinks *flk = _flist_kinks(fla);
     PurpleRequestFields *fields = purple_request_fields_new();
     PurpleRequestFieldGroup *group = purple_request_field_group_new("Options");
-    
+
     purple_request_fields_add_group(fields, group);
     flist_filter_pack(group, "gender", flk->filter_gender_choices, flk->genders);
-    
+
     flist_filter_dialog(fla, fields, G_CALLBACK(flist_filter2_cb));
 }
 
@@ -321,7 +321,7 @@ static void flist_filter1_cb(gpointer user_data, PurpleRequestFields *fields) {
     FListKinks *flk = _flist_kinks(fla);
     int channel_index;
     const gchar *channel;
-    
+
     /* these are server-side filters */
     flk->kink1 = purple_request_fields_get_choice(fields, "kink1");
     flk->kink2 = purple_request_fields_get_choice(fields, "kink2");
@@ -329,7 +329,7 @@ static void flist_filter1_cb(gpointer user_data, PurpleRequestFields *fields) {
 
     /* this is a client-side filter */
     flk->looking = purple_request_fields_get_bool(fields, "looking");
-    
+
     /* this is a client-side filter*/
     channel_index = purple_request_fields_get_choice(fields, "channel");
     channel = g_slist_nth_data(flk->filter_channel_choices, channel_index);
@@ -337,14 +337,14 @@ static void flist_filter1_cb(gpointer user_data, PurpleRequestFields *fields) {
     fla->filter_channel = channel ? g_strdup(channel) : NULL;
     flist_g_slist_free_full(flk->filter_channel_choices, (GDestroyNotify) g_free);
     flk->filter_channel_choices = NULL;
-    
+
     flist_filter2(fla);
 }
 
 static void flist_add_kink_field(FListKinks *flk, PurpleRequestFieldGroup *group, const gchar *name, int start) {
     PurpleRequestField *field = purple_request_field_choice_new(name, _("Kink"), start);
     GList *cur;
-    
+
     purple_request_field_choice_add(field, "(No Filter)");
     cur = flk->kinks_list;
     while(cur) {
@@ -362,7 +362,7 @@ static void flist_filter1(FListAccount *fla, const gchar *default_channel) {
     PurpleRequestField *field;
     GList *channels, *cur;
     int i = 0;
-    
+
     group = purple_request_field_group_new("Options");
     fields = purple_request_fields_new();
     purple_request_fields_add_group(fields, group);
@@ -373,7 +373,7 @@ static void flist_filter1(FListAccount *fla, const gchar *default_channel) {
     /* now, add all of our current channels to the list */
     field = purple_request_field_choice_new("channel", _("Channel"), 0);
     purple_request_field_choice_add(field, "(Any Channel)");
-    
+
     flk->filter_channel_choices = g_slist_prepend(flk->filter_channel_choices, NULL);
     channels = flist_channel_list_all(fla);
     i = 1;
@@ -396,7 +396,7 @@ static void flist_filter1(FListAccount *fla, const gchar *default_channel) {
         flist_add_kink_field(flk, group, "kink2", flk->kink2);
         flist_add_kink_field(flk, group, "kink3", flk->kink3);
     }
-    
+
     flist_filter_dialog(fla, fields, G_CALLBACK(flist_filter1_cb));
 }
 
@@ -405,7 +405,7 @@ static void flist_filter_real(PurpleConnection *pc, const gchar *channel) {
 
     g_return_if_fail(pc);
     g_return_if_fail((fla = pc->proto_data));
-    
+
     if(fla->input_request) return;
 
     flist_filter1(fla, channel);
@@ -430,24 +430,24 @@ static void flist_global_kinks_cb(FListWebRequestData *req_data,
     JsonObject *kinks;
     GList *categories, *cur;
     int i, len;
-    
+
     flk->global_kinks_request = NULL;
-    
+
     if(!root) {
         purple_debug_error(FLIST_DEBUG, "Failed to obtain the global list of kinks. Error Message: %s\n", error_message);
         return;
     }
-    
+
     kinks = json_object_get_object_member(root, "kinks");
     if(!kinks) {
         purple_debug_warning(FLIST_DEBUG, "We received the global list of kinks, but it was empty.\n");
         return;
     }
-    
+
     purple_debug_info(FLIST_DEBUG, "Processing global kink list...\n");
-    
+
     flk->kinks_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL); //TODO: write freeing function!
-    
+
     categories = json_object_get_members(kinks);
     cur = categories;
     while(cur) {
@@ -455,7 +455,7 @@ static void flist_global_kinks_cb(FListWebRequestData *req_data,
         JsonArray *kinks_array;
         JsonObject *kink_group;
         const gchar *category_name;
-        
+
         kink_group = json_object_get_object_member(kinks, category_id);
         category_name = json_object_get_string_member(kink_group, "group");
         kinks_array = json_object_get_array_member(kink_group, "items");
@@ -469,8 +469,8 @@ static void flist_global_kinks_cb(FListWebRequestData *req_data,
             kink->kink_id = g_strdup_printf("%d", (gint) json_object_get_int_member(kink_object, "kink_id"));
             g_hash_table_insert(flk->kinks_table, g_strdup(kink->name), kink);
             if(fla->debug_mode) {
-                purple_debug_info(FLIST_DEBUG, 
-                        "Global kink processed. (ID: %s) (Category: %s) (Name: %s) (Description: %s)\n", 
+                purple_debug_info(FLIST_DEBUG,
+                        "Global kink processed. (ID: %s) (Category: %s) (Name: %s) (Description: %s)\n",
                         kink->kink_id, kink->category, kink->name, kink->description);
             }
         }
@@ -481,7 +481,7 @@ static void flist_global_kinks_cb(FListWebRequestData *req_data,
     purple_debug_info(FLIST_DEBUG, "Global kink list processed. (Kinks: %d)\n", g_hash_table_size(flk->kinks_table));
 
     flk->kinks_list = g_list_sort(g_hash_table_get_values(flk->kinks_table), (GCompareFunc) flist_kinkcmp);
-    
+
     cur = flk->kinks_list; //TODO: filter down to our kinks only!?
     flk->filter_kink_choices = g_slist_prepend(flk->filter_kink_choices, NULL);
     while(cur) {
@@ -499,24 +499,24 @@ void flist_global_kinks_load(PurpleConnection *pc) {
     const gchar **p;
     fla->flist_kinks = g_new0(FListKinks, 1);
     flk = _flist_kinks(fla);
-    
+
     purple_debug_info("Fetching global kink list... (Account: %s) (Character: %s)\n", fla->username, fla->character);
     flk->global_kinks_request = flist_web_request(JSON_KINK_LIST, NULL, TRUE, fla->secure, flist_global_kinks_cb, fla);
-    
+
     genders = flist_get_gender_list();
     while(genders) {
         flk->filter_gender_choices = g_slist_prepend(flk->filter_gender_choices, genders->data);
         genders = genders->next;
     }
     flk->filter_gender_choices = g_slist_reverse(flk->filter_gender_choices);
-    
+
     p = ROLES;
     while(*p) {
         flk->filter_role_choices = g_slist_prepend(flk->filter_role_choices, g_strdup(*p));
         p++;
     }
     flk->filter_role_choices = g_slist_reverse(flk->filter_role_choices);
-    
+
     flk->kink1 = purple_account_get_int(fla->pa, LAST_KINK1, 0);
     flk->kink2 = purple_account_get_int(fla->pa, LAST_KINK2, 0);
     flk->kink3 = purple_account_get_int(fla->pa, LAST_KINK3, 0);
@@ -528,12 +528,12 @@ void flist_global_kinks_load(PurpleConnection *pc) {
 void flist_global_kinks_unload(PurpleConnection *pc) {
     FListAccount *fla = pc->proto_data;
     FListKinks *flk = _flist_kinks(fla);
-    
+
     if(flk->global_kinks_request) {
         flist_web_request_cancel(flk->global_kinks_request);
         flk->global_kinks_request = NULL;
     }
-    
+
     if(flk->kinks_list) {
         g_list_free(flk->kinks_list);
         flk->kinks_list = NULL;
@@ -554,7 +554,7 @@ void flist_global_kinks_unload(PurpleConnection *pc) {
     if(flk->filter_role_choices) {
         flist_g_slist_free_full(flk->filter_role_choices, (GDestroyNotify) g_free);
     }
-    
+
     g_free(flk);
     fla->flist_kinks = NULL;
 }

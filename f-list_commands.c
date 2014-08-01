@@ -49,13 +49,13 @@ GList *flist_buddy_menu(PurpleBuddy *b) {
     FListFriendStatus friend_status;
     GList *ret = NULL;
     PurpleMenuAction *act;
-    
+
     g_return_val_if_fail((pc = purple_account_get_connection(pa)), NULL);
     g_return_val_if_fail((fla = pc->proto_data), NULL);
-    
+
     friend_status = flist_friends_get_friend_status(fla, name);
     bookmarked = flist_friends_is_bookmarked(fla, name);
-    
+
     if(bookmarked) {
         act = purple_menu_action_new("Remove Bookmark", PURPLE_CALLBACK(flist_blist_node_action), GINT_TO_POINTER(FLIST_BOOKMARK_REMOVE), NULL);
         ret = g_list_prepend(ret, act);
@@ -63,7 +63,7 @@ GList *flist_buddy_menu(PurpleBuddy *b) {
         act = purple_menu_action_new("Add Bookmark", PURPLE_CALLBACK(flist_blist_node_action), GINT_TO_POINTER(FLIST_BOOKMARK_ADD), NULL);
         ret = g_list_prepend(ret, act);
     }
-    
+
     switch(friend_status) {
     case FLIST_MUTUAL_FRIEND:
         act = purple_menu_action_new("Remove Friend", PURPLE_CALLBACK(flist_blist_node_action), GINT_TO_POINTER(FLIST_FRIEND_REMOVE), NULL);
@@ -85,7 +85,7 @@ GList *flist_buddy_menu(PurpleBuddy *b) {
         break;
     default: break;
     }
-    
+
     return ret;
 }
 
@@ -104,13 +104,13 @@ void flist_get_tooltip(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboo
     const gchar *identity = flist_normalize(pa, purple_buddy_get_name(buddy));
     FListFriendStatus friend_status;
     gboolean bookmarked;
-    
+
     g_return_if_fail((fla = pc->proto_data));
     character = flist_get_character(fla, identity);
-    
+
     bookmarked = flist_friends_is_bookmarked(fla, identity);
     friend_status = flist_friends_get_friend_status(fla, identity);
-    
+
     if(character) {
         purple_notify_user_info_add_pair(user_info, "Status", flist_format_status(character->status));
         purple_notify_user_info_add_pair(user_info, "Gender", flist_format_gender(character->gender));
@@ -118,7 +118,7 @@ void flist_get_tooltip(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboo
             purple_notify_user_info_add_pair(user_info, "Message", character->status_message);
         }
     }
-    
+
     purple_notify_user_info_add_pair(user_info, "Friend", flist_format_friend_status(friend_status));
     purple_notify_user_info_add_pair(user_info, "Bookmarked", bookmarked ? "Yes" : "No");
 }
@@ -131,16 +131,16 @@ gchar *flist_get_status_text(PurpleBuddy *buddy) {
     GString *ret;
     gboolean empty_status = FALSE;
     gboolean empty;
-    
+
     g_return_val_if_fail(pc, NULL);
     g_return_val_if_fail((fla = pc->proto_data), NULL);
-    
+
     character = flist_get_character(fla, flist_normalize(pa, buddy->name));
     if(!character) return NULL; /* user is offline, no problem here */
-    
+
     empty_status = is_empty_status(character->status);
     empty = empty_status && strlen(character->status_message) == 0;
-    
+
     ret = g_string_new(NULL);
     g_string_append_printf(ret, "(%s)%s", flist_format_gender(character->gender), empty ? "" : " ");
     if(!empty_status) {
@@ -159,9 +159,9 @@ void flist_pidgin_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGrou
     const gchar *identity;
     PurpleBuddy *old_buddy;
     GSList *buddies, *cur;
-    
+
     g_return_if_fail(fla);
-    
+
     identity = purple_buddy_get_name(buddy);
     buddies = purple_find_buddies(pa, identity);
     cur = buddies;
@@ -180,7 +180,7 @@ void flist_pidgin_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGrou
 void flist_pidgin_remove_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group) {
     FListAccount *fla = pc->proto_data;
     const gchar *identity;
-    
+
     g_return_if_fail(fla);
 
     identity = purple_buddy_get_name(buddy);
@@ -195,22 +195,22 @@ PurpleRoomlist *flist_get_roomlist(PurpleConnection *pc) {
     g_return_val_if_fail(fla, NULL);
 
     if(fla->roomlist) purple_roomlist_unref(fla->roomlist);
-    
+
     fla->roomlist = purple_roomlist_new(pa);
-    
+
     f = purple_roomlist_field_new(PURPLE_ROOMLIST_FIELD_STRING, "", "channel", TRUE);
     fields = g_list_append(fields, f);
-    
+
     f = purple_roomlist_field_new(PURPLE_ROOMLIST_FIELD_STRING, _("Status"), "Status", FALSE);
     fields = g_list_append(fields, f);
-    
+
     f = purple_roomlist_field_new(PURPLE_ROOMLIST_FIELD_INT, _("Users"), "users", FALSE);
     fields = g_list_append(fields, f);
-    
+
     purple_roomlist_set_fields(fla->roomlist, fields);
-    
+
     flist_request(pc, FLIST_REQUEST_CHANNEL_LIST, NULL);
-    
+
     return fla->roomlist;
 }
 
@@ -226,16 +226,16 @@ guint flist_send_typing(PurpleConnection *pc, const char *name, PurpleTypingStat
     json_object_set_string_member(json, "status", state_string);
     flist_request(pc, FLIST_NOTIFY_TYPING, json);
     json_object_unref(json);
-    
+
     return 0; //we don't need to send again
 }
 
 void flist_input_request_cancel_cb(gpointer user_data, const gchar *name) {
     PurpleConnection *pc = user_data;
     FListAccount *fla = pc->proto_data;
-    
+
     g_return_if_fail(fla);
-    
+
     fla->input_request = FALSE;
 }
 
@@ -243,15 +243,15 @@ void flist_create_private_channel_action_cb(gpointer user_data, const gchar *nam
     PurpleConnection *pc = user_data;
     FListAccount *fla = pc->proto_data;
     JsonObject *json;
-    
+
     g_return_if_fail(fla);
 
     json = json_object_new();
-    
+
     json_object_set_string_member(json, "channel", name);
     flist_request(pc, "CCR", json);
     json_object_unref(json);
-    
+
     fla->input_request = FALSE;
 }
 
@@ -259,18 +259,18 @@ void flist_create_private_channel_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
     PurpleAccount *pa = purple_connection_get_account(pc);
     FListAccount *fla;
-    
+
     g_return_if_fail(pc);
     g_return_if_fail((fla = pc->proto_data));
     if(fla->input_request) return;
-    
+
     purple_request_input(pc, _("Create Private Channel"), _("Create a private channel on the F-List server."),
         _("Please enter a title for your new channel."), "",
         FALSE, FALSE, NULL,
         _("OK"), G_CALLBACK(flist_create_private_channel_action_cb),
         _("Cancel"), G_CALLBACK(flist_input_request_cancel_cb),
         pa, NULL, NULL, pc);
-    
+
     fla->input_request = TRUE;
 }
 
@@ -290,7 +290,7 @@ void flist_set_status_action_cb(gpointer user_data, PurpleRequestFields *fields)
 
     flist_set_status(fla, status, status_message);
     flist_update_server_status(fla);
-    
+
     fla->input_request = FALSE;
 }
 
@@ -301,9 +301,9 @@ static void flist_set_status_dialog(FListAccount *fla) {
     GSList *status_list;
     int default_value, i;
     FListStatus old_status = flist_get_status(fla);
-    
+
     if(fla->input_request) return;
-    
+
     group = purple_request_field_group_new("Options");
     fields = purple_request_fields_new();
     purple_request_fields_add_group(fields, group);
@@ -329,15 +329,15 @@ static void flist_set_status_dialog(FListAccount *fla) {
 
     field = purple_request_field_string_new("message", "Status Message", flist_get_status_message(fla), FALSE);
     purple_request_field_group_add_field(group, field);
-    
+
     purple_request_fields(fla->pc, _("Set Status"), _("Set your status on the F-List server."), _("Select your status and enter your status message."),
         fields,
         _("OK"), G_CALLBACK(flist_set_status_action_cb),
         _("Cancel"), G_CALLBACK(flist_input_request_cancel_cb),
-        fla->pa, NULL, NULL, fla->pc);     
-    
+        fla->pa, NULL, NULL, fla->pc);
+
     fla->input_request = TRUE;
-    
+
 }
 
 void flist_set_status_action(PurplePluginAction *action) {
@@ -346,7 +346,7 @@ void flist_set_status_action(PurplePluginAction *action) {
 
     g_return_if_fail(pc);
     g_return_if_fail((fla = pc->proto_data));
-    
+
     flist_set_status_dialog(fla);
 }
 
@@ -364,7 +364,7 @@ void flist_join_channel(PurpleConnection *pc, GHashTable *components) {
     guint64 *last_ptr, last, now;
 
     g_return_if_fail(fla);
-    
+
     channel = g_hash_table_lookup(components, CHANNEL_COMPONENTS_NAME);
     g_return_if_fail(channel);
 
@@ -376,7 +376,7 @@ void flist_join_channel(PurpleConnection *pc, GHashTable *components) {
     if(last <= now && now - last < CHANNEL_JOIN_TIMEOUT) return;
 
     convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, pa);
-    if(convo && !purple_conv_chat_has_left(PURPLE_CONV_CHAT(convo))) { 
+    if(convo && !purple_conv_chat_has_left(PURPLE_CONV_CHAT(convo))) {
         return; //don't double-join the channel, we don't want the error message
     }
 
@@ -395,12 +395,12 @@ void flist_leave_channel(PurpleConnection *pc, int id) {
     const gchar *channel;
     PurpleConversation *convo = purple_find_chat(pc, id);
     JsonObject *json;
-    
+
     g_return_if_fail(fla);
 
     if (!convo)
         return;
-    
+
     json = json_object_new();
     channel = purple_conversation_get_name(convo);
     json_object_set_string_member(json, "channel", channel);
@@ -419,7 +419,7 @@ void flist_cancel_roomlist(PurpleRoomlist *list) {
     g_return_if_fail((fla = pc->proto_data));
 
     purple_roomlist_set_in_progress(list, FALSE);
-    
+
     if (fla->roomlist == list) {
         fla->roomlist = NULL;
         purple_roomlist_unref(list);
@@ -439,7 +439,7 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
 
     purple_debug_info(FLIST_DEBUG, "Sending message... (From: %s) (To: %s) (Message: %s) (Flags: %x)\n",
         fla->character, who, message, flags);
-    
+
     im = PURPLE_CONV_IM(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, fla->pa));
 
     stripped_message = purple_markup_strip_html(message); /* strip out formatting */
@@ -461,7 +461,7 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
             fla->character, who);
         ret = 1; //display it now
     }
-    
+
     g_free(stripped_message);
     g_free(escaped_message);
     g_free(bbcode_message);
@@ -476,7 +476,7 @@ static gchar *flist_fix_newlines(const char *html) {
     const char *c = html;
     if (html == NULL)
         return NULL;
-    
+
     ret = g_string_new("");
     while (*c) {
         if (*c == '\n') {
@@ -497,9 +497,9 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     JsonObject *json = json_object_new();
     gchar *stripped_message, *escaped_message, *local_message, *bbcode_message;
     const gchar *channel = purple_conversation_get_name(convo);
-    purple_debug_info("flist", "Sending message to channel... (Character: %s) (Channel: %s) (Message: %s) (Ad: %s)\n", 
+    purple_debug_info("flist", "Sending message to channel... (Character: %s) (Channel: %s) (Message: %s) (Ad: %s)\n",
         fla->character, channel, message, ad ? "yes" : "no");
-    
+
     stripped_message = purple_markup_strip_html(message); /* strip out formatting */
     escaped_message = purple_unescape_html(stripped_message); /* unescape the html entities that are left */
     local_message = purple_markup_escape_text(stripped_message, -1); /* re-escape the html entities */
@@ -513,7 +513,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     json_object_set_string_member(json, "message", escaped_message);
     json_object_set_string_member(json, "channel", channel);
     flist_request(fla->pc, !ad ? FLIST_REQUEST_CHANNEL_MESSAGE : FLIST_CHANNEL_ADVERSTISEMENT, json);
-    
+
     serv_got_chat_in(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), fla->proper_character, PURPLE_MESSAGE_SEND, bbcode_message, time(NULL));
 
     g_free(escaped_message);
@@ -532,7 +532,7 @@ int flist_send_channel_message(PurpleConnection *pc, int id, const char *message
         purple_debug(PURPLE_DEBUG_ERROR, "flist", "We want to send a message in channel %d, but we are not in this channel.\n", id);
         return -EINVAL;
     }
-    
+
     flist_send_channel_message_real(fla, convo, message, FALSE);
     return 0;
 }
@@ -611,22 +611,22 @@ PurpleCmdRet flist_channel_send_ad(PurpleConversation *convo, const gchar *cmd, 
     FListAccount *fla = pc->proto_data;
     const gchar *message = args[0];
     gchar *fixed_message = flist_fix_newlines(message);
-    
+
     flist_send_channel_message_real(fla, convo, fixed_message, TRUE);
-    
+
     g_free(fixed_message);
     return PURPLE_CMD_STATUS_OK;
 }
- 
+
 PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
     const gchar *message = args[0];
     gchar *fixed_message = flist_fix_newlines(message);
     gchar *extended_message = g_strdup_printf("/warn %s", fixed_message);
-    
+
     flist_send_channel_message_real(fla, convo, extended_message, FALSE);
- 
+
     g_free(fixed_message);
     g_free(extended_message);
     return PURPLE_CMD_STATUS_OK;
@@ -652,9 +652,9 @@ PurpleCmdRet flist_channels_cmd(PurpleConversation *convo, const gchar *cmd, gch
 PurpleCmdRet flist_status_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
-    
+
     flist_set_status_dialog(fla);
-    
+
     return PURPLE_CMD_STATUS_OK;
 }
 
@@ -664,20 +664,20 @@ PurpleCmdRet flist_whoami_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     gchar *message1, *message2;
     FListStatus status = flist_get_status(fla);
     const gchar *status_message = flist_get_status_message(fla);
-    
+
     message1 = g_strdup_printf("You are %s.", fla->proper_character);
     if(status_message && strlen(status_message)) {
         message2 = g_strdup_printf("Your status is set to %s, with message: %s", flist_format_status(status), status_message);
     } else {
         message2 = g_strdup_printf("Your status is set to %s, with no message.", flist_format_status(status));
     }
-    
+
     purple_conversation_write(convo, NULL, message1, PURPLE_MESSAGE_SYSTEM, time(NULL));
     purple_conversation_write(convo, NULL, message2, PURPLE_MESSAGE_SYSTEM, time(NULL));
-    
+
     g_free(message1);
     g_free(message2);
-    
+
     return PURPLE_CMD_STATUS_OK;
 }
 
@@ -690,15 +690,15 @@ void flist_init_commands() {
 
     purple_cmd_register("status", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_status_cmd, "status: Opens a dialog box to set your status.", NULL);
-    
+
     purple_cmd_register("whoami", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_whoami_cmd, "whoami: Displays which character you are using.", NULL);
-    
+
     purple_cmd_register("open", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_open_cmd, "open: Opens the current private channel.", NULL);
     purple_cmd_register("openroom", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_open_cmd, "openroom: Opens the current private channel.", NULL);
-    
+
     purple_cmd_register("close", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_close_cmd, "close: Closes the current private channel.", NULL);
     purple_cmd_register("closeroom", "", PURPLE_CMD_P_PRPL, channel_flags,
@@ -714,7 +714,7 @@ void flist_init_commands() {
         FLIST_PLUGIN_ID, flist_roll_dice, "roll &lt;dice&gt;: Rolls dice.", NULL);
     purple_cmd_register("bottle", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_roll_bottle, "bottle: Spins a bottle.", NULL);
-    
+
     purple_cmd_register("warn", "s", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_warning, "warn &lt;message&gt;: Sends a warning.", NULL);
     purple_cmd_register("ad", "s", PURPLE_CMD_P_PRPL, channel_flags,
@@ -726,8 +726,8 @@ void flist_init_commands() {
     purple_cmd_register("showchat", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_show_chat_cmd, "showchat: Show chat in this channel.", NULL);
     purple_cmd_register("hidechat", "", PURPLE_CMD_P_PRPL, channel_flags,
-        FLIST_PLUGIN_ID, flist_channel_hide_chat_cmd, "hidechat: Hide chat in this channel.", NULL);    
-    
+        FLIST_PLUGIN_ID, flist_channel_hide_chat_cmd, "hidechat: Hide chat in this channel.", NULL);
+
     purple_cmd_register("priv", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_priv_cmd, "priv &lt;character&gt;: Opens a private conversation.", NULL);
     purple_cmd_register("join", "s", PURPLE_CMD_P_PRPL, anywhere_flags,

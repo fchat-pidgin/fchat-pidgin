@@ -39,7 +39,7 @@ struct FListProfiles_ {
     GSList *priority_profile_fields;
     GHashTable *category_table;
     GSList *category_list;
-    
+
     gchar *character; /* current request */
     GHashTable *table; /* current request */
     PurpleNotifyUserInfo *profile_info; /* current request */
@@ -54,14 +54,14 @@ static int flist_profile_field_cmp(FListProfileField *field1, FListProfileField 
     return flist_strcmp(field1->name, field2->name);
 }
 
-static void flist_show_profile(PurpleConnection *pc, const gchar *character, GHashTable *profile, 
+static void flist_show_profile(PurpleConnection *pc, const gchar *character, GHashTable *profile,
         gboolean by_id, PurpleNotifyUserInfo *info) {
     FListAccount *fla = pc->proto_data;
     FListProfiles *flp = _flist_profiles(fla);
     GSList *priority = flp->priority_profile_fields;
     GSList *category_list = flp->category_list;
     GList *remaining;
-    
+
     //Add a section break after the main info.
     purple_notify_user_info_add_section_break(info);
 
@@ -185,7 +185,7 @@ static gboolean flist_process_profile(FListAccount *fla, JsonObject *root) {
         JsonObject *field_group;
         JsonArray *field_array;
         guint i, len;
-        
+
         field_group = json_object_get_object_member(info, cur->data);
         group_name = json_object_get_string_member(field_group, "group");
         field_array = json_object_get_array_member(field_group, "items");
@@ -197,7 +197,7 @@ static gboolean flist_process_profile(FListAccount *fla, JsonObject *root) {
             const gchar *field_value = json_object_get_string_member(field_object, "value");
             g_hash_table_insert(profile, (gpointer) field_name, (gpointer) field_value);
         }
-        
+
         cur = cur->next;
     }
     g_list_free(categories);
@@ -205,7 +205,7 @@ static gboolean flist_process_profile(FListAccount *fla, JsonObject *root) {
     flist_show_profile(fla->pc, flp->character, profile, FALSE, flp->profile_info);
 
     g_hash_table_destroy(profile);
-    
+
     return TRUE;
 }
 
@@ -214,16 +214,16 @@ static void flist_get_profile_cb(FListWebRequestData *req_data, gpointer user_da
     FListAccount *fla = user_data;
     FListProfiles *flp = _flist_profiles(fla);
     gboolean success;
-    
+
     flp->profile_request = NULL;
-    
+
     if(!root) {
         purple_debug_warning(FLIST_DEBUG, "We requested a profile from the Web API, but failed. Error Message: %s\n", error_message);
         success = FALSE;
     } else {
         success = flist_process_profile(fla, root);
     }
-    
+
     if(success) {
         g_free(flp->character); flp->character = NULL;
         purple_notify_user_info_destroy(flp->profile_info); flp->profile_info = NULL;
@@ -244,7 +244,7 @@ void flist_get_profile(PurpleConnection *pc, const char *who) {
 
     g_return_if_fail((fla = pc->proto_data));
     flp = _flist_profiles(fla);
-    
+
     if(flp->character) g_free(flp->character);
     flp->character = NULL;
     if(flp->profile_info) purple_notify_user_info_destroy(flp->profile_info);
@@ -312,7 +312,7 @@ static void flist_global_profile_cb(FListWebRequestData *req_data,
     GList *categories, *cur;
 
     flp->global_profile_request = NULL;
-    
+
     if(!root) {
         purple_debug_warning(FLIST_DEBUG, "Failed to obtain the global list of profile fields. Error Message: %s\n", error_message);
         return;
@@ -323,11 +323,11 @@ static void flist_global_profile_cb(FListWebRequestData *req_data,
         purple_debug_warning(FLIST_DEBUG, "We received the global list of profile fields, but it was empty.\n");
         return;
     }
-    
+
     purple_debug_info(FLIST_DEBUG, "Processing global profile fields...\n");
-    
+
     flp->category_table = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
-    
+
     categories = json_object_get_members(info);
     cur = categories;
     while(cur) {
@@ -336,11 +336,11 @@ static void flist_global_profile_cb(FListWebRequestData *req_data,
         JsonArray *field_array;
         FListProfileFieldCategory *category;
         guint i, len;
-        
+
         field_group = json_object_get_object_member(info, cur->data);
         group_name = json_object_get_string_member(field_group, "group");
         field_array = json_object_get_array_member(field_group, "items");
-        
+
         category = g_new0(FListProfileFieldCategory, 1);
         category->name = g_strdup(group_name);
 
@@ -353,8 +353,8 @@ static void flist_global_profile_cb(FListWebRequestData *req_data,
             field->name = g_strdup(json_object_get_string_member(field_object, "name"));
             category->fields = g_slist_prepend(category->fields, field);
             if(fla->debug_mode) {
-                purple_debug_info(FLIST_DEBUG, 
-                        "Global profile field processed. (ID: %s) (Category: %s) (Name: %s)\n", 
+                purple_debug_info(FLIST_DEBUG,
+                        "Global profile field processed. (ID: %s) (Category: %s) (Name: %s)\n",
                         field->fieldid, field->category->name, field->name);
             }
         }
@@ -364,7 +364,7 @@ static void flist_global_profile_cb(FListWebRequestData *req_data,
         cur = g_list_next(cur);
     }
     g_list_free(categories);
-    
+
     purple_debug_info(FLIST_DEBUG, "Global profile fields processed. (Categories: %d)\n", g_hash_table_size(flp->category_table));
 }
 
@@ -372,14 +372,14 @@ void flist_profile_load(PurpleConnection *pc) {
     FListAccount *fla = pc->proto_data;
     FListProfiles *flp;
     GSList *priority = NULL;
-    
+
     fla->flist_profiles = g_new0(FListProfiles, 1);
     flp = _flist_profiles(fla);
-    
+
     flp->global_profile_request = flist_web_request(JSON_INFO_LIST, NULL, TRUE, fla->secure, flist_global_profile_cb, fla);
 
     FListProfileField *field;
-    
+
     //TODO: this is really, really ugly
     field = g_new0(FListProfileField, 1);
     field->name = g_strdup("Orientation"); field->fieldid = g_strdup("2");
@@ -406,7 +406,7 @@ void flist_profile_unload(PurpleConnection *pc) {
         flist_web_request_cancel(flp->global_profile_request);
         flp->global_profile_request = NULL;
     }
-    
+
     if(flp->priority_profile_fields) {
         g_slist_free(flp->priority_profile_fields);
         flp->priority_profile_fields = NULL;
@@ -420,7 +420,7 @@ void flist_profile_unload(PurpleConnection *pc) {
         g_hash_table_destroy(flp->category_table);
         flp->category_table = NULL;
     }
-    
+
     if(flp->profile_request) {
         flist_web_request_cancel(flp->profile_request);
         flp->profile_request = NULL;
@@ -438,7 +438,7 @@ void flist_profile_unload(PurpleConnection *pc) {
         flp->table = NULL;
     }
     if(flp->profile_request) flp->profile_request = NULL;
-    
+
     g_free(flp);
     //TODO: lots of memory leaks here to cleanup?
 }
