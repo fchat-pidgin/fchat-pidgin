@@ -195,7 +195,9 @@ static gboolean flist_process_profile(FListAccount *fla, JsonObject *root) {
             JsonObject *field_object = json_array_get_object_element(field_array, i);
             const gchar *field_name = json_object_get_string_member(field_object, "name");
             const gchar *field_value = json_object_get_string_member(field_object, "value");
-            g_hash_table_insert(profile, (gpointer) field_name, (gpointer) field_value);
+            gchar *tmp = purple_unescape_html(field_value);
+            g_hash_table_insert(profile, (gpointer) field_name, (gpointer) tmp);
+            g_free(tmp);
         }
 
         cur = cur->next;
