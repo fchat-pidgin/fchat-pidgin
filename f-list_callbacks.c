@@ -226,6 +226,10 @@ static gboolean flist_process_STA(PurpleConnection *pc, JsonObject *root) {
     if(character) {
         if(status) {
             character->status = flist_parse_status(status);
+
+            // Update user ranks, in case status changed to Looking
+            // and we need to update the icon in a channel
+            flist_update_user_chats_rank(pc, name);
         }
         if(status_message) {
             character->status_message = g_markup_escape_text(status_message, -1);

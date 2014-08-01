@@ -76,8 +76,8 @@ typedef struct FListFriends_ FListFriends;
 //void flist_account_set_operator(PurpleConnection *pc, const gchar *name, gboolean operator);
 
 #define FLIST_CLIENT_NAME "F-List Pidgin"
-#define FLIST_PLUGIN_VERSION    "0.3.1"
-#define USER_AGENT              "Pidgin F-Chat 3.1"
+#define FLIST_PLUGIN_VERSION    "0.3.2"
+#define USER_AGENT              "Pidgin F-Chat 3.2"
 #define FLIST_PLUGIN_ID         "prpl-flist"
 #define FLIST_PORT              9722
 #define FLIST_PORT_SECURE       9799

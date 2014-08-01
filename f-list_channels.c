@@ -43,22 +43,29 @@ FListFlags flist_get_flags(FListAccount *fla, const gchar *channel, const gchar 
 static PurpleConvChatBuddyFlags flist_flags_lookup(FListAccount *fla, PurpleConversation *convo, const gchar *identity) {
     const gchar *channel = purple_conversation_get_name(convo);
     FListChannel *fchannel = flist_channel_find(fla, channel);
+    PurpleConvChatBuddyFlags flags = 0;
 
     if(!fchannel) {
         purple_debug_error("flist", "Flags requested for %s in channel %s, but no channel was found.\n", identity, channel);
         return PURPLE_CBFLAGS_NONE;
     }
+
     if(fchannel->owner && !flist_op_strcmp(fchannel->owner, identity)) {
-        return PURPLE_CBFLAGS_FOUNDER;
+        flags |= PURPLE_CBFLAGS_FOUNDER;
     }
     if(g_hash_table_lookup(fla->global_ops, identity) != NULL) {
-        return PURPLE_CBFLAGS_OP;
+        flags |= PURPLE_CBFLAGS_OP;
     }
     if(g_list_find_custom(fchannel->operators, identity, flist_op_strcmp)) {
-        return PURPLE_CBFLAGS_HALFOP;
+        flags |= PURPLE_CBFLAGS_HALFOP;
     }
 
-    return PURPLE_CBFLAGS_NONE;
+    // Add "voice" flag to characters with status "Looking"
+    FListCharacter *flc = flist_get_character(fla, identity);
+    if (flc && flc->status == FLIST_STATUS_LOOKING)
+      flags |= PURPLE_CBFLAGS_VOICE;
+
+    return flags;
 }
 
 void flist_update_user_chats_offline(PurpleConnection *pc, const gchar *character) {
