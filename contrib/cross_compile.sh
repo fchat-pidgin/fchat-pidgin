@@ -151,6 +151,11 @@ sed -i "s/myspace//g" "${BUILD_DIR}/${PIDGIN_SRC}/libpurple/protocols/Makefile.m
 # Disable SSL plugin as it requires Mozilla NSS library that cannot be compiled easily (see: https://developer.pidgin.im/wiki/BuildingWinNSS)
 sed -i "s/.*SSL.*//g" "${BUILD_DIR}/${PIDGIN_SRC}/libpurple/plugins/Makefile.mingw"
 
+# Run configure in json-glib to generate json-version.h
+pushd "${WIN32_SRC}/json-glib-0.12.6" > /dev/null
+./configure > /dev/null
+popd > /dev/null
+
 cd "${BUILD_DIR}/${PIDGIN_SRC}"
 echo "Building ..."
 make -j8 -f Makefile.mingw
