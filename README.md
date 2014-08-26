@@ -1,7 +1,7 @@
 fchat-pidgin
 ------------
 
-Pidgin plugin for using FList's chat. Forked from Testpanter's version over at https://code.google.com/p/flist-pidgin/
+Pidgin plugin for using FList's chat. Forked from TestPanther's version over at https://code.google.com/p/flist-pidgin/
 
 Cross Compilation
 -----------------
