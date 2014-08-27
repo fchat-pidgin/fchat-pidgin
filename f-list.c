@@ -449,7 +449,7 @@ void flist_close(PurpleConnection *pc) {
     FListAccount *fla = pc->proto_data;
     if(!fla) return;
 
-    if(fla->connection_status == FLIST_CONNECT) purple_proxy_connect_cancel((void*) pc);
+    if(fla->connection_status == FLIST_CONNECT) purple_proxy_connect_cancel_with_handle((void*) pc);
     if(fla->input_handle > 0) purple_input_remove(fla->input_handle);
     if(fla->fd > 0) close(fla->fd);
     if(fla->ssl_con) purple_ssl_close(fla->ssl_con);
