@@ -365,6 +365,7 @@ static gboolean flist_handle_handshake(PurpleConnection *pc) {
 
     flist_identify(fla);
     fla->connection_status = FLIST_IDENTIFY;
+    purple_connection_update_progress(pc, "Identifying", 4, 5);
     return TRUE;
 }
 
@@ -411,6 +412,7 @@ static void flist_handshake(FListAccount *fla) {
     purple_debug_info(FLIST_DEBUG, "Sending WebSocket handshake...\n");
     len = flist_write_raw(fla, headers, strlen(headers));
     fla->connection_status = FLIST_HANDSHAKE;
+    purple_connection_update_progress(fla->pc, "Sending WebSocket handshake",3 ,5);
     g_free(headers);
 
     //TODO: save this to verify the handshake
@@ -458,6 +460,7 @@ static void flist_connect(FListAccount *fla) {
         purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, _("Unable to open a connection."));
     } else {
         fla->connection_status = FLIST_CONNECT;
+        purple_connection_update_progress(fla->pc, "Connecting to F-Chat server", 2 ,5);
     }
 }
 

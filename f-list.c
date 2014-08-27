@@ -541,6 +541,7 @@ void flist_login(PurpleAccount *pa) {
     flist_friends_load(fla);
 
     flist_ticket_timer(fla, 0);
+    purple_connection_update_progress(fla->pc, "Requesting login ticket", 1 ,5);
     g_strfreev(ac_split);
 }
 
