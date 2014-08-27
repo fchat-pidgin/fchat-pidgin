@@ -532,6 +532,7 @@ void flist_login(PurpleAccount *pa) {
         fla->server_port = purple_account_get_int(pa, "server_port_secure", FLIST_PORT_SECURE);
     }
 
+    fla->receive_rtb = purple_account_get_bool(pa, "receive_rtb", TRUE);
     fla->debug_mode = purple_account_get_bool(pa, "debug_mode", FALSE);
 
     flist_channel_subsystem_load(fla);
@@ -712,6 +713,9 @@ static void plugin_init(PurplePlugin *plugin) {
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Download Bookmarks", "sync_bookmarks", FALSE);
+    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+    option = purple_account_option_bool_new("Receive notifications", "receive_rtb", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Debug Mode", "debug_mode", FALSE);

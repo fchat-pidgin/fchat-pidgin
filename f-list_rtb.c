@@ -31,6 +31,11 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
 
     purple_debug_info(FLIST_DEBUG, "Processing RTB... (Character: %s) (Type: %s)\n", fla->character, type);
 
+    /* Ignore notification if the user doesn't want to see it */
+    if (!fla->receive_rtb) {
+        return TRUE;
+    }
+
     if(flist_str_equal(type, "friendrequest")) {
         flist_friends_received_request(fla);
         return TRUE;

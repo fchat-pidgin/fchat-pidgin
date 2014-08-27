@@ -348,6 +348,7 @@ struct FListAccount_ {
     FListFriends *flist_friends;
 
     /* other options */
+    gboolean receive_rtb;
     gboolean debug_mode;
 };
 
