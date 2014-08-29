@@ -449,7 +449,7 @@ void flist_close(PurpleConnection *pc) {
     FListAccount *fla = pc->proto_data;
     if(!fla) return;
 
-    if(fla->connection_status == FLIST_CONNECT) purple_proxy_connect_cancel((void*) pc);
+    if(fla->connection_status == FLIST_CONNECT) purple_proxy_connect_cancel_with_handle((void*) pc);
     if(fla->input_handle > 0) purple_input_remove(fla->input_handle);
     if(fla->fd > 0) close(fla->fd);
     if(fla->ssl_con) purple_ssl_close(fla->ssl_con);
@@ -532,6 +532,7 @@ void flist_login(PurpleAccount *pa) {
         fla->server_port = purple_account_get_int(pa, "server_port_secure", FLIST_PORT_SECURE);
     }
 
+    fla->receive_rtb = purple_account_get_bool(pa, "receive_rtb", TRUE);
     fla->debug_mode = purple_account_get_bool(pa, "debug_mode", FALSE);
 
     flist_channel_subsystem_load(fla);
@@ -541,6 +542,7 @@ void flist_login(PurpleAccount *pa) {
     flist_friends_load(fla);
 
     flist_ticket_timer(fla, 0);
+    purple_connection_update_progress(fla->pc, "Requesting login ticket", 1 ,5);
     g_strfreev(ac_split);
 }
 
@@ -711,6 +713,9 @@ static void plugin_init(PurplePlugin *plugin) {
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Download Bookmarks", "sync_bookmarks", FALSE);
+    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+    option = purple_account_option_bool_new("Receive notifications", "receive_rtb", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Debug Mode", "debug_mode", FALSE);
