@@ -651,34 +651,60 @@ PurpleCmdRet flist_channels_cmd(PurpleConversation *convo, const gchar *cmd, gch
     return PURPLE_CMD_STATUS_OK;
 }
 
+void flist_convo_print_status(PurpleConversation *convo, FListStatus status, const gchar *status_message) {
+    gchar *formatted_message;
+    if(status_message && strlen(status_message)) {
+        formatted_message = g_strdup_printf("Your status is set to %s, with message: %s", flist_format_status(status), status_message);
+    } else {
+        formatted_message = g_strdup_printf("Your status is set to %s, with no message.", flist_format_status(status));
+    }
+    purple_conversation_write(convo, NULL, formatted_message, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    g_free(formatted_message);
+}
+
 PurpleCmdRet flist_status_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
+    FListStatus status;
+    gchar *status_message;
 
-    flist_set_status_dialog(fla);
+    if (args[0] == NULL) 
+        return PURPLE_CMD_STATUS_WRONG_ARGS;
 
-    return PURPLE_CMD_STATUS_OK;
+    status = flist_parse_status(args[0]);
+
+    status_message = args[1];
+    if (status_message == NULL) 
+        status_message = "";
+
+    if (status == FLIST_STATUS_AVAILABLE 
+            || status == FLIST_STATUS_LOOKING
+            || status == FLIST_STATUS_BUSY
+            || status == FLIST_STATUS_DND
+            || status == FLIST_STATUS_AWAY) {
+        flist_set_status(fla, status, status_message);
+        flist_update_server_status(fla);
+        flist_convo_print_status(convo, status, status_message);
+        return PURPLE_CMD_STATUS_OK;
+    } else {
+        *error = g_strdup(_("Unrecognized status: first argument must be one of: online, looking, busy, dnd, away"));
+        return PURPLE_CMD_STATUS_FAILED;
+    }
 }
+
 
 PurpleCmdRet flist_whoami_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
-    gchar *message1, *message2;
+    gchar *message1;
     FListStatus status = flist_get_status(fla);
     const gchar *status_message = flist_get_status_message(fla);
 
     message1 = g_strdup_printf("You are %s.", fla->proper_character);
-    if(status_message && strlen(status_message)) {
-        message2 = g_strdup_printf("Your status is set to %s, with message: %s", flist_format_status(status), status_message);
-    } else {
-        message2 = g_strdup_printf("Your status is set to %s, with no message.", flist_format_status(status));
-    }
-
     purple_conversation_write(convo, NULL, message1, PURPLE_MESSAGE_SYSTEM, time(NULL));
-    purple_conversation_write(convo, NULL, message2, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    flist_convo_print_status(convo, status, status_message);
 
     g_free(message1);
-    g_free(message2);
 
     return PURPLE_CMD_STATUS_OK;
 }
@@ -690,8 +716,8 @@ void flist_init_commands() {
     purple_cmd_register("channels", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_channels_cmd, "channels: Opens the list of channels.", NULL);
 
-    purple_cmd_register("status", "", PURPLE_CMD_P_PRPL, anywhere_flags,
-        FLIST_PLUGIN_ID, flist_status_cmd, "status: Opens a dialog box to set your status.", NULL);
+    purple_cmd_register("status", "ws", PURPLE_CMD_P_PRPL, anywhere_flags | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
+        FLIST_PLUGIN_ID, flist_status_cmd, "status: Change your status and status message.", NULL);
 
     purple_cmd_register("whoami", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_whoami_cmd, "whoami: Displays which character you are using.", NULL);
