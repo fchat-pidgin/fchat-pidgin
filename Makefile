@@ -2,9 +2,9 @@
 LINUX_COMPILER = gcc
 WIN32_COMPILER = i686-w64-mingw32-gcc
 
-WIN32_DEV_DIR=win32/win32-dev
+WIN32_DEV_DIR=win32
 WIN32_GTK_DEV_DIR=${WIN32_DEV_DIR}/gtk_2_0-2.14
-WIN32_PIDGIN_DIR=win32/pidgin-2.10.9
+WIN32_PIDGIN_DIR=${WIN32_DEV_DIR}/pidgin-2.10.9
 WIN32_CFLAGS = \
 				-DENABLE_NLS \
 				-DHAVE_ZLIB \
@@ -25,8 +25,7 @@ WIN32_CFLAGS = \
 
 WIN32_LIBS = \
 				-L${WIN32_GTK_DEV_DIR}/lib \
-				-L${WIN32_PIDGIN_DIR}/libpurple \
-				-L${WIN32_PIDGIN_DIR}/pidgin \
+				-L${WIN32_PIDGIN_DIR}-win32bin \
 				-lglib-2.0 \
 				-lgobject-2.0 \
 				-lintl \
@@ -70,7 +69,7 @@ FLIST_SOURCES = \
 				${FLIST_ADDITIONAL_SOURCES}
 
 #Standard stuff here
-.PHONY: all clean install
+.PHONY: all clean install prepare_cross
 
 all:	flist.so
 
@@ -85,8 +84,8 @@ install:
 flist.so:	${FLIST_SOURCES}
 	${LINUX_COMPILER} -Wall -I. -g -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
 
-prepare_cross_env:
-	./contrib/cross_compile.sh
+prepare_cross:
+	./contrib/prepare_cross.sh
 
-flist.dll: ${FLIST_SOURCES} prepare_cross_env
+flist.dll: ${FLIST_SOURCES} 
 	${WIN32_COMPILER} -Wall -I. -g -O2 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS}
