@@ -845,7 +845,8 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
 PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
-    const gchar *channel, *character, *code;
+    const gchar *channel, *character;
+    const gchar *code = NULL;
     JsonObject *json;
     PurpleConvChatBuddyFlags flags;
     FListCharacter *target;

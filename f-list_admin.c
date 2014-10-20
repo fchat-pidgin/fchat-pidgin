@@ -186,7 +186,8 @@ void flist_broadcast_action(PurplePluginAction *action) {
 PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
-    const gchar *character, *code;
+    const gchar *character;
+    const gchar *code = NULL;
     JsonObject *json;
     FListFlags flags;
 
@@ -213,7 +214,8 @@ PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd
 PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
-    const gchar *character, *code;
+    const gchar *character;
+    const gchar *code = NULL;
     JsonObject *json;
     FListFlags flags;
 
@@ -242,7 +244,8 @@ PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gc
 PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
-    const gchar *channel, *code;
+    const gchar *channel;
+    const gchar *code = NULL;
     JsonObject *json;
     FListFlags flags;
 
