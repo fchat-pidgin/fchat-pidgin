@@ -18,17 +18,19 @@ if ! command -v i686-w64-mingw32-gcc >/dev/null 2>/dev/null ; then
     exit 2
 fi
 
+PIDGIN_VERSION=2.10.11
+
 WIN32_DEV_DIR=win32/
 mkdir -p $WIN32_DEV_DIR
 GTK_BUNDLE_URL=http://ftp.gnome.org/pub/GNOME/binaries/win32/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip
 GTK_BUNDLE_FILE=${WIN32_DEV_DIR}/gtk+-bundle_2.14.7-20090119_win32.zip
 GTK_BUNDLE_DIR=${WIN32_DEV_DIR}/gtk_2_0-2.14
-PIDGIN_SRC_URL=http://sourceforge.net/projects/pidgin/files/Pidgin/2.10.9/pidgin-2.10.9.tar.gz/download
-PIDGIN_SRC_FILE=${WIN32_DEV_DIR}/pidgin-2.10.9.tar.gz
-PIDGIN_SRC_DIR=${WIN32_DEV_DIR}/pidgin-2.10.9
-PIDGIN_BIN_URL=http://sourceforge.net/projects/pidgin/files/Pidgin/2.10.9/pidgin-2.10.9-win32-bin.zip/download
-PIDGIN_BIN_FILE=${WIN32_DEV_DIR}/pidgin-2.10.9-win32-bin.zip
-PIDGIN_BIN_DIR=${WIN32_DEV_DIR}/pidgin-2.10.9-win32bin
+PIDGIN_SRC_URL=http://sourceforge.net/projects/pidgin/files/Pidgin/${PIDGIN_VERSION}/pidgin-${PIDGIN_VERSION}.tar.gz/download
+PIDGIN_SRC_FILE=${WIN32_DEV_DIR}/pidgin-${PIDGIN_VERSION}.tar.gz
+PIDGIN_SRC_DIR=${WIN32_DEV_DIR}/pidgin-${PIDGIN_VERSION}
+PIDGIN_BIN_URL=http://sourceforge.net/projects/pidgin/files/Pidgin/${PIDGIN_VERSION}/pidgin-${PIDGIN_VERSION}-win32-bin.zip/download
+PIDGIN_BIN_FILE=${WIN32_DEV_DIR}/pidgin-${PIDGIN_VERSION}-win32-bin.zip
+PIDGIN_BIN_DIR=${WIN32_DEV_DIR}/pidgin-${PIDGIN_VERSION}-win32bin
 JSON_SRC_URL=http://ftp.gnome.org/pub/GNOME/sources/json-glib/0.12/json-glib-0.12.6.tar.xz
 JSON_SRC_FILE=${WIN32_DEV_DIR}/json-glib-0.12.6.tar.xz
 JSON_SRC_DIR=${WIN32_DEV_DIR}/json-glib-0.12.6/
