@@ -66,6 +66,7 @@ FLIST_SOURCES = \
 				f-list_friends.c \
 				f-list_status.c \
 				f-list_rtb.c \
+				f-list_ignore.c \
 				${FLIST_ADDITIONAL_SOURCES}
 
 #Standard stuff here
@@ -82,10 +83,10 @@ install:
 	cp flist.so ${PIDGIN_DIR}
 
 flist.so:	${FLIST_SOURCES}
-	${LINUX_COMPILER} -Wall -I. -g -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
+	${LINUX_COMPILER} -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
 
 prepare_cross:
 	./contrib/prepare_cross.sh
 
 flist.dll: ${FLIST_SOURCES} 
-	${WIN32_COMPILER} -Wall -I. -g -O2 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS}
+	${WIN32_COMPILER} -Wall -I. -g -O2 -std=c99 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS}
