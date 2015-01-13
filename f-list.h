@@ -54,7 +54,6 @@
 #include "smiley.h"
 #include "savedstatuses.h"
 
-
 typedef enum FListFlags_ FListFlags;
 typedef enum FListGender_ FListGender;
 typedef enum FListStatus_ FListStatus;
@@ -72,12 +71,9 @@ typedef struct FListProfiles_ FListProfiles;
 typedef struct FListWebRequestData_ FListWebRequestData;
 typedef struct FListFriends_ FListFriends;
 
-//gboolean flist_account_is_operator(PurpleConnection *pc, const gchar *name);
-//void flist_account_set_operator(PurpleConnection *pc, const gchar *name, gboolean operator);
-
 #define FLIST_CLIENT_NAME "F-List Pidgin"
-#define FLIST_PLUGIN_VERSION    "0.3.2"
-#define USER_AGENT              "Pidgin F-Chat 3.2"
+#define FLIST_PLUGIN_VERSION    "0.4.0"
+#define USER_AGENT              "Pidgin F-Chat 0.4.0"
 #define FLIST_PLUGIN_ID         "prpl-flist"
 #define FLIST_PORT              9722
 #define FLIST_PORT_SECURE       9799
@@ -118,6 +114,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_PING                              "PIN"
 #define FLIST_NOTIFY_TYPING                     "TPN"
 #define FLIST_CHANNEL_GET_BANLIST               "CBL"
+#define FLIST_IGNORE                            "IGN"
 
 /* admin commands */
 #define FLIST_ADD_GLOBAL_OPERATOR               "AOP"
@@ -200,6 +197,13 @@ enum FListFriendsRequestType_ {
     FLIST_FRIEND_DENY,
     FLIST_FRIENDS_UPDATE
 };
+
+enum FListIgnoreActionType_ {
+    FLIST_NODE_IGNORE,
+    FLIST_NODE_UNIGNORE
+};
+
+typedef enum FListIgnoreActionType_ FListIgnoreActionType;
 
 /* gender conversion */
 GSList *flist_get_gender_list();
@@ -347,6 +351,9 @@ struct FListAccount_ {
     gboolean sync_friends;
     FListFriends *flist_friends;
 
+    /* ignore list */
+    GList *ignore_list;
+
     /* other options */
     gboolean receive_rtb;
     gboolean debug_mode;
@@ -367,6 +374,7 @@ struct FListAccount_ {
 #include "f-list_friends.h"
 #include "f-list_status.h"
 #include "f-list_rtb.h"
+#include "f-list_ignore.h"
 #include "f-list_pidgin.h" //TODO: maybe not include this ...
 
 #endif

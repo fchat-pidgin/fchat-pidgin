@@ -281,7 +281,7 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
     show = flist_get_channel_show_chat(fla, channel);
     flags = (show ? PURPLE_MESSAGE_RECV : PURPLE_MESSAGE_INVISIBLE);
 
-    if (strncmp(message, "/warn", 5) == 0)
+    if (g_ascii_strncasecmp(message, "/warn", 5) == 0)
     {
       full_message = g_strdup_printf("[b][color=red]Warning: %s[/color][/b]", &message[6]);
       parsed = flist_bbcode_to_html(fla, convo, full_message);
@@ -290,7 +290,7 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
       parsed = flist_bbcode_to_html(fla, convo, message);
 
     purple_debug_info("flist", "Message: %s\n", parsed);
-    if(show) {
+    if(show && !flist_ignore_character_is_ignored(pc, character)) {
         serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
     }
     g_free(parsed);
@@ -326,14 +326,13 @@ static gboolean flist_process_LRP(PurpleConnection *pc, JsonObject *root) {
     full_message = g_strdup_printf("[b](Roleplay Ad)[/b] %s", message);
     parsed = flist_bbcode_to_html(fla, convo, full_message);
     purple_debug_info("flist", "Advertisement: %s\n", parsed);
-    if(show) {
+    if(show && !flist_ignore_character_is_ignored(pc, character)) {
         serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
     }
     g_free(parsed);
     g_free(full_message);
     return TRUE;
 }
-
 
 static gboolean flist_process_BRO(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
@@ -519,7 +518,8 @@ static gboolean flist_process_TPN(PurpleConnection *pc, JsonObject *root) {
     character = json_object_get_string_member(root, "character");
     status = json_object_get_string_member(root, "status");
 
-    serv_got_typing(pc, character, 0, flist_typing_state(status));
+    if (!flist_ignore_character_is_ignored(pc, character))
+        serv_got_typing(pc, character, 0, flist_typing_state(status));
 
     return TRUE;
 }
@@ -547,7 +547,10 @@ static gboolean flist_process_PRI(PurpleConnection *pc, JsonObject *root) {
     /* TODO: this will not work if this message opens a new window */
     PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, character, fla->pa);
     gchar *parsed = flist_bbcode_to_html(fla, convo, message);
-    serv_got_im(pc, character, parsed, PURPLE_MESSAGE_RECV, time(NULL));
+
+    if (!flist_ignore_character_is_ignored(pc, character))
+        serv_got_im(pc, character, parsed, PURPLE_MESSAGE_RECV, time(NULL));
+
     g_free(parsed);
     return TRUE;
 }
@@ -616,6 +619,9 @@ void flist_callback_init() {
     g_hash_table_insert(callbacks, "LRP", flist_process_LRP); //channel ad
     g_hash_table_insert(callbacks, "CDS", flist_process_CDS);
     g_hash_table_insert(callbacks, "CIU", flist_process_CIU); //channel invite
+
+    // Ignore list handling
+    g_hash_table_insert(callbacks, "IGN", flist_process_IGN); //ignore list
 
     //staff call
     g_hash_table_insert(callbacks, "SFC", flist_process_SFC);

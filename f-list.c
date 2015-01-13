@@ -377,6 +377,9 @@ static GList *flist_actions(PurplePlugin *plugin, gpointer context) {
     act = purple_plugin_action_new(_("Character Search"), flist_filter_action);
     list = g_list_append(list, act);
 
+    act = purple_plugin_action_new(_("Ignore List"), flist_ignore_list_action);
+    list = g_list_append(list, act);
+
     if(fla && fla->proper_character) {
         if(fla->global_ops && g_hash_table_lookup(fla->global_ops, fla->proper_character)) {
             list = g_list_append(list, NULL); /* this adds a divider */
@@ -475,6 +478,8 @@ void flist_close(PurpleConnection *pc) {
     /* login options */
     if(fla->server_address) g_free(fla->server_address);
 
+    if (fla->ignore_list) flist_g_list_free_full(fla->ignore_list, g_free);
+
     if(fla->input_request) purple_request_close_with_handle((void*) pc);
 
     flist_friends_unload(fla);
@@ -534,6 +539,7 @@ void flist_login(PurpleAccount *pa) {
 
     fla->receive_rtb = purple_account_get_bool(pa, "receive_rtb", TRUE);
     fla->debug_mode = purple_account_get_bool(pa, "debug_mode", FALSE);
+    fla->ignore_list = NULL;
 
     flist_channel_subsystem_load(fla);
     flist_clear_filter(fla);

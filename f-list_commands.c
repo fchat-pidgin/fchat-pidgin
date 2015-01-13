@@ -86,6 +86,17 @@ GList *flist_buddy_menu(PurpleBuddy *b) {
     default: break;
     }
 
+    if (flist_ignore_character_is_ignored(pc, name))
+    {
+        act = purple_menu_action_new("Unignore", PURPLE_CALLBACK(flist_blist_node_ignore_action), GINT_TO_POINTER(FLIST_NODE_UNIGNORE), NULL);
+        ret = g_list_prepend(ret, act);
+    }
+    else
+    {
+        act = purple_menu_action_new("Ignore", PURPLE_CALLBACK(flist_blist_node_ignore_action), GINT_TO_POINTER(FLIST_NODE_IGNORE), NULL);
+        ret = g_list_prepend(ret, act);
+    }
+
     return ret;
 }
 
@@ -121,6 +132,9 @@ void flist_get_tooltip(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboo
 
     purple_notify_user_info_add_pair(user_info, "Friend", flist_format_friend_status(friend_status));
     purple_notify_user_info_add_pair(user_info, "Bookmarked", bookmarked ? "Yes" : "No");
+
+    if (flist_ignore_character_is_ignored(pc, identity))
+        purple_notify_user_info_add_pair(user_info, "Ignored", "Yes");
 }
 
 gchar *flist_get_status_text(PurpleBuddy *buddy) {
@@ -220,6 +234,9 @@ guint flist_send_typing(PurpleConnection *pc, const char *name, PurpleTypingStat
     FListAccount *fla = pc->proto_data;
     const gchar *state_string = flist_typing_state_string(state);
     JsonObject *json;
+
+    if (flist_ignore_character_is_ignored(pc, name))
+        return 0;
 
     g_return_val_if_fail(fla, 0);
 
@@ -436,6 +453,12 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
     PurpleConvIm *im;
     gchar *stripped_message, *escaped_message, *local_message, *bbcode_message;
     int ret;
+
+    if (flist_ignore_character_is_ignored(pc, who))
+    {
+        purple_notify_error(pc, "Error!", "You have ignored this user.", NULL);
+        return 0;
+    }
 
     g_return_val_if_fail(fla, 0);
 
@@ -742,6 +765,9 @@ void flist_init_commands() {
         FLIST_PLUGIN_ID, flist_roll_dice, "roll &lt;dice&gt;: Rolls dice.", NULL);
     purple_cmd_register("bottle", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_roll_bottle, "bottle: Spins a bottle.", NULL);
+
+    purple_cmd_register("ignore", "ws", PURPLE_CMD_P_PRPL, anywhere_flags | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
+        FLIST_PLUGIN_ID, flist_ignore_cmd, "ignore: Manage your ignore list (Use /ignore list, add &lt;character&gt; or delete &lt;character&gt;).", NULL);
 
     purple_cmd_register("warn", "s", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_warning, "warn &lt;message&gt;: Sends a warning.", NULL);
