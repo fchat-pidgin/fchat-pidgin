@@ -68,7 +68,11 @@ static void flist_write_hybi(FListAccount *fla, guint8 opcode, gchar *content, g
 
     frame = g_malloc(10 + len);
     ptr = frame;
-    *ptr = (opcode << 4) | 0x01; ptr++;
+
+    // Set FIN bit (leftmost), followed by opcode (rightmost)
+    // e.g. 0x10000001 is a finished-frame text message
+    // Reserved bits (bits 2-4) MUST not be set - F-Chat server seems to ignore that
+    *ptr = (0x1 << 7) | opcode; ptr++;
 
     /* The length is sent as a big endian integer. */
     if(len < 126) {
