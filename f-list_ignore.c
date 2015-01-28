@@ -113,7 +113,7 @@ gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
         for (size_t i = 0; i < json_array_get_length(chars); i++)
         {
             GList *row = NULL;
-            row = g_list_append(row, json_array_get_string_element(chars, i));
+            row = g_list_append(row, (gpointer) json_array_get_string_element(chars, i));
             purple_notify_searchresults_row_add(results, row);
         }
 
