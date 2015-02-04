@@ -194,12 +194,12 @@ PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd
     flags = flist_get_flags(fla, NULL, fla->proper_character);
     if(!(flags & FLIST_FLAG_ADMIN)) {
         *error = g_strdup(_("You must be an administrator to add or remove global operators."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     if(!purple_utf8_strcasecmp(cmd, "op")) code = FLIST_CHANNEL_BAN;
     if(!purple_utf8_strcasecmp(cmd, "deop")) code = FLIST_CHANNEL_UNBAN;
-    if(!code) return PURPLE_CMD_STATUS_NOT_FOUND;
+    if(!code) return PURPLE_CMD_RET_FAILED;
 
     character = args[0];
 
@@ -208,7 +208,7 @@ PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd
     flist_request(pc, code, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -222,14 +222,14 @@ PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gc
     flags = flist_get_flags(fla, NULL, fla->proper_character);
     if(!(flags & (FLIST_FLAG_ADMIN | FLIST_FLAG_GLOBAL_OP))) {
         *error = g_strdup(_("You must be a global operator to globally kick, ban, or unban."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     if(!purple_utf8_strcasecmp(cmd, "gkick")) code = FLIST_GLOBAL_KICK;
     if(!purple_utf8_strcasecmp(cmd, "ipban")) code = FLIST_GLOBAL_IP_BAN;
     if(!purple_utf8_strcasecmp(cmd, "accountban")) code = FLIST_GLOBAL_ACCOUNT_BAN;
     if(!purple_utf8_strcasecmp(cmd, "gunban")) code = FLIST_GLOBAL_UNBAN;
-    if(!code) return PURPLE_CMD_STATUS_NOT_FOUND;
+    if(!code) return PURPLE_CMD_RET_FAILED;
 
     character = args[0];
 
@@ -238,7 +238,7 @@ PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gc
     flist_request(pc, code, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -252,12 +252,12 @@ PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gcha
     flags = flist_get_flags(fla, NULL, fla->proper_character);
     if(!(flags & (FLIST_FLAG_ADMIN | FLIST_FLAG_GLOBAL_OP))) {
         *error = g_strdup(_("You must be a global operator to create or delete public channels."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     if(!purple_utf8_strcasecmp(cmd, "createchannel")) code = FLIST_PUBLIC_CHANNEL_CREATE;
     if(!purple_utf8_strcasecmp(cmd, "killchannel")) code = FLIST_PUBLIC_CHANNEL_DELETE;
-    if(!code) return PURPLE_CMD_STATUS_NOT_FOUND;
+    if(!code) return PURPLE_CMD_RET_FAILED;
 
     channel = args[0];
 
@@ -266,7 +266,7 @@ PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gcha
     flist_request(pc, code, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_broadcast_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -279,7 +279,7 @@ PurpleCmdRet flist_broadcast_cmd(PurpleConversation *convo, const gchar *cmd, gc
     flags = flist_get_flags(fla, NULL, fla->proper_character);
     if(!(flags & (FLIST_FLAG_ADMIN))) {
         *error = g_strdup(_("You must be an administrator to send a global broadcast."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     message = args[0];
@@ -289,7 +289,7 @@ PurpleCmdRet flist_broadcast_cmd(PurpleConversation *convo, const gchar *cmd, gc
     flist_request(pc, FLIST_BROADCAST, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -304,7 +304,7 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     flags = flist_get_flags(fla, NULL, fla->proper_character);
     if(!(flags & (FLIST_FLAG_ADMIN | FLIST_FLAG_GLOBAL_OP))) {
         *error = g_strdup(_("You must be a global operator to timeban."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     split = g_strsplit(args[0], ",", 3);
@@ -313,7 +313,7 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     if(count < 3) {
         g_strfreev(split);
         *error = g_strdup(_("You must enter a character, a time, and a reason."));
-        return PURPLE_CMD_STATUS_WRONG_ARGS;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     character = split[0];
@@ -324,7 +324,7 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     if(time_parsed == 0 || endptr != time + strlen(time)) {
         g_strfreev(split);
         *error = g_strdup(_("You must enter a valid length of time."));
-        return PURPLE_CMD_STATUS_WRONG_ARGS;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     json = json_object_new();
@@ -334,7 +334,7 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     flist_request(pc, FLIST_GLOBAL_TIMEOUT, json);
     json_object_unref(json);
     g_strfreev(split);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_reward_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -347,7 +347,7 @@ PurpleCmdRet flist_reward_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     flags = flist_get_flags(fla, NULL, fla->proper_character);
     if(!(flags & (FLIST_FLAG_ADMIN | FLIST_FLAG_GLOBAL_OP))) {
         *error = g_strdup(_("You must be a global operator to reward a user."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     character = args[0];
@@ -357,7 +357,7 @@ PurpleCmdRet flist_reward_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     flist_request(pc, FLIST_REWARD, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 void flist_send_sfc_confirm(PurpleConnection *pc, const gchar *callid) {

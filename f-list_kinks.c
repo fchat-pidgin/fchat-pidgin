@@ -420,7 +420,7 @@ PurpleCmdRet flist_filter_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     flist_filter_real(pc, NULL); //TODO: put the proper channel title here
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 static void flist_global_kinks_cb(FListWebRequestData *req_data,

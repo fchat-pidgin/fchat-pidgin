@@ -584,7 +584,7 @@ PurpleCmdRet flist_channel_who_cmd(PurpleConversation *convo, const gchar *cmd, 
     FListChannel *fchannel = flist_channel_find(fla, name);
     GList *chat_buddies, *list = NULL;
 
-    g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_STATUS_FAILED);
+    g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_RET_FAILED);
 
     chat_buddies = purple_conv_chat_get_users(PURPLE_CONV_CHAT(convo));
     while(chat_buddies) {
@@ -614,7 +614,7 @@ PurpleCmdRet flist_channel_oplist_cmd(PurpleConversation *convo, const gchar *cm
     gchar *to_print;
     GList *cur;
 
-    g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_STATUS_FAILED);
+    g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_RET_FAILED);
 
     str = g_string_new(NULL);
     if(!fchannel->owner && !fchannel->operators) {
@@ -639,7 +639,7 @@ PurpleCmdRet flist_channel_oplist_cmd(PurpleConversation *convo, const gchar *cm
     purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", to_print, PURPLE_MESSAGE_SYSTEM, time(NULL));
     g_free(to_print);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_op_deop_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -656,12 +656,12 @@ PurpleCmdRet flist_channel_op_deop_cmd(PurpleConversation *convo, const gchar *c
     flags = flist_flags_lookup(fla, convo, fla->proper_character);
     if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER))) {
         *error = g_strdup(_("You must be the channel owner or a global operator to add or remove channel operators."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     if(!purple_utf8_strcasecmp(cmd, "cop")) code = FLIST_CHANNEL_ADD_OP;
     if(!purple_utf8_strcasecmp(cmd, "cdeop")) code = FLIST_CHANNEL_REMOVE_OP;
-    if(!code) return PURPLE_CMD_STATUS_NOT_FOUND;
+    if(!code) return PURPLE_CMD_RET_FAILED;
 
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
@@ -669,7 +669,7 @@ PurpleCmdRet flist_channel_op_deop_cmd(PurpleConversation *convo, const gchar *c
     flist_request(pc, code, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_code_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -687,7 +687,7 @@ PurpleCmdRet flist_channel_code_cmd(PurpleConversation *convo, const gchar *cmd,
     g_free(name_escaped);
     g_free(title_escaped);
     g_free(message);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_join_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -696,7 +696,7 @@ PurpleCmdRet flist_channel_join_cmd(PurpleConversation *convo, const gchar *cmd,
     GHashTable* components = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
     g_hash_table_insert(components, CHANNEL_COMPONENTS_NAME, g_strdup(channel));
     serv_join_chat(pc, components);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_make_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -709,7 +709,7 @@ PurpleCmdRet flist_channel_make_cmd(PurpleConversation *convo, const gchar *cmd,
     flist_request(pc, FLIST_CHANNEL_CREATE, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_banlist_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -722,7 +722,7 @@ PurpleCmdRet flist_channel_banlist_cmd(PurpleConversation *convo, const gchar *c
     flags = flist_flags_lookup(fla, convo, fla->proper_character);
     if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_HALFOP | PURPLE_CBFLAGS_FOUNDER))) {
         *error = g_strdup(_("You must be a channel operator to view the channel banlist."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     json = json_object_new();
@@ -730,7 +730,7 @@ PurpleCmdRet flist_channel_banlist_cmd(PurpleConversation *convo, const gchar *c
     flist_request(pc, FLIST_CHANNEL_GET_BANLIST, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_open_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -743,7 +743,7 @@ PurpleCmdRet flist_channel_open_cmd(PurpleConversation *convo, const gchar *cmd,
     flags = flist_flags_lookup(fla, convo, fla->proper_character);
     if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER))) {
         *error = g_strdup(_("You must be the channel owner or a global operator to open or close a private channel."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     json = json_object_new();
@@ -753,7 +753,7 @@ PurpleCmdRet flist_channel_open_cmd(PurpleConversation *convo, const gchar *cmd,
     json_object_unref(json);
 
     //TODO: don't allow this on public channels?
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_close_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -766,7 +766,7 @@ PurpleCmdRet flist_channel_close_cmd(PurpleConversation *convo, const gchar *cmd
     flags = flist_flags_lookup(fla, convo, fla->proper_character);
     if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER))) {
         *error = g_strdup(_("You must be the channel owner or a global operator to open or close a private channel."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     json_object_set_string_member(json, "channel", channel);
@@ -776,7 +776,7 @@ PurpleCmdRet flist_channel_close_cmd(PurpleConversation *convo, const gchar *cmd
     //TODO: don't allow this on public channels
 
     json_object_unref(json);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_show_topic_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -784,12 +784,12 @@ PurpleCmdRet flist_channel_show_topic_cmd(PurpleConversation *convo, const gchar
     FListAccount *fla = pc ? pc->proto_data : NULL;
     const gchar *channel;
 
-    g_return_val_if_fail(fla, PURPLE_CMD_STATUS_FAILED);
+    g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
 
     channel = purple_conversation_get_name(convo);
     flist_show_channel_topic(fla, channel);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -798,11 +798,11 @@ PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *convo, const g
     const gchar *channel;
     FListChannel *fchannel;
 
-    g_return_val_if_fail(fla, PURPLE_CMD_STATUS_FAILED);
+    g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
 
     channel = purple_conversation_get_name(convo);
     fchannel = flist_channel_find(fla, channel);
-    g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_STATUS_FAILED);
+    g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_RET_FAILED);
 
     if(!fchannel->topic) {
         purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", "The description for this channel is currently unset.", PURPLE_MESSAGE_SYSTEM, time(NULL));
@@ -812,7 +812,7 @@ PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *convo, const g
         g_free(escaped_topic);
     }
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -826,7 +826,7 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
     flags = flist_flags_lookup(fla, convo, fla->proper_character);
     if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER | PURPLE_CBFLAGS_HALFOP))) {
         *error = g_strdup(_("You must be a channel or global operator to set the channel topic."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     channel = purple_conversation_get_name(convo);
@@ -839,7 +839,7 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
     json_object_unref(json);
 
     //TODO: don't allow this on public channels? (or do we?)
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -855,7 +855,7 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
     flags = flist_flags_lookup(fla, convo, fla->proper_character);
     if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER | PURPLE_CBFLAGS_HALFOP))) {
         *error = g_strdup(_("You must be a channel or global operator to kick, ban, or unban."));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     if(!purple_utf8_strcasecmp(cmd, "kick")) code = FLIST_CHANNEL_KICK;
@@ -864,7 +864,7 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
         code = FLIST_CHANNEL_UNBAN;
         must_be_online = FALSE;
     }
-    if(!code) return PURPLE_CMD_STATUS_NOT_FOUND;
+    if(!code) return PURPLE_CMD_RET_FAILED;
 
     channel = purple_conversation_get_name(convo);
     character = args[0];
@@ -872,7 +872,7 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
     target = flist_get_character(fla, character);
     if(must_be_online && !target) {
         *error = g_strdup(_("You may only kick or ban users that are online!"));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 
     json = json_object_new();
@@ -881,7 +881,7 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
     flist_request(pc, code, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -898,7 +898,7 @@ PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *convo, const gchar *cm
     flist_request(pc, FLIST_CHANNEL_INVITE, json);
     json_object_unref(json);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 static void flist_channel_destroy(void *p) {
