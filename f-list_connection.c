@@ -63,7 +63,7 @@ static void flist_write_hybi(FListAccount *fla, guint8 opcode, gchar *content, g
     guint8 *frame, *ptr;
     gsize frame_len;
     guint8 mask[4];
-    int offset;
+    gsize offset;
 
     frame = g_malloc(10 + len);
     ptr = frame;
@@ -272,7 +272,7 @@ static void flist_process_hybi(FListAccount *fla) {
     guint8 mask[4];
     gchar *payload;
     gsize payload_len;
-    int offset;
+    gsize offset;
     gboolean stop = FALSE;
 
     while(!stop) {

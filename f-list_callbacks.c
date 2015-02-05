@@ -491,7 +491,7 @@ static gboolean flist_process_LIS(PurpleConnection *pc, JsonObject *root) {
     JsonArray *characters;
     guint32 len;
     JsonArray *character_array;
-    int i;
+    guint i;
 
     g_return_val_if_fail(root, TRUE);
     characters = json_object_get_array_member(root, "characters");
