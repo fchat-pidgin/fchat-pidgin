@@ -500,7 +500,7 @@ void flist_global_kinks_load(PurpleConnection *pc) {
     fla->flist_kinks = g_new0(FListKinks, 1);
     flk = _flist_kinks(fla);
 
-    purple_debug_info("Fetching global kink list... (Account: %s) (Character: %s)\n", fla->username, fla->character);
+    purple_debug_info(FLIST_DEBUG, "Fetching global kink list... (Account: %s) (Character: %s)\n", fla->username, fla->character);
     flk->global_kinks_request = flist_web_request(JSON_KINK_LIST, NULL, TRUE, fla->secure, flist_global_kinks_cb, fla);
 
     genders = flist_get_gender_list();
