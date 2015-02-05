@@ -103,7 +103,7 @@ static GSList *flist_get_filter_characters(FListAccount *fla, gboolean has_extra
         PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, fla->filter_channel, fla->pa);
         if(convo) {
             GSList *tmp = NULL;
-            purple_debug_info("flist", "We filtered on channel %s.\n", fla->filter_channel);
+            purple_debug_info(FLIST_DEBUG, "We filtered on channel %s.\n", fla->filter_channel);
             //TODO: do we have to clean this up when we're done with it? The API is unclear.
             GList *chat_users = purple_conv_chat_get_users(PURPLE_CONV_CHAT(convo));
             while(chat_users) {
@@ -114,7 +114,7 @@ static GSList *flist_get_filter_characters(FListAccount *fla, gboolean has_extra
             }
             ret = flist_g_slist_intersect_and_free(ret, tmp);
         } else {
-            purple_debug_info("flist", "We tried to filter on channel %s, but no channel was found.\n", fla->filter_channel);
+            purple_debug_info(FLIST_DEBUG, "We tried to filter on channel %s, but no channel was found.\n", fla->filter_channel);
         }
     }
 

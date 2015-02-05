@@ -17,7 +17,7 @@ static void g_string_append_cgi(GString *str, GHashTable *table) {
     gboolean first = TRUE;
     g_hash_table_iter_init(&iter, table);
     while(g_hash_table_iter_next(&iter, &key, &value)) {
-        purple_debug_info("flist", "cgi writing key, value: %s, %s\n", (gchar *)key, (gchar *)value);
+        purple_debug_info(FLIST_DEBUG, "cgi writing key, value: %s, %s\n", (gchar *)key, (gchar *)value);
         if(!first) g_string_append(str, "&");
         g_string_append_printf(str, "%s", purple_url_encode(key));
         g_string_append(str, "=");
@@ -70,7 +70,7 @@ static gchar *http_request(const gchar *url, gboolean http11, gboolean post, con
 
         post = g_string_free(post_str, FALSE);
 
-        purple_debug_info("flist", "posting (len: %" G_GSIZE_FORMAT "): %s\n", strlen(post), post);
+        purple_debug_info(FLIST_DEBUG, "posting (len: %" G_GSIZE_FORMAT "): %s\n", strlen(post), post);
 
         g_string_append(request_str, "Content-Type: application/x-www-form-urlencoded\r\n");
         g_string_append_printf(request_str, "Content-Length: %" G_GSIZE_FORMAT "\r\n", strlen(post));

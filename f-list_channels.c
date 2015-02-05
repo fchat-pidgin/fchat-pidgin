@@ -46,7 +46,7 @@ static PurpleConvChatBuddyFlags flist_flags_lookup(FListAccount *fla, PurpleConv
     PurpleConvChatBuddyFlags flags = 0;
 
     if(!fchannel) {
-        purple_debug_error("flist", "Flags requested for %s in channel %s, but no channel was found.\n", identity, channel);
+        purple_debug_error(FLIST_DEBUG, "Flags requested for %s in channel %s, but no channel was found.\n", identity, channel);
         return PURPLE_CBFLAGS_NONE;
     }
 
@@ -235,13 +235,13 @@ void flist_got_channel_joined(FListAccount *fla, const gchar *name) {
     fchannel->users = g_hash_table_new_full((GHashFunc) flist_str_hash, (GEqualFunc) flist_str_equal, g_free, NULL);
     fchannel->mode = CHANNEL_MODE_BOTH;
     g_hash_table_replace(fla->chat_table, g_strdup(name), fchannel);
-    purple_debug(PURPLE_DEBUG_INFO, "flist", "We (%s) have joined channel %s.\n", fla->proper_character, name);
+    purple_debug_info(FLIST_DEBUG, "We (%s) have joined channel %s.\n", fla->proper_character, name);
 }
 
 void flist_got_channel_left(FListAccount *fla, const gchar *name) {
     flist_remove_chat(fla, name);
     g_hash_table_remove(fla->chat_table, name);
-    purple_debug(PURPLE_DEBUG_INFO, "flist", "We (%s) have left channel %s.\n", fla->proper_character, name);
+    purple_debug_info(FLIST_DEBUG, "We (%s) have left channel %s.\n", fla->proper_character, name);
 }
 
 void flist_got_channel_mode(FListAccount *fla, const gchar *channel, const gchar *mode) {
@@ -379,7 +379,7 @@ gboolean flist_process_kickban(PurpleConnection *pc, JsonObject *root, gboolean 
 
     convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, pa);
     if(!convo) {
-        purple_debug(PURPLE_DEBUG_ERROR, "flist", "User %s was kicked or banned from channel %s, but we are not in this channel.\n", channel, character);
+        purple_debug_error(FLIST_DEBUG, "User %s was kicked or banned from channel %s, but we are not in this channel.\n", channel, character);
         return TRUE;
     }
 
@@ -512,7 +512,7 @@ gboolean flist_process_LCH(PurpleConnection *pc, JsonObject *root) {
 
     convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, pa);
     if(!convo) {
-        purple_debug(PURPLE_DEBUG_ERROR, "flist", "User %s left channel %s, but we are not in this channel.\n", character, channel);
+        purple_debug_error(FLIST_DEBUG, "User %s left channel %s, but we are not in this channel.\n", character, channel);
         return TRUE;
     }
 

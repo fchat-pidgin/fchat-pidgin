@@ -482,7 +482,7 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
         purple_conv_im_write(im, NULL, bbcode_message, flags, time(NULL));
         ret = 0; //we've already displayed it
     } else {
-        purple_debug_warning("flist", "Sent message, but convo not found. (From: %s) (To: %s)\n",
+        purple_debug_warning(FLIST_DEBUG, "Sent message, but convo not found. (From: %s) (To: %s)\n",
             fla->character, who);
         ret = 1; //display it now
     }
@@ -522,7 +522,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     JsonObject *json = json_object_new();
     gchar *stripped_message, *escaped_message, *local_message, *bbcode_message;
     const gchar *channel = purple_conversation_get_name(convo);
-    purple_debug_info("flist", "Sending message to channel... (Character: %s) (Channel: %s) (Message: %s) (Ad: %s)\n",
+    purple_debug_info(FLIST_DEBUG, "Sending message to channel... (Character: %s) (Channel: %s) (Message: %s) (Ad: %s)\n",
         fla->character, channel, message, ad ? "yes" : "no");
 
     stripped_message = purple_markup_strip_html(message); /* strip out formatting */
@@ -554,7 +554,7 @@ int flist_send_channel_message(PurpleConnection *pc, int id, const char *message
     g_return_val_if_fail((fla = pc->proto_data), -EINVAL);
 
     if (!convo) {
-        purple_debug(PURPLE_DEBUG_ERROR, "flist", "We want to send a message in channel %d, but we are not in this channel.\n", id);
+        purple_debug_error(FLIST_DEBUG, "We want to send a message in channel %d, but we are not in this channel.\n", id);
         return -EINVAL;
     }
 

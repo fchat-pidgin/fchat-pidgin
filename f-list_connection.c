@@ -496,7 +496,7 @@ static void flist_receive_ticket(FListWebRequestData *req_data, gpointer data, J
     purple_debug_info(FLIST_DEBUG, "Ticket received. (Account: %s) (Character: %s) (Ticket: %s)\n", fla->username, fla->character, ticket);
 
     g_hash_table_insert(ticket_table, g_strdup(fla->username), g_strdup(ticket));
-    purple_debug_info("flist", "Login Ticket: %s\n", ticket);
+    purple_debug_info(FLIST_DEBUG, "Login Ticket: %s\n", ticket);
 
     if(first) {
         flist_connect(fla);
