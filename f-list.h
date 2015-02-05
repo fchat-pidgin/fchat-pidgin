@@ -54,14 +54,6 @@
 #include "smiley.h"
 #include "savedstatuses.h"
 
-typedef enum FListFlags_ FListFlags;
-typedef enum FListGender_ FListGender;
-typedef enum FListStatus_ FListStatus;
-typedef enum FListChannelMode_ FListChannelMode;
-typedef enum FListFriendStatus_ FListFriendStatus;
-typedef enum FListFriendsRequestType_ FListFriendsRequestType;
-typedef enum FListConnectionStatus_ FListConnectionStatus;
-
 typedef struct FListCharacter_ FListCharacter;
 typedef struct FListAccount_ FListAccount;
 typedef struct FListRoomlistChannel_ FListRoomlistChannel;
@@ -228,6 +220,13 @@ enum FListIgnoreActionType_ {
     FLIST_NODE_UNIGNORE
 };
 
+typedef enum FListFlags_ FListFlags;
+typedef enum FListGender_ FListGender;
+typedef enum FListStatus_ FListStatus;
+typedef enum FListChannelMode_ FListChannelMode;
+typedef enum FListFriendStatus_ FListFriendStatus;
+typedef enum FListFriendsRequestType_ FListFriendsRequestType;
+typedef enum FListConnectionStatus_ FListConnectionStatus;
 typedef enum FListIgnoreActionType_ FListIgnoreActionType;
 
 /* gender conversion */
