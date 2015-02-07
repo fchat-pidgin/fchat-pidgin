@@ -65,15 +65,27 @@ gboolean color_is_allowed(const char *color)
 static gchar *format_bold(ParserVars *vars, const gchar *ts, const gchar *inner) {
     return g_strdup_printf("<b>%s</b>", inner);
 }
+
 static gchar *format_italic(ParserVars *vars, const gchar *ts, const gchar *inner) {
     return g_strdup_printf("<i>%s</i>", inner);
 }
+
 static gchar *format_strike(ParserVars *vars, const gchar *ts, const gchar *inner) {
     return g_strdup_printf("<s>%s</s>", inner);
 }
+
 static gchar *format_underline(ParserVars *vars, const gchar *ts, const gchar *inner) {
     return g_strdup_printf("<u>%s</u>", inner);
 }
+
+static gchar *format_subscript(ParserVars *vars, const gchar *ts, const gchar *inner) {
+    return g_strdup_printf("<span style=\"vertical-align: sub; font-size: smaller;\">%s</span>", inner);
+}
+
+static gchar *format_superscript(ParserVars *vars, const gchar *ts, const gchar *inner) {
+    return g_strdup_printf("<span style=\"vertical-align: super; font-size: smaller;\">%s</span>", inner);
+}
+
 static gchar *format_url(ParserVars *vars, const gchar *ts, const gchar *inner) {
     gchar *escaped, *ret;
     if(strlen(ts) > 0) {
@@ -113,6 +125,7 @@ static gchar *format_user(ParserVars *vars, const gchar *ts, const gchar *inner)
     g_free(lower);
     return ret;
 }
+
 static gchar *format_icon(ParserVars *vars, const gchar *ts, const gchar *inner) {
     gchar *lower = g_utf8_strdown(inner, -1);
     gchar *ret;
@@ -162,6 +175,8 @@ BBCodeTag tag_bold = { "b", TRUE, FALSE, format_bold };
 BBCodeTag tag_italic = { "i", TRUE, FALSE, format_italic };
 BBCodeTag tag_underline = { "u", TRUE, FALSE, format_underline };
 BBCodeTag tag_strike = { "s", TRUE, FALSE, format_strike };
+BBCodeTag tag_subscript = { "sub", TRUE, FALSE, format_subscript };
+BBCodeTag tag_superscript = { "sup", TRUE, FALSE, format_superscript };
 BBCodeTag tag_url = { "url", FALSE, TRUE, format_url };
 BBCodeTag tag_color = { "color", TRUE, TRUE, format_color };
 BBCodeTag tag_user = { "user", FALSE, FALSE, format_user };
@@ -320,6 +335,8 @@ void flist_bbcode_init() {
     g_hash_table_insert(tag_table, "i", &tag_italic);
     g_hash_table_insert(tag_table, "u", &tag_underline);
     g_hash_table_insert(tag_table, "s", &tag_strike);
+    g_hash_table_insert(tag_table, "sub", &tag_subscript);
+    g_hash_table_insert(tag_table, "sup", &tag_superscript);
     g_hash_table_insert(tag_table, "url", &tag_url);
     g_hash_table_insert(tag_table, "color", &tag_color);
     g_hash_table_insert(tag_table, "user", &tag_user);
