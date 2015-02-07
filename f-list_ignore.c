@@ -113,7 +113,7 @@ gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
         for (size_t i = 0; i < json_array_get_length(chars); i++)
         {
             GList *row = NULL;
-            row = g_list_append(row, json_array_get_string_element(chars, i));
+            row = g_list_append(row, (gpointer) json_array_get_string_element(chars, i));
             purple_notify_searchresults_row_add(results, row);
         }
 
@@ -141,31 +141,31 @@ PurpleCmdRet flist_ignore_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     
     if (args[0] == NULL)
-        return PURPLE_CMD_STATUS_WRONG_ARGS;
+        return PURPLE_CMD_RET_FAILED;
 
     gchar *subcmd = args[0];
     if (g_ascii_strncasecmp(subcmd, "add", 3) == 0)
     {
         if (args[1] == NULL)
-            return PURPLE_CMD_STATUS_WRONG_ARGS;
+            return PURPLE_CMD_RET_FAILED;
 
         flist_ignore_list_request_add(pc, args[1]);
     }
     else if (g_ascii_strncasecmp(subcmd, "delete", 6) == 0)
     {
         if (args[1] == NULL)
-            return PURPLE_CMD_STATUS_WRONG_ARGS;
+            return PURPLE_CMD_RET_FAILED;
 
         flist_ignore_list_request_remove(pc, args[1]);
     }
     else if (g_ascii_strncasecmp(subcmd, "list", 4) == 0)
     {
         if (args[1] != NULL)
-            return PURPLE_CMD_STATUS_WRONG_ARGS;
+            return PURPLE_CMD_RET_FAILED;
 
         flist_ignore_list_request_list(pc);
     }
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 

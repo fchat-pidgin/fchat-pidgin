@@ -50,7 +50,7 @@ void flist_apply_filter(FListAccount *fla, GSList *candidates) {
     cur = candidates;
     while(cur) {
         const gchar *name = cur->data; cur = g_slist_next(cur);
-        purple_debug_info("flist", "adding %s\n", name);
+        purple_debug_info(FLIST_DEBUG, "adding %s\n", name);
         PurpleBuddy *b = purple_find_buddy(fla->pa, name);
         if(!b) { /* we're adding a new buddy */
             b = purple_buddy_new(fla->pa, name, NULL);

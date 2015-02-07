@@ -482,7 +482,7 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
         purple_conv_im_write(im, NULL, bbcode_message, flags, time(NULL));
         ret = 0; //we've already displayed it
     } else {
-        purple_debug_warning("flist", "Sent message, but convo not found. (From: %s) (To: %s)\n",
+        purple_debug_warning(FLIST_DEBUG, "Sent message, but convo not found. (From: %s) (To: %s)\n",
             fla->character, who);
         ret = 1; //display it now
     }
@@ -522,7 +522,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     JsonObject *json = json_object_new();
     gchar *stripped_message, *escaped_message, *local_message, *bbcode_message;
     const gchar *channel = purple_conversation_get_name(convo);
-    purple_debug_info("flist", "Sending message to channel... (Character: %s) (Channel: %s) (Message: %s) (Ad: %s)\n",
+    purple_debug_info(FLIST_DEBUG, "Sending message to channel... (Character: %s) (Channel: %s) (Message: %s) (Ad: %s)\n",
         fla->character, channel, message, ad ? "yes" : "no");
 
     stripped_message = purple_markup_strip_html(message); /* strip out formatting */
@@ -554,7 +554,7 @@ int flist_send_channel_message(PurpleConnection *pc, int id, const char *message
     g_return_val_if_fail((fla = pc->proto_data), -EINVAL);
 
     if (!convo) {
-        purple_debug(PURPLE_DEBUG_ERROR, "flist", "We want to send a message in channel %d, but we are not in this channel.\n", id);
+        purple_debug_error(FLIST_DEBUG, "We want to send a message in channel %d, but we are not in this channel.\n", id);
         return -EINVAL;
     }
 
@@ -570,7 +570,7 @@ PurpleCmdRet flist_roll_bottle(PurpleConversation *convo, const gchar *cmd, gcha
     json_object_set_string_member(json, "dice", "bottle");
     flist_request(pc, FLIST_ROLL_DICE, json);
     json_object_unref(json);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_roll_dice(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -581,7 +581,7 @@ PurpleCmdRet flist_roll_dice(PurpleConversation *convo, const gchar *cmd, gchar 
     json_object_set_string_member(json, "dice", args[0]);
     flist_request(pc, FLIST_ROLL_DICE, json);
     json_object_unref(json);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_priv_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -595,7 +595,7 @@ PurpleCmdRet flist_priv_cmd(PurpleConversation *convo, const gchar *cmd, gchar *
     if(rconvo) {
         purple_conversation_present(rconvo);
     }
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_show_ads_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -604,7 +604,7 @@ PurpleCmdRet flist_channel_show_ads_cmd(PurpleConversation *convo, const gchar *
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_ads(fla, channel, TRUE);
     flist_channel_show_message(fla, channel);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_hide_ads_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
@@ -612,7 +612,7 @@ PurpleCmdRet flist_channel_hide_ads_cmd(PurpleConversation *convo, const gchar *
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_ads(fla, channel, FALSE);
     flist_channel_show_message(fla, channel);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_show_chat_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
@@ -620,7 +620,7 @@ PurpleCmdRet flist_channel_show_chat_cmd(PurpleConversation *convo, const gchar 
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_chat(fla, channel, TRUE);
     flist_channel_show_message(fla, channel);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_hide_chat_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
@@ -628,7 +628,7 @@ PurpleCmdRet flist_channel_hide_chat_cmd(PurpleConversation *convo, const gchar 
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_chat(fla, channel, FALSE);
     flist_channel_show_message(fla, channel);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_send_ad(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -640,7 +640,7 @@ PurpleCmdRet flist_channel_send_ad(PurpleConversation *convo, const gchar *cmd, 
     flist_send_channel_message_real(fla, convo, fixed_message, TRUE);
 
     g_free(fixed_message);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -654,7 +654,7 @@ PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, 
 
     g_free(fixed_message);
     g_free(extended_message);
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_get_profile_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -662,7 +662,7 @@ PurpleCmdRet flist_get_profile_cmd(PurpleConversation *convo, const gchar *cmd, 
     const gchar *character = args[0];
     flist_get_profile(pc, character);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_channels_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -671,7 +671,7 @@ PurpleCmdRet flist_channels_cmd(PurpleConversation *convo, const gchar *cmd, gch
 
     purple_roomlist_show_with_account(pa);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 void flist_convo_print_status(PurpleConversation *convo, FListStatus status, const gchar *status_message) {
@@ -692,7 +692,7 @@ PurpleCmdRet flist_status_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     gchar *status_message;
 
     if (args[0] == NULL) 
-        return PURPLE_CMD_STATUS_WRONG_ARGS;
+        return PURPLE_CMD_RET_FAILED;
 
     status = flist_parse_status(args[0]);
 
@@ -708,10 +708,10 @@ PurpleCmdRet flist_status_cmd(PurpleConversation *convo, const gchar *cmd, gchar
         flist_set_status(fla, status, status_message);
         flist_update_server_status(fla);
         flist_convo_print_status(convo, status, status_message);
-        return PURPLE_CMD_STATUS_OK;
+        return PURPLE_CMD_RET_OK;
     } else {
         *error = g_strdup(_("Unrecognized status: first argument must be one of: online, looking, busy, dnd, away"));
-        return PURPLE_CMD_STATUS_FAILED;
+        return PURPLE_CMD_RET_FAILED;
     }
 }
 
@@ -729,7 +729,7 @@ PurpleCmdRet flist_whoami_cmd(PurpleConversation *convo, const gchar *cmd, gchar
 
     g_free(message1);
 
-    return PURPLE_CMD_STATUS_OK;
+    return PURPLE_CMD_RET_OK;
 }
 
 void flist_init_commands() {

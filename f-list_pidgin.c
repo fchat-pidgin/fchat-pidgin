@@ -10,20 +10,20 @@ static gboolean flist_channel_activate_real(const gchar *host, const gchar *path
     PurpleConnection *pc;
     GHashTable *components;
 
-    purple_debug_info("flist", "We are attempting to join a channel. Account: %s Channel: %s\n", host, path);
+    purple_debug_info(FLIST_DEBUG, "We are attempting to join a channel. Account: %s Channel: %s\n", host, path);
     pa = flist_deserialize_account(host);
     if(!pa) {
-        purple_debug_warning("flist", "Attempt failed. The account is not found.");
+        purple_debug_warning(FLIST_DEBUG, "Attempt failed. The account is not found.");
         return FALSE;
     }
 
     pc = purple_account_get_connection(pa);
     if(!pc) {
-        purple_debug_warning("flist", "Attempt failed. The account has no connection.");
+        purple_debug_warning(FLIST_DEBUG, "Attempt failed. The account has no connection.");
         return FALSE;
     }
     if(purple_connection_get_state(pc) != PURPLE_CONNECTED) {
-        purple_debug_warning("flist", "Attempt failed. The account is not online.");
+        purple_debug_warning(FLIST_DEBUG, "Attempt failed. The account is not online.");
         return FALSE;
     }
 
@@ -42,14 +42,14 @@ static gboolean flist_channel_activate(GtkIMHtml *imhtml, GtkIMHtmlLink *link) {
     gboolean ret = FALSE;
 
     url += strlen("flistc://");
-    purple_debug_info("flist", "FList channel URL activated: %s\n", url);
+    purple_debug_info(FLIST_DEBUG, "FList channel URL activated: %s\n", url);
 
     if(!purple_url_parse(url, &host, &port, &path, &user, &password)) {
-        purple_debug_warning("flist", "The FList channel URL did not parse.");
+        purple_debug_warning(FLIST_DEBUG, "The FList channel URL did not parse.");
         return FALSE;
     }
 
-    purple_debug_info("flist", "The FList channel URL is parsed. Host: %s Path: %s\n", host, path);
+    purple_debug_info(FLIST_DEBUG, "The FList channel URL is parsed. Host: %s Path: %s\n", host, path);
 
     if(host && path) {
         gchar *host_fixed = g_strdup(purple_url_decode(host));
@@ -71,20 +71,20 @@ gboolean flist_staff_activate_real(const gchar *host, const gchar *path) {
     PurpleAccount *pa;
     PurpleConnection *pc;
 
-    purple_debug_info("flist", "We are attempting to send a staff confirmation. Account: %s Callid: %s\n", host, path);
+    purple_debug_info(FLIST_DEBUG, "We are attempting to send a staff confirmation. Account: %s Callid: %s\n", host, path);
     pa = flist_deserialize_account(host);
     if(!pa) {
-        purple_debug_warning("flist", "Attempt failed. The account is not found.");
+        purple_debug_warning(FLIST_DEBUG, "Attempt failed. The account is not found.");
         return FALSE;
     }
 
     pc = purple_account_get_connection(pa);
     if(!pc) {
-        purple_debug_warning("flist", "Attempt failed. The account has no connection.");
+        purple_debug_warning(FLIST_DEBUG, "Attempt failed. The account has no connection.");
         return FALSE;
     }
     if(purple_connection_get_state(pc) != PURPLE_CONNECTED) {
-        purple_debug_warning("flist", "Attempt failed. The account is not online.");
+        purple_debug_warning(FLIST_DEBUG, "Attempt failed. The account is not online.");
         return FALSE;
     }
 
@@ -100,14 +100,14 @@ static gboolean flist_staff_activate(GtkIMHtml *imhtml, GtkIMHtmlLink *link) {
     gboolean ret = FALSE;
 
     url += strlen("flistsfc://");
-    purple_debug_info("flist", "FList staff URL activated: %s\n", url);
+    purple_debug_info(FLIST_DEBUG, "FList staff URL activated: %s\n", url);
 
     if(!purple_url_parse(url, &host, &port, &path, &user, &password)) {
-        purple_debug_warning("flist", "The FList staff URL did not parse.");
+        purple_debug_warning(FLIST_DEBUG, "The FList staff URL did not parse.");
         return FALSE;
     }
 
-    purple_debug_info("flist", "The FList staff URL is parsed. Host: %s Path: %s\n", host, path);
+    purple_debug_info(FLIST_DEBUG, "The FList staff URL is parsed. Host: %s Path: %s\n", host, path);
 
     if(host && path) {
         gchar *host_fixed = g_strdup(purple_url_decode(host));

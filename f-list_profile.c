@@ -130,7 +130,7 @@ gboolean flist_process_PRD(PurpleConnection *pc, JsonObject *root) {
     const gchar *key, *value;
 
     if(!flp->character) {
-        purple_debug(PURPLE_DEBUG_ERROR, "flist", "Profile information received, but we are not expecting profile information.\n");
+        purple_debug_error(FLIST_DEBUG, "Profile information received, but we are not expecting profile information.\n");
         return TRUE;
     }
 
@@ -157,7 +157,7 @@ gboolean flist_process_PRD(PurpleConnection *pc, JsonObject *root) {
     value = json_object_get_string_member(root, "value");
     g_hash_table_replace(flp->table, g_strdup(key), g_strdup(value));
 
-    purple_debug_info("flist", "Profile information received for %s. Key: %s. Value: %s.\n", flp->character, key, value);
+    purple_debug_info(FLIST_DEBUG, "Profile information received for %s. Key: %s. Value: %s.\n", flp->character, key, value);
 
     return TRUE;
 }

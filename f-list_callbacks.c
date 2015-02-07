@@ -46,7 +46,7 @@ static void flist_purple_find_chats_in_node(PurpleAccount *pa, PurpleBlistNode *
 /*static void flist_purple_find_buddies_in_node(PurpleAccount *pa, PurpleBlistNode *n, GSList **current) {
     while(n) {
         if(PURPLE_BLIST_NODE_IS_BUDDY(n) && PURPLE_BUDDY(n)->account == pa) {
-            purple_debug_info("flist", "found buddy: %s %x\n", purple_buddy_get_name(PURPLE_BUDDY(n)), n);
+            purple_debug_info(FLIST_DEBUG, "found buddy: %s %x\n", purple_buddy_get_name(PURPLE_BUDDY(n)), n);
             *current = g_slist_prepend(*current, n);
         }
         if(n->child) flist_purple_find_buddies_in_node(pa, n->child, current);
@@ -274,7 +274,7 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
 
     convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, pa);
     if(!convo) {
-        purple_debug_error("flist", "Received message for channel %s, but we are not in this channel.\n", channel);
+        purple_debug_error(FLIST_DEBUG, "Received message for channel %s, but we are not in this channel.\n", channel);
         return TRUE;
     }
 
@@ -289,7 +289,7 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
     else
       parsed = flist_bbcode_to_html(fla, convo, message);
 
-    purple_debug_info("flist", "Message: %s\n", parsed);
+    purple_debug_info(FLIST_DEBUG, "Message: %s\n", parsed);
     if(show && !flist_ignore_character_is_ignored(pc, character)) {
         serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
     }
@@ -316,7 +316,7 @@ static gboolean flist_process_LRP(PurpleConnection *pc, JsonObject *root) {
 
     convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, pa);
     if(!convo) {
-        purple_debug_error("flist", "Received advertisement for channel %s, but we are not in this channel.\n", channel);
+        purple_debug_error(FLIST_DEBUG, "Received advertisement for channel %s, but we are not in this channel.\n", channel);
         return TRUE;
     }
 
@@ -325,7 +325,7 @@ static gboolean flist_process_LRP(PurpleConnection *pc, JsonObject *root) {
 
     full_message = g_strdup_printf("[b](Roleplay Ad)[/b] %s", message);
     parsed = flist_bbcode_to_html(fla, convo, full_message);
-    purple_debug_info("flist", "Advertisement: %s\n", parsed);
+    purple_debug_info(FLIST_DEBUG, "Advertisement: %s\n", parsed);
     if(show && !flist_ignore_character_is_ignored(pc, character)) {
         serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
     }
@@ -369,7 +369,7 @@ static gboolean flist_process_SYS(PurpleConnection *pc, JsonObject *root) {
     if(channel) {
         convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, pa);
         if(!convo) {
-            purple_debug(PURPLE_DEBUG_ERROR, "flist", "Received system message for channel %s, but we are not in this channel.\n", channel);
+            purple_debug_error(FLIST_DEBUG, "Received system message for channel %s, but we are not in this channel.\n", channel);
             return TRUE;
         }
         parsed = flist_bbcode_to_html(fla, convo, message);
