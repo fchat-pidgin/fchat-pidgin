@@ -20,6 +20,8 @@
  */
 #include "f-list_bbcode.h"
 
+static const gchar *BB_COLORS[] = { "white", "black", "red", "blue", "yellow", "green", "pink", "gray", "orange", "purple", "brown", "cyan", NULL };
+
 typedef struct ParserVars_ {
     FListAccount *fla;
     PurpleConversation *convo;
@@ -46,6 +48,19 @@ gchar *flist_escape_attribute(const gchar *to_escape) {
     return g_string_free(ret, FALSE);
 }
 
+gboolean color_is_allowed(const char *color)
+{
+    guint32 i = 0;
+    while(BB_COLORS[i])
+    {
+        if (g_ascii_strcasecmp(BB_COLORS[i], color) == 0)
+            return TRUE;
+        i++;
+    }
+
+    return FALSE;
+}
+
 //TODO: replace all of these with CSS
 static gchar *format_bold(ParserVars *vars, const gchar *ts, const gchar *inner) {
     return g_strdup_printf("<b>%s</b>", inner);
@@ -70,16 +85,27 @@ static gchar *format_url(ParserVars *vars, const gchar *ts, const gchar *inner) 
     g_free(escaped);
     return ret;
 }
+
 static gchar *format_color(ParserVars *vars, const gchar *ts, const gchar *inner) {
     if(strlen(ts) > 0) {
         gchar *escaped, *ret;
         escaped = flist_escape_attribute(ts);
+
+        // Only allow the same colors the webclient does
+        if (!color_is_allowed(escaped))
+        {
+            g_free(escaped);
+            return g_strdup(inner);
+        }
+
         ret = g_strdup_printf("<font color=\"%s\">%s</font>", escaped, inner);
         g_free(escaped);
         return ret;
     }
+
     return g_strdup(inner);
 }
+
 static gchar *format_user(ParserVars *vars, const gchar *ts, const gchar *inner) {
     const gchar *url_pattern = "<a href=\"http://www.f-list.net/c/%s\">%s</a>";
     gchar *lower = g_utf8_strdown(inner, -1);
