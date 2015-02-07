@@ -69,24 +69,36 @@ FLIST_SOURCES = \
 				f-list_ignore.c \
 				${FLIST_ADDITIONAL_SOURCES}
 
+TARGET = flist.so
+WIN32_TARGET = flist.dll
+
+TEST_PURPLE_DIR = purple
+TEST_PURPLE_PLUGINS_DIR = ${TEST_PURPLE_DIR}/plugins
+
 #Standard stuff here
 .PHONY: all clean install prepare_cross
 
-all:	flist.so
+all:	${TARGET}
 
 clean:
-	rm -f flist.so
-	rm -f flist.dll
-	rm -rf win32
+	rm -f ${TARGET}
+	rm -f ${WIN32_TARGET}
+	rm -rf ${WIN32_DEV_DIR}
+	rm -rf ${TEST_PURPLE_DIR}
+
+test_linux: ${TARGET}
+	mkdir -p ${TEST_PURPLE_PLUGINS_DIR}
+	cp ${TARGET} ${TEST_PURPLE_PLUGINS_DIR}
+	pidgin -m -c ${TEST_PURPLE_DIR} -d | tee pidgin.log
 
 install:
 	cp flist.so ${PIDGIN_DIR}
 
-flist.so:	${FLIST_SOURCES}
+${TARGET}:	${FLIST_SOURCES}
 	${LINUX_COMPILER} -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
 
 prepare_cross:
 	./contrib/prepare_cross.sh
 
-flist.dll: ${FLIST_SOURCES} 
+${WIN32_TARGET}: ${FLIST_SOURCES} 
 	${WIN32_COMPILER} -Wall -I. -g -O2 -std=c99 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS}
