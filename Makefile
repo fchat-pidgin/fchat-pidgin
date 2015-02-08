@@ -86,10 +86,15 @@ clean:
 	rm -rf ${WIN32_DEV_DIR}
 	rm -rf ${TEST_PURPLE_DIR}
 
-test_linux: ${TARGET}
+prepare_test_linux: ${TARGET}
 	mkdir -p ${TEST_PURPLE_PLUGINS_DIR}
 	cp ${TARGET} ${TEST_PURPLE_PLUGINS_DIR}
-	pidgin -m -c ${TEST_PURPLE_DIR} -d | tee pidgin.log
+
+test_linux: prepare_test_linux
+	pidgin -m -c ${TEST_PURPLE_DIR} -d 2>&1 | tee pidgin.log
+
+valgrind_linux: prepare_test_linux
+	valgrind --tool=memcheck --leak-check=yes --leak-resolution=high --num-callers=20 --trace-children=no --child-silent-after-fork=yes --track-fds=yes --track-origins=yes pidgin -m -c ${TEST_PURPLE_DIR} -d 2>&1 | tee valgrind.log
 
 install:
 	cp flist.so ${PIDGIN_DIR}
