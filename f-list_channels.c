@@ -537,6 +537,22 @@ void flist_channel_print_error(PurpleConversation *convo, const gchar *message) 
     purple_conv_chat_write(PURPLE_CONV_CHAT(convo), NULL, message, PURPLE_MESSAGE_ERROR, time(NULL));
 }
 
+void flist_channel_print_op_warning(PurpleConversation *convo, const gchar *character, const gchar *message)
+{
+    FListAccount *fla = convo->account->gc->proto_data;
+    gchar *full_message = flist_bbcode_to_html(fla, convo, message);
+    gchar *parsed = g_strdup_printf("<font color=\"red\">[WARNING] %s: %s</font>", character, full_message);
+
+    // /warn should only appear in channels, not private messages
+    if (convo->type == PURPLE_CONV_TYPE_CHAT)
+    {
+        purple_conv_chat_write(PURPLE_CONV_CHAT(convo), character, parsed, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    }
+
+    g_free(full_message);
+    g_free(parsed);
+}
+
 static void flist_who_single(FListAccount *fla, PurpleConversation *convo, FListCharacter *character, gboolean icon) {
     GString *message_str = g_string_new("");
     gchar *message, *parsed_message;

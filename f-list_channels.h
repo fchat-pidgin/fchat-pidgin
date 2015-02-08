@@ -38,6 +38,7 @@ struct FListChannel_ {
 FListFlags flist_get_flags(FListAccount *, const gchar *channel, const gchar *identity);
 
 void flist_channel_print_error(PurpleConversation *convo, const gchar *message);
+void flist_channel_print_op_warning(PurpleConversation *convo, const gchar *character, const gchar *message);
 
 void flist_update_user_chats_offline(PurpleConnection *, const gchar *);
 void flist_update_user_chats_rank(PurpleConnection *, const gchar *);

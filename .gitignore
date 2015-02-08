@@ -2,3 +2,5 @@
 *.dll
 *.swp
 win32
+purple
+*.log

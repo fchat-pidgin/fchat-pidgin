@@ -534,7 +534,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
         local_message = tmp;
     }
     bbcode_message = flist_bbcode_to_html(fla, convo, local_message); /* convert the bbcode to html to display locally */
-    channel = purple_conversation_get_name(convo);
+
     json_object_set_string_member(json, "message", escaped_message);
     json_object_set_string_member(json, "channel", channel);
     flist_request(fla->pc, !ad ? FLIST_REQUEST_CHANNEL_MESSAGE : FLIST_CHANNEL_ADVERSTISEMENT, json);
@@ -545,6 +545,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     g_free(stripped_message);
     g_free(bbcode_message);
     g_free(local_message);
+    json_object_unref(json);
 }
 
 int flist_send_channel_message(PurpleConnection *pc, int id, const char *message, PurpleMessageFlags flags) {
@@ -650,10 +651,33 @@ PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, 
     gchar *fixed_message = flist_fix_newlines(message);
     gchar *extended_message = g_strdup_printf("/warn %s", fixed_message);
 
-    flist_send_channel_message_real(fla, convo, extended_message, FALSE);
+    const gchar *channel = purple_conversation_get_name(convo);
+    FListChannel *fc = flist_channel_find(fla, channel);
 
+    if (!fc || !g_list_find_custom(fc->operators, fla->character, (GCompareFunc) flist_strcmp))
+    {
+        *error = g_strdup("Insufficient permissions.");
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    JsonObject *json = json_object_new();
+    purple_debug_info(FLIST_DEBUG, "Sending warning to channel... (Character: %s) (Channel: %s) (Message: %s)\n",
+        fla->character, channel, message);
+
+    gchar *stripped_message = purple_markup_strip_html(extended_message); /* strip out formatting */
+    gchar *escaped_message = purple_unescape_html(stripped_message); /* unescape the html entities that are left */
+    json_object_set_string_member(json, "message", escaped_message);
+    json_object_set_string_member(json, "channel", channel);
+    flist_request(fla->pc, FLIST_REQUEST_CHANNEL_MESSAGE, json);
+
+    flist_channel_print_op_warning(convo, fla->character, fixed_message);
+
+    g_free(escaped_message);
+    g_free(stripped_message);
     g_free(fixed_message);
     g_free(extended_message);
+    json_object_unref(json);
+
     return PURPLE_CMD_RET_OK;
 }
 
