@@ -100,7 +100,7 @@ install:
 	cp flist.so ${PIDGIN_DIR}
 
 ${TARGET}:	${FLIST_SOURCES}
-	${LINUX_COMPILER} -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
+	${LINUX_COMPILER} -Wall -I. -g -pedantic -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
 
 prepare_cross:
 	./contrib/prepare_cross.sh
