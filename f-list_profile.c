@@ -155,7 +155,7 @@ gboolean flist_process_PRD(PurpleConnection *pc, JsonObject *root) {
 
     key = json_object_get_string_member(root, "key");
     value = json_object_get_string_member(root, "value");
-    g_hash_table_replace(flp->table, g_strdup(key), g_strdup(value));
+    g_hash_table_replace(flp->table, g_strdup(key), purple_unescape_text(value));
 
     purple_debug_info(FLIST_DEBUG, "Profile information received for %s. Key: %s. Value: %s.\n", flp->character, key, value);
 
