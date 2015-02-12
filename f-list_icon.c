@@ -61,7 +61,16 @@ static void flist_fetch_icon_cb(PurpleUtilFetchUrlData *url_data, gpointer data,
                 purple_conv_custom_smiley_close(convo, fli->smiley);
             }
         } else {
-            purple_buddy_icons_set_for_user(fla->pa, character, g_memdup(b, len), len, checksum);
+            // check if the icon is for my account ...
+            if (!purple_utf8_strcasecmp(character, fla->proper_character))
+            {
+                purple_buddy_icons_set_account_icon(fla->pa, g_memdup(b, len), len);
+            }
+            // ... or a buddy
+            else
+            {
+                purple_buddy_icons_set_for_user(fla->pa, character, g_memdup(b, len), len, checksum);
+            }
         }
     }
 
@@ -97,6 +106,11 @@ static void flist_fetch_icon_real(FListAccount *fla, FListFetchIcon *fli) {
 
     g_free(url);
     g_free(character_lower);
+}
+
+void flist_fetch_account_icon(FListAccount *fla)
+{
+    flist_fetch_icon(fla, fla->proper_character);
 }
 
 void flist_fetch_icon(FListAccount *fla, const gchar *character) {

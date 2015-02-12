@@ -24,6 +24,7 @@
 #include "f-list.h"
 
 void flist_fetch_icon(FListAccount *, const gchar *who);
+void flist_fetch_account_icon(FListAccount *fla);
 void flist_fetch_emoticon(FListAccount *, const gchar *smiley, const gchar *who, PurpleConversation *convo);
 void flist_fetch_icon_cancel_all(FListAccount *);
 

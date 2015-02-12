@@ -539,6 +539,9 @@ static gboolean flist_process_IDN(PurpleConnection *pc, JsonObject *root) {
     fla->connection_status = FLIST_ONLINE;
     character = json_object_get_string_member(root, "character");
     fla->proper_character = g_strdup(character);
+
+    flist_fetch_account_icon(fla);
+
     return TRUE;
 }
 static gboolean flist_process_PIN(PurpleConnection *pc, JsonObject *root) {
