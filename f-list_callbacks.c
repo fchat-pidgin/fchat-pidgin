@@ -232,7 +232,11 @@ static gboolean flist_process_STA(PurpleConnection *pc, JsonObject *root) {
             flist_update_user_chats_rank(pc, name);
         }
         if(status_message) {
-            character->status_message = g_markup_escape_text(status_message, -1);
+            if (character->status_message)
+                g_free(character->status_message);
+
+            // The server already escapes HTML entities for us, no need to escape them again
+            character->status_message = g_strdup(status_message);
         }
         flist_update_friend(pc, name, FALSE, FALSE);
     }
@@ -426,7 +430,12 @@ static gboolean flist_process_LIS(PurpleConnection *pc, JsonObject *root) {
         character->name = g_strdup(json_array_get_string_element(character_array, 0));
         character->gender = flist_parse_gender(json_array_get_string_element(character_array, 1));
         character->status = flist_parse_status(json_array_get_string_element(character_array, 2));
-        character->status_message = g_markup_escape_text(json_array_get_string_element(character_array, 3), -1);
+
+        if (character->status_message)
+            g_free(character->status_message);
+
+        // The server already escapes HTML entities for us, no need to escape them again
+        character->status_message = g_strdup(json_array_get_string_element(character_array, 3));
 
         g_hash_table_replace(fla->all_characters, g_strdup(flist_normalize(pa, character->name)), character);
         flist_update_friend(pc, character->name, TRUE, FALSE);
@@ -521,7 +530,6 @@ static gboolean flist_process_TPN(PurpleConnection *pc, JsonObject *root) {
 
     return TRUE;
 }
-
 
 typedef gboolean(*flist_cb_fn)(PurpleConnection *, JsonObject *);
 
