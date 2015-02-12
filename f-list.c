@@ -670,7 +670,7 @@ static PurplePluginInfo info = {
     FLIST_PLUGIN_VERSION,             /* version */
     "F-List Protocol Plugin",         /* summary */
     "F-List Protocol Plugin",         /* description */
-    "TestPanther",         /* author */
+    "TestPanther, Nelwill, Sabhak",         /* author */
     "http://f-list.net/",    /* homepage */
     plugin_load,                     /* load */
     plugin_unload,                     /* unload */
@@ -710,10 +710,6 @@ static void plugin_init(PurplePlugin *plugin) {
 
     option = purple_account_option_bool_new("Use Secure Connections", "use_https", FALSE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-
-//deprecated option
-//    option = purple_account_option_bool_new("Use WebSocket Handshake", "use_websocket_handshake", FALSE);
-//    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Download Friends List", "sync_friends", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
