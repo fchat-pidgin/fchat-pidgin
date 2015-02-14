@@ -159,6 +159,7 @@ FListWebRequestData* flist_web_request(const gchar* url, GHashTable* args, gbool
     ret->user_data = data;
     ret->timer = purple_timeout_add_seconds(FLIST_WEB_REQUEST_TIMEOUT, (GSourceFunc) flist_web_request_timeout, ret);
     g_hash_table_insert(requests, ret, ret);
+    g_free(http);
     g_free(full_url);
     return ret;
 }
