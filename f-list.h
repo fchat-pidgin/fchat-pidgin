@@ -309,6 +309,9 @@ struct FListAccount_ {
     guint ticket_timer;
     FListWebRequestData *ticket_request;
 
+    /* cookies */
+    GHashTable *cookies; //Website cookies, needed for log uploading
+
     /* connection data */
     PurpleSslConnection *ssl_con;
     gchar *rx_buf;

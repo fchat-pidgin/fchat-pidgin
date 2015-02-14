@@ -285,7 +285,7 @@ void flist_get_profile(PurpleConnection *pc, const char *who) {
     } else if(flp->category_table) { /* Try to get the profile through the website API first. */
         GHashTable *args = flist_web_request_args(fla);
         g_hash_table_insert(args, "name", g_strdup(flp->character));
-        flp->profile_request = flist_web_request(JSON_CHARACTER_INFO, args, TRUE, fla->secure, flist_get_profile_cb, fla);
+        flp->profile_request = flist_web_request(JSON_CHARACTER_INFO, args, NULL, TRUE, fla->secure, flist_get_profile_cb, fla);
         g_hash_table_destroy(args);
     } else { /* Try to get the profile through F-Chat. */
         JsonObject *json = json_object_new();
@@ -378,7 +378,7 @@ void flist_profile_load(PurpleConnection *pc) {
     fla->flist_profiles = g_new0(FListProfiles, 1);
     flp = _flist_profiles(fla);
 
-    flp->global_profile_request = flist_web_request(JSON_INFO_LIST, NULL, TRUE, fla->secure, flist_global_profile_cb, fla);
+    flp->global_profile_request = flist_web_request(JSON_INFO_LIST, NULL, NULL, TRUE, fla->secure, flist_global_profile_cb, fla);
 
     FListProfileField *field;
 
