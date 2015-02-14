@@ -378,6 +378,7 @@ struct FListAccount_ {
 #include "f-list_status.h"
 #include "f-list_rtb.h"
 #include "f-list_ignore.h"
+#include "f-list_report.h"
 #include "f-list_util.h"
 #include "f-list_pidgin.h" //TODO: maybe not include this ...
 

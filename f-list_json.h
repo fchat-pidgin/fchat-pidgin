@@ -17,6 +17,8 @@
 #define JSON_INFO_LIST          "www.f-list.net/json/api/info-list.php"
 #define JSON_KINK_LIST          "www.f-list.net/json/api/kink-list.php"
 
+#define JSON_UPLOAD_LOG         "www.f-list.net/fchat/submitLog.php"
+
 typedef void            (*FListWebCallback)       (FListWebRequestData*, gpointer data, JsonObject *, const gchar *error);
 
 FListWebRequestData* flist_web_request(const gchar*, GHashTable*, GHashTable* cookies, gboolean post, gboolean secure, FListWebCallback, gpointer data);

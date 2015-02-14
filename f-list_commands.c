@@ -872,4 +872,7 @@ void flist_init_commands() {
 
     purple_cmd_register("broadcast", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_broadcast_cmd, "broadcast &lt;message&gt;: Sends a broadcast to the server.", NULL);
+
+    purple_cmd_register("report", "s", PURPLE_CMD_P_PRPL, anywhere_flags | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
+        FLIST_PLUGIN_ID, flist_report_cmd, "report &lt;user&gt;: Report misbehavior of user and upload logs of current tab.", NULL);
 }
