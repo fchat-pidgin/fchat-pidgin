@@ -94,7 +94,7 @@ test_linux: prepare_test_linux
 	pidgin -m -c ${TEST_PURPLE_DIR} -d 2>&1 | tee pidgin.log
 
 valgrind_linux: prepare_test_linux
-	valgrind --tool=memcheck --leak-check=yes --leak-resolution=high --num-callers=20 --trace-children=no --child-silent-after-fork=yes --track-fds=yes --track-origins=yes pidgin -m -c ${TEST_PURPLE_DIR} -d 2>&1 | tee valgrind.log
+	valgrind --tool=memcheck --leak-check=yes --leak-resolution=high --num-callers=20 --trace-children=no --child-silent-after-fork=yes --track-fds=yes --track-origins=yes --log-file=valgrind.log pidgin -m -c ${TEST_PURPLE_DIR} -d 
 
 install:
 	cp flist.so ${PIDGIN_DIR}
