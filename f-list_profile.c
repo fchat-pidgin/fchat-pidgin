@@ -54,6 +54,22 @@ static int flist_profile_field_cmp(FListProfileField *field1, FListProfileField 
     return flist_strcmp(field1->name, field2->name);
 }
 
+
+static void flist_profile_field_free(gpointer data) {
+    FListProfileField *pf = data;
+    g_free(pf->fieldid);
+    g_free(pf->name);
+    g_free(pf);
+}
+
+static void flist_profile_field_category_free(gpointer data) {
+    FListProfileFieldCategory *pfc = data;
+    g_free(pfc->name);
+    g_slist_free_full(pfc->fields, flist_profile_field_free);
+    g_free(pfc);
+}
+
+
 static void flist_show_profile(PurpleConnection *pc, const gchar *character, GHashTable *profile,
         gboolean by_id, PurpleNotifyUserInfo *info) {
     FListAccount *fla = pc->proto_data;
@@ -328,7 +344,7 @@ static void flist_global_profile_cb(FListWebRequestData *req_data,
 
     purple_debug_info(FLIST_DEBUG, "Processing global profile fields...\n");
 
-    flp->category_table = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+    flp->category_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, flist_profile_field_category_free);
 
     categories = json_object_get_members(info);
     cur = categories;
@@ -362,7 +378,7 @@ static void flist_global_profile_cb(FListWebRequestData *req_data,
         }
         category->fields = g_slist_sort(category->fields, (GCompareFunc) flist_profile_field_cmp);
         flp->category_list = g_slist_append(flp->category_list, category);
-        g_hash_table_insert(flp->category_table, category->name, category);
+        g_hash_table_insert(flp->category_table, g_strdup(category->name), category);
         cur = g_list_next(cur);
     }
     g_list_free(categories);
@@ -410,7 +426,7 @@ void flist_profile_unload(PurpleConnection *pc) {
     }
 
     if(flp->priority_profile_fields) {
-        g_slist_free(flp->priority_profile_fields);
+        g_slist_free_full(flp->priority_profile_fields, flist_profile_field_free);
         flp->priority_profile_fields = NULL;
     }
 
@@ -442,5 +458,4 @@ void flist_profile_unload(PurpleConnection *pc) {
     if(flp->profile_request) flp->profile_request = NULL;
 
     g_free(flp);
-    //TODO: lots of memory leaks here to cleanup?
 }
