@@ -67,6 +67,8 @@ FLIST_SOURCES = \
 				f-list_status.c \
 				f-list_rtb.c \
 				f-list_ignore.c \
+				f-list_report.c \
+				f-list_util.c \
 				${FLIST_ADDITIONAL_SOURCES}
 
 TARGET = flist.so
@@ -100,7 +102,7 @@ install:
 	cp flist.so ${PIDGIN_DIR}
 
 ${TARGET}:	${FLIST_SOURCES}
-	${LINUX_COMPILER} -Wall -I. -g -pedantic -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
+	${LINUX_COMPILER} -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
 
 prepare_cross:
 	./contrib/prepare_cross.sh

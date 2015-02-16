@@ -18,30 +18,25 @@
  * You should have received a copy of the GNU General Public License
  * along with F-List Pidgin.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FLIST_CONNECTION_H
-#define FLIST_CONNECTION_H
 
-#define WS_FINAL_SEGMENT 0x01
-#define WS_OPCODE_TYPE_CONTINUATION 0x00
-
-#define WS_OPCODE_TYPE_TEXT 1
-#define WS_OPCODE_TYPE_BINARY 2
-#define WS_OPCODE_TYPE_CLOSE 8
-#define WS_OPCODE_TYPE_PING 9
-#define WS_OPCODE_TYPE_PONG 10
+#ifndef FLIST_REPORT_H
+#define FLIST_REPORT_H
 
 #include "f-list.h"
 
-#define HTTP_LOGIN "www.f-list.net/action/script_login.php"
+struct FListReport_ {
+    FListAccount* fla;
+    PurpleConversation *convo;
+    gchar *channel_handle;
+    gchar *channel_pretty;
+    gchar *character;
+    gchar *reason;
+    gchar *log;
+};
 
-const gchar *flist_get_ticket(FListAccount *);
-void flist_request(PurpleConnection *, const gchar *, JsonObject *);
+typedef struct FListReport_ FListReport;
 
-void flist_receive_ping(PurpleConnection *);
-void flist_ticket_timer(FListAccount *, guint);
+PurpleCmdRet flist_report_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data);
+void flist_report_free(FListReport *flr);
 
-void flist_get_cookie_data(FListAccount *fla);
-
-void flist_ticket_init();
-
-#endif
+#endif /* FLIST_REPORT_H */

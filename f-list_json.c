@@ -10,87 +10,6 @@ struct FListWebRequestData_ {
     guint timer;
 };
 
-//TODO: you're supposed to change spaces to "+" values??
-static void g_string_append_cgi(GString *str, GHashTable *table) {
-    GHashTableIter iter;
-    gpointer key, value;
-    gboolean first = TRUE;
-    g_hash_table_iter_init(&iter, table);
-    while(g_hash_table_iter_next(&iter, &key, &value)) {
-        purple_debug_info(FLIST_DEBUG, "cgi writing key, value: %s, %s\n", (gchar *)key, (gchar *)value);
-        if(!first) g_string_append(str, "&");
-        g_string_append_printf(str, "%s", purple_url_encode(key));
-        g_string_append(str, "=");
-        g_string_append_printf(str, "%s", purple_url_encode(value));
-        first = FALSE;
-    }
-}
-
-static void g_string_append_cookies(GString *str, GHashTable *table) {
-    GHashTableIter iter;
-    gpointer key, value;
-    gboolean first = TRUE;
-    g_hash_table_iter_init(&iter, table);
-    while(g_hash_table_iter_next(&iter, &key, &value)) {
-        if(!first) g_string_append(str, " ");
-        g_string_append_printf(str, "%s", purple_url_encode(key));
-        g_string_append(str, "=");
-        g_string_append_printf(str, "%s;", purple_url_encode(value));
-        first = FALSE;
-    }
-}
-
-//mostly shamelessly stolen from pidgin's "util.c"
-static gchar *http_request(const gchar *url, gboolean http11, gboolean post, const gchar *user_agent, GHashTable *req_table, GHashTable *cookie_table) {
-    GString *request_str = g_string_new(NULL);
-    gchar *address = NULL, *page = NULL, *user = NULL, *password = NULL;
-    int port;
-
-    purple_url_parse(url, &address, &port, &page, &user, &password);
-
-    g_string_append_printf(request_str, "%s /%s%s", (post ? "POST" : "GET"), page, (!post && req_table ? "?" : ""));
-    if(req_table && !post) g_string_append_cgi(request_str, req_table);
-    g_string_append_printf(request_str, " HTTP/%s\r\n", (http11 ? "1.1" : "1.0"));
-    g_string_append_printf(request_str, "Connection: close\r\n");
-    if(user_agent) g_string_append_printf(request_str, "User-Agent: %s\r\n", user_agent);
-    g_string_append_printf(request_str, "Accept: */*\r\n");
-    g_string_append_printf(request_str, "Host: %s\r\n", address);
-
-    if(cookie_table) {
-        g_string_append(request_str, "Cookie: ");
-        g_string_append_cookies(request_str, cookie_table);
-        g_string_append(request_str, "\r\n");
-    }
-
-    if(post) {
-        GString *post_str = g_string_new(NULL);
-        gchar *post = NULL;
-
-        if(req_table) g_string_append_cgi(post_str, req_table);
-
-        post = g_string_free(post_str, FALSE);
-
-        purple_debug_info(FLIST_DEBUG, "posting (len: %" G_GSIZE_FORMAT "): %s\n", strlen(post), post);
-
-        g_string_append(request_str, "Content-Type: application/x-www-form-urlencoded\r\n");
-        g_string_append_printf(request_str, "Content-Length: %" G_GSIZE_FORMAT "\r\n", strlen(post));
-        g_string_append(request_str, "\r\n");
-
-        g_string_append(request_str, post);
-
-        g_free(post);
-    } else {
-        g_string_append(request_str, "\r\n");
-    }
-
-    if(address) g_free(address);
-    if(page) g_free(page);
-    if(user) g_free(user);
-    if(password) g_free(password);
-
-    return g_string_free(request_str, FALSE);
-}
-
 GHashTable* requests; //TODO: Replace this with a simple list, perhaps?
 
 void flist_web_request_cancel(FListWebRequestData *req_data) {
@@ -149,9 +68,9 @@ gboolean flist_web_request_timeout(gpointer data) {
     return FALSE;
 }
 
-FListWebRequestData* flist_web_request(const gchar* url, GHashTable* args, gboolean post, gboolean secure, FListWebCallback cb, gpointer data) {
+FListWebRequestData* flist_web_request(const gchar* url, GHashTable* args, GHashTable *cookies, gboolean post, gboolean secure, FListWebCallback cb, gpointer data) {
     gchar *full_url = g_strdup_printf("%s%s", secure ? "https://" : "http://", url);
-    gchar *http = http_request(full_url, TRUE, post, USER_AGENT, args, NULL);
+    gchar *http = http_request(full_url, TRUE, post, USER_AGENT, args, cookies);
     FListWebRequestData *ret = g_new0(FListWebRequestData, 1);
     PurpleUtilFetchUrlData *url_data = purple_util_fetch_url_request(full_url, FALSE, USER_AGENT, FALSE, http, FALSE, flist_web_request_cb, ret);
     ret->url_data = url_data;

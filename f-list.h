@@ -99,6 +99,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_CHANNEL_ADD_OP                    "COA"
 #define FLIST_CHANNEL_REMOVE_OP                 "COR"
 #define FLIST_CHANNEL_CREATE                    "CCR"
+#define FLIST_CHANNEL_TIMEOUT                   "CTU"
 #define FLIST_SET_CHANNEL_DESCRIPTION           "CDS"
 #define FLIST_SET_CHANNEL_STATUS                "RST"
 #define FLIST_SET_STATUS                        "STA"
@@ -115,6 +116,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_NOTIFY_TYPING                     "TPN"
 #define FLIST_CHANNEL_GET_BANLIST               "CBL"
 #define FLIST_IGNORE                            "IGN"
+#define FLIST_ALERT_STAFF                       "SFC"
 
 /* admin commands */
 #define FLIST_ADD_GLOBAL_OPERATOR               "AOP"
@@ -309,6 +311,9 @@ struct FListAccount_ {
     guint ticket_timer;
     FListWebRequestData *ticket_request;
 
+    /* cookies */
+    GHashTable *cookies; //Website cookies, needed for log uploading
+
     /* connection data */
     PurpleSslConnection *ssl_con;
     gchar *rx_buf;
@@ -375,6 +380,8 @@ struct FListAccount_ {
 #include "f-list_status.h"
 #include "f-list_rtb.h"
 #include "f-list_ignore.h"
+#include "f-list_report.h"
+#include "f-list_util.h"
 #include "f-list_pidgin.h" //TODO: maybe not include this ...
 
 #endif

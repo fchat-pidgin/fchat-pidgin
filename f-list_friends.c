@@ -201,20 +201,20 @@ gboolean flist_friend_action(FListAccount *fla, const gchar *name, FListFriendsR
     case FLIST_FRIEND_REQUEST:
         g_hash_table_insert(args, "source_name", g_strdup(fla->character));
         g_hash_table_insert(args, "dest_name", g_strdup(name));
-        req->req_data = flist_web_request(JSON_FRIENDS_REQUEST, args, TRUE, fla->secure, flist_friends_action_cb, req);
+        req->req_data = flist_web_request(JSON_FRIENDS_REQUEST, args, NULL, TRUE, fla->secure, flist_friends_action_cb, req);
         flf->outgoing_requests_dirty = TRUE;
         break;
     case FLIST_FRIEND_REMOVE:
         g_hash_table_insert(args, "source_name", g_strdup(fla->character));
         g_hash_table_insert(args, "dest_name", g_strdup(name));
-        req->req_data = flist_web_request(JSON_FRIENDS_REMOVE, args, TRUE, fla->secure, flist_friends_action_cb, req);
+        req->req_data = flist_web_request(JSON_FRIENDS_REMOVE, args, NULL, TRUE, fla->secure, flist_friends_action_cb, req);
         flf->friends_dirty = TRUE;
         break;
     case FLIST_FRIEND_AUTHORIZE:
         if(!friend) break;
         g_hash_table_insert(args, "request_id", g_strdup_printf("%d", friend->code));
         req->code = friend->code;
-        req->req_data = flist_web_request(JSON_FRIENDS_ACCEPT, args, TRUE, fla->secure, flist_friends_action_cb, req);
+        req->req_data = flist_web_request(JSON_FRIENDS_ACCEPT, args, NULL, TRUE, fla->secure, flist_friends_action_cb, req);
         flf->incoming_requests_dirty = TRUE;
         flf->friends_dirty = TRUE;
         break;
@@ -222,25 +222,25 @@ gboolean flist_friend_action(FListAccount *fla, const gchar *name, FListFriendsR
         if(!friend) break;
         g_hash_table_insert(args, "request_id", g_strdup_printf("%d", friend->code));
         req->code = friend->code;
-        req->req_data = flist_web_request(JSON_FRIENDS_DENY, args, TRUE, fla->secure, flist_friends_action_cb, req);
+        req->req_data = flist_web_request(JSON_FRIENDS_DENY, args, NULL, TRUE, fla->secure, flist_friends_action_cb, req);
         flf->incoming_requests_dirty = TRUE;
         break;
     case FLIST_FRIEND_CANCEL:
         if(!friend) break;
         g_hash_table_insert(args, "request_id", g_strdup_printf("%d", friend->code));
         req->code = friend->code;
-        req->req_data = flist_web_request(JSON_FRIENDS_CANCEL, args, TRUE, fla->secure, flist_friends_action_cb, req);
+        req->req_data = flist_web_request(JSON_FRIENDS_CANCEL, args, NULL, TRUE, fla->secure, flist_friends_action_cb, req);
         flf->outgoing_requests_dirty = TRUE;
         break;
     case FLIST_BOOKMARK_ADD:
         if(g_hash_table_lookup(flf->cannot_bookmark, name)) break; /* We cannot bookmark some users. Move on. */
         g_hash_table_insert(args, "name", g_strdup(name));
-        req->req_data = flist_web_request(JSON_BOOKMARK_ADD, args, TRUE, fla->secure, flist_friends_action_cb, req);
+        req->req_data = flist_web_request(JSON_BOOKMARK_ADD, args, NULL, TRUE, fla->secure, flist_friends_action_cb, req);
         flf->bookmarks_dirty = TRUE;
         break;
     case FLIST_BOOKMARK_REMOVE:
         g_hash_table_insert(args, "name", g_strdup(name));
-        req->req_data = flist_web_request(JSON_BOOKMARK_REMOVE, args, TRUE, fla->secure, flist_friends_action_cb, req);
+        req->req_data = flist_web_request(JSON_BOOKMARK_REMOVE, args, NULL, TRUE, fla->secure, flist_friends_action_cb, req);
         flf->bookmarks_dirty = TRUE;
         break;
     default: break;
@@ -541,7 +541,7 @@ static gboolean flist_friends_sync_timer_cb(gpointer data) {
     /* Request the update. */
     req = g_new0(FListFriendsRequest, 1);
     req->fla = fla; req->automatic = TRUE; req->type = FLIST_FRIENDS_UPDATE;
-    req->req_data = flist_web_request(JSON_FRIENDS, args, TRUE, fla->secure, flist_friends_update_cb, req);
+    req->req_data = flist_web_request(JSON_FRIENDS, args, NULL, TRUE, fla->secure, flist_friends_update_cb, req);
     flf->update_request = req;
     flf->update_timer_active = FALSE;
 

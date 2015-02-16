@@ -917,6 +917,47 @@ PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *convo, const gchar *cm
     return PURPLE_CMD_RET_OK;
 }
 
+PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
+
+    PurpleConvChatBuddyFlags flags = flist_flags_lookup(fla, convo, fla->proper_character);
+    if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER | PURPLE_CBFLAGS_HALFOP))) {
+        *error = g_strdup(_("You must be a channel or global operator to timeban."));
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    gchar **split = g_strsplit(args[0], ",", 2);
+    guint count = g_strv_length(split);
+
+    if(count < 2) {
+        g_strfreev(split);
+        *error = g_strdup(_("You must enter a character and a time."));
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    const gchar *channel = purple_conversation_get_name(convo);
+    gchar *character = split[0];
+    gchar *time = g_strchug(split[1]);
+
+    gchar *endptr;
+    gulong time_parsed = strtoul(time, &endptr, 10);
+    if(time_parsed == 0 || endptr != time + strlen(time)) {
+        g_strfreev(split);
+        *error = g_strdup(_("You must enter a valid length of time."));
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    JsonObject *json = json_object_new();
+    json_object_set_string_member(json, "channel", channel);
+    json_object_set_string_member(json, "character", character);
+    json_object_set_string_member(json, "length", time);
+    flist_request(pc, FLIST_CHANNEL_TIMEOUT, json);
+    json_object_unref(json);
+
+    return PURPLE_CMD_RET_OK;
+}
+
 static void flist_channel_destroy(void *p) {
     FListChannel *fchannel = (FListChannel *) p;
     g_free(fchannel->name);

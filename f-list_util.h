@@ -18,30 +18,13 @@
  * You should have received a copy of the GNU General Public License
  * along with F-List Pidgin.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FLIST_CONNECTION_H
-#define FLIST_CONNECTION_H
 
-#define WS_FINAL_SEGMENT 0x01
-#define WS_OPCODE_TYPE_CONTINUATION 0x00
-
-#define WS_OPCODE_TYPE_TEXT 1
-#define WS_OPCODE_TYPE_BINARY 2
-#define WS_OPCODE_TYPE_CLOSE 8
-#define WS_OPCODE_TYPE_PING 9
-#define WS_OPCODE_TYPE_PONG 10
+#ifndef FLIST_UTIL_H
+#define FLIST_UTIL_H
 
 #include "f-list.h"
 
-#define HTTP_LOGIN "www.f-list.net/action/script_login.php"
-
-const gchar *flist_get_ticket(FListAccount *);
-void flist_request(PurpleConnection *, const gchar *, JsonObject *);
-
-void flist_receive_ping(PurpleConnection *);
-void flist_ticket_timer(FListAccount *, guint);
-
-void flist_get_cookie_data(FListAccount *fla);
-
-void flist_ticket_init();
+gchar *http_request(const gchar *url, gboolean http11, gboolean post, const gchar *user_agent, GHashTable *req_table, GHashTable *cookie_table);
+void flist_parse_cookies_into_hash_table(const gchar *header, gsize len, GHashTable *hash_table);
 
 #endif

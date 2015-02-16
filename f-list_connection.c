@@ -510,12 +510,43 @@ static gboolean flist_ticket_timer_cb(gpointer data) {
     g_hash_table_insert(args, "password", g_strdup(fla->password));
 
     purple_debug_info(FLIST_DEBUG, "Requesting ticket... (Account: %s) (Character: %s)\n", fla->username, fla->character);
-    fla->ticket_request = flist_web_request(JSON_GET_TICKET, args, TRUE, fla->secure, flist_receive_ticket, fla);
+    fla->ticket_request = flist_web_request(JSON_GET_TICKET, args, NULL, TRUE, fla->secure, flist_receive_ticket, fla);
     fla->ticket_timer = 0;
 
     g_hash_table_destroy(args);
 
+    // After fetching our ticket, get precious cookies
+    flist_get_cookie_data(fla);
+
     return FALSE;
+}
+
+void flist_get_cookie_data_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message) {
+    FListAccount *fla = user_data;
+    fla->cookies = g_hash_table_new(g_str_hash, g_str_equal);
+    flist_parse_cookies_into_hash_table(url_text, len, fla->cookies);
+
+    purple_debug_info(FLIST_DEBUG, "Got cookies for account '%s'!\n", fla->username);
+}
+
+/* This logs into f-list.net to retrieve cookie information.
+ * We need that later to be able to upload logs when reporting users
+ */
+void flist_get_cookie_data(FListAccount *fla) {
+    gchar *full_url = g_strdup_printf("%s%s", fla->secure ? "https://" : "http://", HTTP_LOGIN);
+
+    GHashTable *args = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
+    g_hash_table_insert(args, "username", g_strdup(fla->username));
+    g_hash_table_insert(args, "password", g_strdup(fla->password));
+
+    gchar *http = http_request(full_url, TRUE, TRUE, USER_AGENT, args, NULL);
+
+    // performs HTTP GET and calls flist_get_cookie_data_cb with the response, containing headers
+    // TODO what to do with url_data? I don't need it.
+    PurpleUtilFetchUrlData *url_data = purple_util_fetch_url_request(full_url, FALSE, USER_AGENT, FALSE, http, TRUE, flist_get_cookie_data_cb, fla);
+
+    g_free(full_url);
+    g_hash_table_destroy(args);
 }
 
 void flist_ticket_timer(FListAccount *fla, guint timeout) {

@@ -715,8 +715,10 @@ PurpleCmdRet flist_status_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     FListStatus status;
     gchar *status_message;
 
-    if (args[0] == NULL) 
+    if (args[0] == NULL) {
+        *error = g_strdup(_("Syntax is /status condition message. Condition can be one of : online, looking, busy, dnd, away. Message is optional, and will be emptied if not provided"));
         return PURPLE_CMD_RET_FAILED;
+    }
 
     status = flist_parse_status(args[0]);
 
@@ -828,6 +830,8 @@ void flist_init_commands() {
         FLIST_PLUGIN_ID, flist_channel_op_deop_cmd, "cop &lt;character&gt: Adds an operator to the current channel.", NULL);
     purple_cmd_register("cdeop", "s", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_op_deop_cmd, "cdeop &lt;character&gt: Removes an operator from the current channel.", NULL);
+    purple_cmd_register("ctimeout", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
+        FLIST_PLUGIN_ID, flist_channel_timeout_cmd, "ctimeout &lt;character&gt;, &lt;time&gt;: Temporarily bans a user from a channel.", NULL);
 
     purple_cmd_register("search", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_filter_cmd, "search: Opens the character search form.", NULL);
@@ -872,4 +876,7 @@ void flist_init_commands() {
 
     purple_cmd_register("broadcast", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_broadcast_cmd, "broadcast &lt;message&gt;: Sends a broadcast to the server.", NULL);
+
+    purple_cmd_register("report", "s", PURPLE_CMD_P_PRPL, anywhere_flags | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
+        FLIST_PLUGIN_ID, flist_report_cmd, "report &lt;user&gt;: Report misbehavior of user and upload logs of current tab.", NULL);
 }
