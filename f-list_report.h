@@ -27,7 +27,8 @@
 struct FListReport_ {
     FListAccount* fla;
     PurpleConversation *convo;
-    gchar *channel;
+    gchar *channel_handle;
+    gchar *channel_pretty;
     gchar *character;
     gchar *reason;
     gchar *log;

@@ -115,6 +115,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_NOTIFY_TYPING                     "TPN"
 #define FLIST_CHANNEL_GET_BANLIST               "CBL"
 #define FLIST_IGNORE                            "IGN"
+#define FLIST_ALERT_STAFF                       "SFC"
 
 /* admin commands */
 #define FLIST_ADD_GLOBAL_OPERATOR               "AOP"
