@@ -105,7 +105,7 @@ static void flist_report_cb(gpointer user_data, PurpleRequestFields *fields) {
     flist_web_request(JSON_UPLOAD_LOG, args, flr->fla->cookies, TRUE, flr->fla->secure, flist_upload_log_cb, flr);
 
     g_hash_table_destroy(args);
-    flist_g_list_free_full(logs, g_free);
+    g_list_free(logs);
 }
 
 static void flist_report_cancel_cb(gpointer user_data) {
