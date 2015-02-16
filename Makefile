@@ -68,6 +68,7 @@ FLIST_SOURCES = \
 				f-list_rtb.c \
 				f-list_ignore.c \
 				f-list_report.c \
+				f-list_util.c \
 				${FLIST_ADDITIONAL_SOURCES}
 
 TARGET = flist.so
