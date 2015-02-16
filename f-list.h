@@ -99,6 +99,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_CHANNEL_ADD_OP                    "COA"
 #define FLIST_CHANNEL_REMOVE_OP                 "COR"
 #define FLIST_CHANNEL_CREATE                    "CCR"
+#define FLIST_CHANNEL_TIMEOUT                   "CTU"
 #define FLIST_SET_CHANNEL_DESCRIPTION           "CDS"
 #define FLIST_SET_CHANNEL_STATUS                "RST"
 #define FLIST_SET_STATUS                        "STA"

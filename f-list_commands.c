@@ -828,6 +828,8 @@ void flist_init_commands() {
         FLIST_PLUGIN_ID, flist_channel_op_deop_cmd, "cop &lt;character&gt: Adds an operator to the current channel.", NULL);
     purple_cmd_register("cdeop", "s", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_op_deop_cmd, "cdeop &lt;character&gt: Removes an operator from the current channel.", NULL);
+    purple_cmd_register("ctimeout", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
+        FLIST_PLUGIN_ID, flist_channel_timeout_cmd, "ctimeout &lt;character&gt;, &lt;time&gt;: Temporarily bans a user from a channel.", NULL);
 
     purple_cmd_register("search", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_filter_cmd, "search: Opens the character search form.", NULL);

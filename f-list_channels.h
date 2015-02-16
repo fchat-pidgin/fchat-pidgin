@@ -75,6 +75,7 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *, const gchar *, gc
 PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_make_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
+PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data);
 
 gboolean flist_process_COL(PurpleConnection *, JsonObject *);
 gboolean flist_process_JCH(PurpleConnection *, JsonObject *);
