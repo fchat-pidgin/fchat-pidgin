@@ -31,7 +31,8 @@ struct FListReport_ {
     gchar *channel_pretty;
     gchar *character;
     gchar *reason;
-    gchar *log;
+    gchar *log_text;
+    gchar *log_id;
 };
 
 typedef struct FListReport_ FListReport;

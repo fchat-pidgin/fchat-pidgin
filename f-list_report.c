@@ -21,7 +21,36 @@
 
 #include "f-list_report.h"
 
-static void flist_upload_log_cb(FListWebRequestData* req_data, gpointer user_data,
+void flist_report_alert_staff(FListReport *flr) {
+    gchar *report_message = g_strdup_printf("Current Tab/Channel: %s | Reporting User: %s | %s", flr->channel_pretty, flr->fla->proper_character, flr->reason);
+
+    // log uploaded succesfully, let's alert staff now.
+    JsonObject *json = json_object_new();
+    json_object_set_string_member(json, "action", "report");
+    json_object_set_string_member(json, "report", report_message);
+    json_object_set_string_member(json, "character", flr->character);
+
+    // Append log_id if we uploaded a log for ths report
+    if (flr->log_id)
+        json_object_set_string_member(json, "logid", flr->log_id);
+
+    flist_request(flr->fla->pc, FLIST_ALERT_STAFF, json);
+    json_object_unref(json);
+    g_free(report_message);
+
+    purple_debug_info(FLIST_DEBUG, "Staff alert sent!\n");
+
+    gchar *message;
+    if (flr->log_id)
+        message = g_strdup_printf("Your report against '%s' has been sent (ID %s), staff has been alerted.", flr->character, flr->log_id);
+    else
+        message = g_strdup_printf("Your report against '%s' has been sent, Staff has been alerted.", flr->character);
+
+    purple_conversation_write(flr->convo, NULL, message, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    g_free(message);
+}
+
+static void flist_report_upload_log_cb(FListWebRequestData* req_data, gpointer user_data,
         JsonObject *root, const gchar *error_message) {
 
     FListReport *flr = (FListReport*)user_data;
@@ -44,33 +73,18 @@ static void flist_upload_log_cb(FListWebRequestData* req_data, gpointer user_dat
     if (log_id && strlen(log_id))
     {
         purple_debug_info(FLIST_DEBUG, "Log upload succesful (id: %s), now alerting staff.\n", log_id);
-
-        gchar *report_message = g_strdup_printf("Current Tab/Channel: %s | Reporting User: %s | %s", flr->channel_pretty, flr->fla->proper_character, flr->reason);
-        // log uploaded succesfully, let's alert staff now.
-        JsonObject *json = json_object_new();
-        json_object_set_string_member(json, "action", "report");
-        json_object_set_string_member(json, "report", report_message);
-        json_object_set_string_member(json, "character", flr->character);
-        json_object_set_string_member(json, "logid", log_id);
-        flist_request(flr->fla->pc, FLIST_ALERT_STAFF, json);
-        json_object_unref(json);
-        g_free(report_message);
-
-        purple_debug_info(FLIST_DEBUG, "Staff alert sent!\n");
-
-        gchar *message = g_strdup_printf("Your report against '%s' has been uploaded (ID %s), staff has been alerted.", flr->character, log_id);
-        purple_conversation_write(flr->convo, NULL, message, PURPLE_MESSAGE_SYSTEM, time(NULL));
-        g_free(message);
-
+        flr->log_id = g_strdup(log_id);
+        flist_report_alert_staff(flr);
         flist_report_free(user_data);
+        return;
     }
+
+    // This should only happen with a broken server implmenetation
+    purple_debug_warning(FLIST_DEBUG, "Log upload failed, server did not respond with a log id!\n");
+    flist_report_free(flr);
 }
 
-static void flist_report_cb(gpointer user_data, PurpleRequestFields *fields) {
-    FListReport *flr = user_data;
-    flr->reason = g_strdup(purple_request_fields_get_string(fields, "reason"));
-    flr->character = g_strdup(purple_request_fields_get_string(fields, "character"));
-
+void flist_report_send(FListReport *flr) {
     GList *logs, *current_log;
     PurpleLogType log_type = flr->convo->type == PURPLE_CONV_TYPE_CHAT ? PURPLE_LOG_CHAT : PURPLE_LOG_IM;
 
@@ -85,30 +99,39 @@ static void flist_report_cb(gpointer user_data, PurpleRequestFields *fields) {
         return;
     }
 
-    // The newest (current) log is the first one
+    // The newest (current) log is always the first one
     current_log = g_list_first(logs);
 
     // Read its contents and strip HTML tags
     gchar *log_text = purple_log_read(current_log->data, 0);
-    flr->log = purple_markup_strip_html(log_text);
+    flr->log_text = purple_markup_strip_html(log_text);
     g_free(log_text);
 
-    purple_debug_info(FLIST_DEBUG, "User filed a report against '%s': '%s'\n------------- LOG -------------\n%s\n-----------------------------\n", flr->character, flr->reason, flr->log);
+    purple_debug_info(FLIST_DEBUG, "User filed a report against '%s': '%s'\n------------- LOG -------------\n%s\n-----------------------------\n", flr->character, flr->reason, flr->log_text);
 
     // Fire web request to upload our log
     GHashTable *args = flist_web_request_args(flr->fla);
     g_hash_table_insert(args, "character", g_strdup(flr->fla->proper_character));
-    g_hash_table_insert(args, "log", g_strdup(flr->log));
+    g_hash_table_insert(args, "log", g_strdup(flr->log_text));
     g_hash_table_insert(args, "reportText", g_strdup(flr->reason));
     g_hash_table_insert(args, "reportUser", g_strdup(flr->character));
     g_hash_table_insert(args, "channel", g_strdup(flr->channel_pretty));
-    flist_web_request(JSON_UPLOAD_LOG, args, flr->fla->cookies, TRUE, flr->fla->secure, flist_upload_log_cb, flr);
+    flist_web_request(JSON_UPLOAD_LOG, args, flr->fla->cookies, TRUE, flr->fla->secure, flist_report_upload_log_cb, flr);
 
     g_hash_table_destroy(args);
     g_list_free(logs);
+
 }
 
-static void flist_report_cancel_cb(gpointer user_data) {
+static void flist_report_ui_ok_cb(gpointer user_data, PurpleRequestFields *fields) {
+    FListReport *flr = user_data;
+    flr->reason = g_strdup(purple_request_fields_get_string(fields, "reason"));
+    flr->character = g_strdup(purple_request_fields_get_string(fields, "character"));
+
+    flist_report_send(flr);
+}
+
+static void flist_report_ui_cancel_cb(gpointer user_data) {
     FListReport *flr = user_data;
     flist_report_free(flr);
 }
@@ -119,26 +142,19 @@ void flist_report_free(FListReport *flr)
     g_free(flr->channel_handle);
     g_free(flr->character);
     g_free(flr->reason);
-    g_free(flr->log);
+    g_free(flr->log_text);
+    g_free(flr->log_id);
     g_free(flr);
 }
 
-PurpleCmdRet flist_report_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    PurpleConnection *pc = purple_conversation_get_gc(convo);
-    FListAccount *fla = pc->proto_data;
-
-    if (convo->type != PURPLE_CONV_TYPE_CHAT && convo->type != PURPLE_CONV_TYPE_IM)
-    {
-        *error = g_strdup("You can use /report only in channels and private conversations!");
-        return PURPLE_CMD_RET_FAILED;
-    }
-
-    // Reportee can be passed as argument
-    gchar *character = args[0];
+FListReport *flist_report_new(FListAccount *fla, PurpleConversation *convo, const gchar *reported_character, const gchar* reason) {
     FListReport *flr = g_new0(FListReport, 1);
     flr->fla = fla;
     flr->convo = convo;
+    flr->character = g_strdup(reported_character);
+    flr->reason = g_strdup(reason);
 
+    // Conversation is a channel
     if (convo->type == PURPLE_CONV_TYPE_CHAT)
     {
         const gchar *convo_name = purple_conversation_get_name(convo);
@@ -151,12 +167,17 @@ PurpleCmdRet flist_report_cmd(PurpleConversation *convo, const gchar *cmd, gchar
         else
             flr->channel_pretty = g_strdup(fchannel->name);
     }
+    // Conversastion is a private message
     else if (convo->type == PURPLE_CONV_TYPE_IM)
     {
         flr->channel_handle = g_strdup(purple_conversation_get_name(convo));
         flr->channel_pretty = g_strdup(flr->channel_handle);
     }
 
+    return flr;
+}
+
+void flist_report_display_ui(FListReport *flr) {
     // Set up report UI
     PurpleRequestFields *fields;
     PurpleRequestFieldGroup *group;
@@ -166,19 +187,67 @@ PurpleCmdRet flist_report_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     fields = purple_request_fields_new();
     purple_request_fields_add_group(fields, group);
 
-    field = purple_request_field_string_new("reason", "What's your problem? Be brief.", "", TRUE);
+    field = purple_request_field_string_new("reason", "What's your problem? Be brief.", flr->reason, TRUE);
     purple_request_field_set_required(field, TRUE);
     purple_request_field_group_add_field(group, field);
 
-    field = purple_request_field_string_new("character", "Reported character", character, FALSE);
+    field = purple_request_field_string_new("character", "Reported character", flr->character, FALSE);
     purple_request_field_set_required(field, TRUE);
     purple_request_field_group_add_field(group, field);
     
-    purple_request_fields(fla->pc, _("Alert Staff"), _("Before you alert the moderators, PLEASE READ:"), _("If you're just having personal trouble with someone, right-click their name and ignore them. Moderators enforce the rules of the chat. If what you're reporting is not a violation of the rules, NOBODY WILL DO A THING."),
+    purple_request_fields(flr->fla->pc, _("Alert Staff"), _("Before you alert the moderators, PLEASE READ:"), _("If you're just having personal trouble with someone, right-click their name and ignore them. Moderators enforce the rules of the chat. If what you're reporting is not a violation of the rules, NOBODY WILL DO A THING."),
         fields,
-        _("OK"), G_CALLBACK(flist_report_cb),
-        _("Cancel"), G_CALLBACK(flist_report_cancel_cb),
-        fla->pa, NULL, NULL, flr);
+        _("OK"), G_CALLBACK(flist_report_ui_ok_cb),
+        _("Cancel"), G_CALLBACK(flist_report_ui_cancel_cb),
+        flr->fla->pa, NULL, NULL, flr);
+}
 
+PurpleCmdRet flist_report_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
+
+    if (convo->type != PURPLE_CONV_TYPE_CHAT && convo->type != PURPLE_CONV_TYPE_IM)
+    {
+        *error = g_strdup("You can use /report only in channels and private conversations!");
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    gchar *character = NULL, *reason = NULL;
+
+    gchar **split = g_strsplit(args[0], ",", 2);
+    guint count = g_strv_length(split);
+
+    // We got character and reason
+    if (count == 2)
+    {
+        character = split[0];
+        reason = g_strchug(split[1]);
+    }
+    // We only got characte
+    else if (count == 1)
+    {
+        character = split[0];
+    }
+    // We got something we did not expect
+    else if (count >= 3)
+    {
+        g_strfreev(split);
+        *error = g_strdup(_("Either use /report &lt;character&rt;,&lt;reason&rt; to directly send report or use /report &lt;character&r or just /report to open a dialog."));
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    FListReport *flr = flist_report_new(fla, convo, character, reason);
+
+    // When both character and reason are set we don't need to display the UI
+    if (character && reason)
+    {
+        flist_report_send(flr);
+    }
+    else
+    {
+        flist_report_display_ui(flr);
+    }
+
+    g_strfreev(split);
     return PURPLE_CMD_RET_OK;
 }
