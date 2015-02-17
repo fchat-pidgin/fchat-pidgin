@@ -846,13 +846,24 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
     }
 
     channel = purple_conversation_get_name(convo);
-    topic = args[0];
 
-    json = json_object_new();
-    json_object_set_string_member(json, "channel", channel);
-    json_object_set_string_member(json, "description", topic);
-    flist_request(pc, FLIST_SET_CHANNEL_DESCRIPTION, json);
-    json_object_unref(json);
+    if (args[0])
+    {
+        topic = args[0];
+
+        json = json_object_new();
+        json_object_set_string_member(json, "channel", channel);
+        json_object_set_string_member(json, "description", topic);
+        flist_request(pc, FLIST_SET_CHANNEL_DESCRIPTION, json);
+        json_object_unref(json);
+    }
+    else
+    {
+        FListChannel *flc = flist_channel_find(fla, channel);
+        g_return_val_if_fail(flc != NULL, PURPLE_CMD_RET_FAILED);
+
+        flist_channel_display_topic_ui(convo, flc->topic);
+    }
 
     //TODO: don't allow this on public channels? (or do we?)
     return PURPLE_CMD_RET_OK;
@@ -992,4 +1003,45 @@ void flist_channel_subsystem_load(FListAccount *fla) {
 void flist_channel_subsystem_unload(FListAccount *fla) {
     g_hash_table_destroy(fla->chat_timestamp);
     g_hash_table_destroy(fla->chat_table);
+}
+
+/* Channel Topic UI */
+static void flist_channel_topic_ui_ok_cb(gpointer user_data, PurpleRequestFields *fields) {
+    PurpleConversation *convo = user_data;
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    const gchar *channel = purple_conversation_get_name(convo);
+
+    const gchar *topic = purple_request_fields_get_string(fields, "topic");
+    JsonObject *json = json_object_new();
+    json_object_set_string_member(json, "channel", channel);
+    json_object_set_string_member(json, "description", topic);
+    flist_request(pc, FLIST_SET_CHANNEL_DESCRIPTION, json);
+    json_object_unref(json);
+
+    // TODO test if we actually need this. If we do, add this to all other UI handlers in the plugin
+    purple_request_fields_destroy(fields);
+}
+
+void flist_channel_display_topic_ui(PurpleConversation *convo, const gchar *current_topic) {
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    PurpleAccount *pa = purple_connection_get_account(pc);
+
+    // Set up report UI
+    PurpleRequestFields *fields;
+    PurpleRequestFieldGroup *group;
+    PurpleRequestField *field;
+
+    group = purple_request_field_group_new("Channel Description");
+    fields = purple_request_fields_new();
+    purple_request_fields_add_group(fields, group);
+
+    field = purple_request_field_string_new("topic", "", current_topic, TRUE);
+    purple_request_field_set_required(field, TRUE);
+    purple_request_field_group_add_field(group, field);
+
+    purple_request_fields(pc, _("Edit Channel Description"), _(""), _("You can use BBCode in the description."),
+        fields,
+        _("OK"), G_CALLBACK(flist_channel_topic_ui_ok_cb),
+        _("Cancel"), NULL, /* we don't need a cancel callback */
+        pa, NULL, NULL, convo);
 }
