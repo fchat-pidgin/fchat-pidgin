@@ -810,7 +810,7 @@ void flist_init_commands() {
     purple_cmd_register("makeroom", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_channel_make_cmd, "makeroom &lt;channel&gt;: Creates a private channel.", NULL);
 
-    purple_cmd_register("setdescription", "s", PURPLE_CMD_P_PRPL, channel_flags,
+    purple_cmd_register("setdescription", "s", PURPLE_CMD_P_PRPL, channel_flags | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
         FLIST_PLUGIN_ID, flist_channel_set_topic_cmd, "setdescription &lt;message&gt: Sets the topic for the current channel.", NULL);
     purple_cmd_register("getdescription", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_show_raw_topic_cmd, "getdescripton: Shows the unparsed topic for the current channel.", NULL);
