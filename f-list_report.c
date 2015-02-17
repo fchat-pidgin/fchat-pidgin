@@ -123,19 +123,6 @@ void flist_report_send(FListReport *flr) {
 
 }
 
-static void flist_report_ui_ok_cb(gpointer user_data, PurpleRequestFields *fields) {
-    FListReport *flr = user_data;
-    flr->reason = g_strdup(purple_request_fields_get_string(fields, "reason"));
-    flr->character = g_strdup(purple_request_fields_get_string(fields, "character"));
-
-    flist_report_send(flr);
-}
-
-static void flist_report_ui_cancel_cb(gpointer user_data) {
-    FListReport *flr = user_data;
-    flist_report_free(flr);
-}
-
 void flist_report_free(FListReport *flr)
 {
     g_free(flr->channel_pretty);
@@ -176,6 +163,20 @@ FListReport *flist_report_new(FListAccount *fla, PurpleConversation *convo, cons
 
     return flr;
 }
+
+static void flist_report_ui_ok_cb(gpointer user_data, PurpleRequestFields *fields) {
+    FListReport *flr = user_data;
+    flr->reason = g_strdup(purple_request_fields_get_string(fields, "reason"));
+    flr->character = g_strdup(purple_request_fields_get_string(fields, "character"));
+
+    flist_report_send(flr);
+}
+
+static void flist_report_ui_cancel_cb(gpointer user_data) {
+    FListReport *flr = user_data;
+    flist_report_free(flr);
+}
+
 
 void flist_report_display_ui(FListReport *flr) {
     // Set up report UI
