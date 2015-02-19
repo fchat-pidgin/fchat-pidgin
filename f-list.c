@@ -619,7 +619,7 @@ static PurplePluginProtocolInfo prpl_info = {
     NULL,                   /* set_permit_deny */
     flist_join_channel,        /* join_chat */
     NULL,                   /* reject chat invite */
-    NULL, //flist_get_channel_name,    /* get_chat_name */
+    flist_get_channel_name, /* get_chat_name */
     NULL,                   /* chat_invite */
     flist_leave_channel,    /* chat_leave */
     NULL,                   /* chat_whisper */

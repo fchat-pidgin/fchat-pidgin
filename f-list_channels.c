@@ -993,3 +993,18 @@ void flist_channel_subsystem_unload(FListAccount *fla) {
     g_hash_table_destroy(fla->chat_timestamp);
     g_hash_table_destroy(fla->chat_table);
 }
+
+char *flist_get_channel_name(GHashTable *components) {
+    char * channel;
+
+    if (components == NULL) {
+        return NULL;
+    }
+
+     channel = (char *)g_hash_table_lookup(components, CHANNEL_COMPONENTS_NAME);
+     if (channel) {
+         return g_strdup(channel);
+     } else {
+         return NULL;
+     }
+}

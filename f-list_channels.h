@@ -60,6 +60,7 @@ GList *flist_channel_list_all(FListAccount *);
 
 void flist_channel_subsystem_load(FListAccount*);
 void flist_channel_subsystem_unload(FListAccount*);
+char *flist_get_channel_name(GHashTable *components);
 
 PurpleCmdRet flist_channel_code_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_oplist_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
