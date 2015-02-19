@@ -1031,9 +1031,6 @@ static void flist_channel_topic_ui_ok_cb(gpointer user_data, PurpleRequestFields
     json_object_set_string_member(json, "description", topic);
     flist_request(pc, FLIST_SET_CHANNEL_DESCRIPTION, json);
     json_object_unref(json);
-
-    // TODO test if we actually need this. If we do, add this to all other UI handlers in the plugin
-    purple_request_fields_destroy(fields);
 }
 
 void flist_channel_display_topic_ui(PurpleConversation *convo, const gchar *current_topic) {
