@@ -118,6 +118,8 @@ void flist_request(PurpleConnection *pc, const gchar* type, JsonObject *object) 
     gchar *to_write;
     gsize to_write_len;
 
+    purple_debug_info(FLIST_DEBUG, "Sending message... (Code: %s)\n", type);
+
     to_write_str = g_string_new(NULL);
     g_string_append(to_write_str, type);
 
