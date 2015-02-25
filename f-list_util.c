@@ -51,9 +51,20 @@ static void g_string_append_cgi(GString *str, GHashTable *table) {
     while(g_hash_table_iter_next(&iter, &key, &value)) {
         purple_debug_info(FLIST_DEBUG, "cgi writing key, value: %s, %s\n", (gchar *)key, (gchar *)value);
         if(!first) g_string_append(str, "&");
-        g_string_append_printf(str, "%s", purple_url_encode(key));
+
+        // We use g_uri_escape_string instead of purple_url_encode 
+        // because the latter only supports strings up to 2048 bytes
+        // (depending on BUF_LEN)
+        gchar *encoded_key = g_uri_escape_string(key, NULL, FALSE);
+        g_string_append_printf(str, "%s", encoded_key);
+        g_free(encoded_key);
+
         g_string_append(str, "=");
-        g_string_append_printf(str, "%s", purple_url_encode(value));
+
+        gchar *encoded_value = g_uri_escape_string(value, NULL, FALSE);
+        g_string_append_printf(str, "%s", encoded_value);
+        g_free(encoded_value);
+
         first = FALSE;
     }
 }
