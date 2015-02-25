@@ -110,7 +110,7 @@ void flist_report_send(FListReport *flr) {
     purple_debug_info(FLIST_DEBUG, "User filed a report against '%s': '%s'\n------------- LOG -------------\n%s\n-----------------------------\n", flr->character, flr->reason, flr->log_text);
 
     // Fire web request to upload our log
-    GHashTable *args = flist_web_request_args(flr->fla);
+    GHashTable *args = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
     g_hash_table_insert(args, "character", g_strdup(flr->fla->proper_character));
     g_hash_table_insert(args, "log", g_strdup(flr->log_text));
     g_hash_table_insert(args, "reportText", g_strdup(flr->reason));
