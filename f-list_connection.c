@@ -448,6 +448,9 @@ static void flist_connected(gpointer user_data, int fd, const gchar *err) {
         return;
     }
 
+    // After connection to chat, get precious cookies
+    flist_get_cookie_data(fla);
+
     if(fla->secure) { // If this is a secure connection, we have to perform the SSL handshake.
         purple_debug_info(FLIST_DEBUG, "Sending SSL handshake...\n");
         fla->ssl_con = purple_ssl_connect_with_host_fd(fla->pa, fd, flist_ssl_cb, flist_ssl_error_cb, fla->server_address, fla);
@@ -517,15 +520,16 @@ static gboolean flist_ticket_timer_cb(gpointer data) {
 
     g_hash_table_destroy(args);
 
-    // After fetching our ticket, get precious cookies
-    flist_get_cookie_data(fla);
-
     return FALSE;
 }
 
 void flist_get_cookie_data_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message) {
     FListAccount *fla = user_data;
-    fla->cookies = g_hash_table_new(g_str_hash, g_str_equal);
+
+    if (fla->cookies)
+        g_hash_table_unref(fla->cookies);
+
+    fla->cookies = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
     flist_parse_cookies_into_hash_table(url_text, len, fla->cookies);
 
     purple_debug_info(FLIST_DEBUG, "Got cookies for account '%s'!\n", fla->username);
@@ -543,9 +547,10 @@ void flist_get_cookie_data(FListAccount *fla) {
 
     gchar *http = http_request(full_url, TRUE, TRUE, USER_AGENT, args, NULL);
 
+    purple_debug_info(FLIST_DEBUG, "Fetching cookies from %s ...", full_url);
     // performs HTTP GET and calls flist_get_cookie_data_cb with the response, containing headers
     // TODO what to do with url_data? I don't need it.
-    PurpleUtilFetchUrlData *url_data = purple_util_fetch_url_request(full_url, FALSE, USER_AGENT, FALSE, http, TRUE, flist_get_cookie_data_cb, fla);
+    PurpleUtilFetchUrlData *url_data = purple_util_fetch_url_request(full_url, TRUE, USER_AGENT, TRUE, http, TRUE, flist_get_cookie_data_cb, fla);
 
     g_free(full_url);
     g_hash_table_destroy(args);

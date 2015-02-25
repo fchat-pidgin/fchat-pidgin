@@ -71,8 +71,9 @@ gboolean flist_web_request_timeout(gpointer data) {
 FListWebRequestData* flist_web_request(const gchar* url, GHashTable* args, GHashTable *cookies, gboolean post, gboolean secure, FListWebCallback cb, gpointer data) {
     gchar *full_url = g_strdup_printf("%s%s", secure ? "https://" : "http://", url);
     gchar *http = http_request(full_url, TRUE, post, USER_AGENT, args, cookies);
+    purple_debug_info(FLIST_DEBUG, "HTTP-Request: %s\n", http);
     FListWebRequestData *ret = g_new0(FListWebRequestData, 1);
-    PurpleUtilFetchUrlData *url_data = purple_util_fetch_url_request(full_url, FALSE, USER_AGENT, FALSE, http, FALSE, flist_web_request_cb, ret);
+    PurpleUtilFetchUrlData *url_data = purple_util_fetch_url_request(full_url, TRUE, USER_AGENT, TRUE, http, FALSE, flist_web_request_cb, ret);
     ret->url_data = url_data;
     ret->cb = cb;
     ret->user_data = data;
