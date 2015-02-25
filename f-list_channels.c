@@ -1046,11 +1046,14 @@ void flist_channel_display_topic_ui(PurpleConversation *convo, const gchar *curr
     fields = purple_request_fields_new();
     purple_request_fields_add_group(fields, group);
 
-    field = purple_request_field_string_new("topic", "", current_topic, TRUE);
+    // XXX There's a reason the field's label is so long: The label's size determines how large the field will be.
+    // We could fill it up with spaces (which would be written as "Label          :" ...) or have some useless text in there.
+    // Oh Pidgin, y u so silly.
+    field = purple_request_field_string_new("topic", "Edit your channel's description. You can use BBCode.", current_topic, TRUE);
     purple_request_field_set_required(field, TRUE);
     purple_request_field_group_add_field(group, field);
 
-    purple_request_fields(pc, _("Edit Channel Description"), _(""), _("You can use BBCode in the description."),
+    purple_request_fields(pc, _("Edit Channel Description"), purple_conversation_get_title(convo), _(""),
         fields,
         _("OK"), G_CALLBACK(flist_channel_topic_ui_ok_cb),
         _("Cancel"), NULL, /* we don't need a cancel callback */
