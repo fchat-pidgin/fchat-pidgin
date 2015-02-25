@@ -37,7 +37,10 @@ void flist_parse_cookies_into_hash_table(const gchar *header, gsize len, GHashTa
 
         gchar *key = g_strndup(start + ident_len, key_end-(start+ident_len));
         gchar *value = g_strndup(key_end + 1, value_end-(key_end+1));
+
         g_hash_table_insert(hash_table, key, value);
+        purple_debug_info(FLIST_DEBUG, "Adding cookie '%s' (%s) to cookie jar!\n", key, value);
+
         start = g_strstr_len(start+1, len, ident);
     }
 }
