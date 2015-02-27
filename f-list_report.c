@@ -103,7 +103,7 @@ void flist_report_send(FListReport *flr) {
     current_log = g_list_first(logs);
 
     // Read its contents and strip HTML tags
-    Gchar *log_text = purple_log_read(current_log->data, 0);
+    gchar *log_text = purple_log_read(current_log->data, 0);
     flr->log_text = purple_markup_escape_text(purple_markup_strip_html(log_text), -1);
     g_free(log_text);
 
