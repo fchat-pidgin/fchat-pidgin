@@ -103,8 +103,8 @@ void flist_report_send(FListReport *flr) {
     current_log = g_list_first(logs);
 
     // Read its contents and strip HTML tags
-    gchar *log_text = purple_log_read(current_log->data, 0);
-    flr->log_text = purple_markup_strip_html(log_text);
+    Gchar *log_text = purple_log_read(current_log->data, 0);
+    flr->log_text = purple_markup_escape_text(purple_markup_strip_html(log_text), -1);
     g_free(log_text);
 
     purple_debug_info(FLIST_DEBUG, "User filed a report against '%s': '%s'\n------------- LOG -------------\n%s\n-----------------------------\n", flr->character, flr->reason, flr->log_text);
