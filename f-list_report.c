@@ -110,15 +110,15 @@ void flist_report_send(FListReport *flr) {
     purple_debug_info(FLIST_DEBUG, "User filed a report against '%s': '%s'\n------------- LOG -------------\n%s\n-----------------------------\n", flr->character, flr->reason, flr->log_text);
 
     // Fire web request to upload our log
-    GHashTable *args = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
-    g_hash_table_insert(args, "character", g_strdup(flr->fla->proper_character));
-    g_hash_table_insert(args, "log", g_strdup(flr->log_text));
-    g_hash_table_insert(args, "reportText", g_strdup(flr->reason));
-    g_hash_table_insert(args, "reportUser", g_strdup(flr->character));
-    g_hash_table_insert(args, "channel", g_strdup(flr->channel_pretty));
+    GHashTable *args = g_hash_table_new(g_str_hash, g_str_equal);
+    g_hash_table_insert(args, "character", flr->fla->proper_character);
+    g_hash_table_insert(args, "log", flr->log_text);
+    g_hash_table_insert(args, "reportText", flr->reason);
+    g_hash_table_insert(args, "reportUser", flr->character);
+    g_hash_table_insert(args, "channel", flr->channel_pretty);
     flist_web_request(JSON_UPLOAD_LOG, args, flr->fla->cookies, TRUE, flr->fla->secure, flist_report_upload_log_cb, flr);
 
-    g_hash_table_destroy(args);
+    g_hash_table_unref(args);
     g_list_free(logs);
 
 }
