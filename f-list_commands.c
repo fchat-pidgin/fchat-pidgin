@@ -451,7 +451,7 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
     FListAccount *fla = pc->proto_data;
     JsonObject *json;
     PurpleConvIm *im;
-    gchar *stripped_message, *escaped_message, *local_message, *bbcode_message;
+    gchar *plain_message, *local_message, *bbcode_message;
     int ret;
 
     if (flist_ignore_character_is_ignored(pc, who))
@@ -467,14 +467,13 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
 
     im = PURPLE_CONV_IM(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, fla->pa));
 
-    stripped_message = purple_markup_strip_html(message); /* strip out formatting */
-    escaped_message = purple_unescape_html(stripped_message); /* escape the html entities that are left */
-    local_message = purple_markup_escape_text(stripped_message, -1); /* re-escape the html entities */
+    purple_markup_html_to_xhtml(message, NULL, &plain_message);
+    local_message = purple_markup_escape_text(plain_message, -1); /* re-escape the html entities */
     bbcode_message = flist_bbcode_to_html(fla, purple_conv_im_get_conversation(im), local_message); /* convert the bbcode to html to display locally */
 
     json = json_object_new();
     json_object_set_string_member(json, "recipient", who);
-    json_object_set_string_member(json, "message", escaped_message);
+    json_object_set_string_member(json, "message", plain_message);
     flist_request(pc, FLIST_REQUEST_PRIVATE_MESSAGE, json);
     json_object_unref(json);
 
@@ -487,8 +486,7 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
         ret = 1; //display it now
     }
 
-    g_free(stripped_message);
-    g_free(escaped_message);
+    g_free(plain_message);
     g_free(bbcode_message);
     g_free(local_message);
 
@@ -520,14 +518,13 @@ static gchar *flist_fix_newlines(const char *html) {
 
 static void flist_send_channel_message_real(FListAccount *fla, PurpleConversation *convo, const gchar *message, gboolean ad) {
     JsonObject *json = json_object_new();
-    gchar *stripped_message, *escaped_message, *local_message, *bbcode_message;
+    gchar *plain_message, *local_message, *bbcode_message;
     const gchar *channel = purple_conversation_get_name(convo);
     purple_debug_info(FLIST_DEBUG, "Sending message to channel... (Character: %s) (Channel: %s) (Message: %s) (Ad: %s)\n",
         fla->character, channel, message, ad ? "yes" : "no");
 
-    stripped_message = purple_markup_strip_html(message); /* strip out formatting */
-    escaped_message = purple_unescape_html(stripped_message); /* unescape the html entities that are left */
-    local_message = purple_markup_escape_text(stripped_message, -1); /* re-escape the html entities */
+    purple_markup_html_to_xhtml(message, NULL, &plain_message);
+    local_message = purple_markup_escape_text(plain_message, -1); /* re-escape the html entities */
     if(ad) {
         gchar *tmp = g_strdup_printf("[b](Roleplay Ad)[/b] %s", local_message);
         g_free(local_message);
@@ -535,14 +532,13 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     }
     bbcode_message = flist_bbcode_to_html(fla, convo, local_message); /* convert the bbcode to html to display locally */
 
-    json_object_set_string_member(json, "message", escaped_message);
+    json_object_set_string_member(json, "message", plain_message);
     json_object_set_string_member(json, "channel", channel);
     flist_request(fla->pc, !ad ? FLIST_REQUEST_CHANNEL_MESSAGE : FLIST_CHANNEL_ADVERSTISEMENT, json);
 
     serv_got_chat_in(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), fla->proper_character, PURPLE_MESSAGE_SEND, bbcode_message, time(NULL));
 
-    g_free(escaped_message);
-    g_free(stripped_message);
+    g_free(plain_message);
     g_free(bbcode_message);
     g_free(local_message);
     json_object_unref(json);
@@ -650,6 +646,7 @@ PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, 
     const gchar *message = args[0];
     gchar *fixed_message = flist_fix_newlines(message);
     gchar *extended_message = g_strdup_printf("/warn %s", fixed_message);
+    gchar *plain_message;
 
     const gchar *channel = purple_conversation_get_name(convo);
     FListChannel *fc = flist_channel_find(fla, channel);
@@ -664,16 +661,14 @@ PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, 
     purple_debug_info(FLIST_DEBUG, "Sending warning to channel... (Character: %s) (Channel: %s) (Message: %s)\n",
         fla->character, channel, message);
 
-    gchar *stripped_message = purple_markup_strip_html(extended_message); /* strip out formatting */
-    gchar *escaped_message = purple_unescape_html(stripped_message); /* unescape the html entities that are left */
-    json_object_set_string_member(json, "message", escaped_message);
+    purple_markup_html_to_xhtml(message, NULL, &plain_message);
+    json_object_set_string_member(json, "message", plain_message);
     json_object_set_string_member(json, "channel", channel);
     flist_request(fla->pc, FLIST_REQUEST_CHANNEL_MESSAGE, json);
 
     flist_channel_print_op_warning(convo, fla->character, fixed_message);
 
-    g_free(escaped_message);
-    g_free(stripped_message);
+    g_free(plain_message);
     g_free(fixed_message);
     g_free(extended_message);
     json_object_unref(json);
