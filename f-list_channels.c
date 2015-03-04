@@ -152,21 +152,21 @@ static void flist_show_channel_topic(FListAccount *fla, const gchar *channel) {
 void flist_got_channel_topic(FListAccount *fla, const gchar *channel, const gchar *topic) {
     PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
     FListChannel *fchannel = flist_channel_find(fla, channel);
-    gchar *escaped_description, *stripped_description, *stripped_description_2, *unescaped_description;
-
+    gchar *stripped_description, *stripped_description_2, *unescaped_description;
+    
     g_return_if_fail(topic != NULL);
     g_return_if_fail(convo != NULL);
     g_return_if_fail(fchannel != NULL);
 
+    unescaped_description = purple_unescape_html(topic);
+
     if(fchannel->topic) g_free(fchannel->topic);
-    fchannel->topic = g_strdup(topic);
+    fchannel->topic = g_strdup(unescaped_description);
 
-    escaped_description = purple_markup_escape_text(fchannel->topic, -1);
-    stripped_description = flist_bbcode_strip(escaped_description);
+    stripped_description = flist_bbcode_strip(fchannel->topic);
     stripped_description_2 = flist_strip_crlf(stripped_description);
-    unescaped_description = purple_unescape_html(stripped_description_2);
 
-    purple_conv_chat_set_topic(PURPLE_CONV_CHAT(convo), NULL, unescaped_description);
+    purple_conv_chat_set_topic(PURPLE_CONV_CHAT(convo), NULL, stripped_description_2);
     flist_show_channel_topic(fla, channel);
 
     if(purple_conversation_get_data(convo, CHAT_SHOW_DISPLAY_STATUS)) {
@@ -174,7 +174,6 @@ void flist_got_channel_topic(FListAccount *fla, const gchar *channel, const gcha
         flist_channel_show_message(fla, channel);
     }
 
-    g_free(escaped_description);
     g_free(stripped_description);
     g_free(stripped_description_2);
     g_free(unescaped_description);
