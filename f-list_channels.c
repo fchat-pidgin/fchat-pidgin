@@ -142,8 +142,12 @@ static void flist_show_channel_topic(FListAccount *fla, const gchar *channel) {
     escaped_description = purple_markup_escape_text(fchannel->topic, -1);
     html_description = flist_bbcode_to_html(fla, convo, escaped_description);
 
-    //message = g_strdup_printf("The description for %s is: %s", purple_conversation_get_title(convo), html_description);
-    purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", html_description, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", "Channel description has been set to:", PURPLE_MESSAGE_SYSTEM, time(NULL));
+
+    if (strlen(html_description) > 0)
+        purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", html_description, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    else
+        purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", "<i>Nothing</i>", PURPLE_MESSAGE_SYSTEM, time(NULL));
 
     g_free(escaped_description);
     g_free(html_description);
