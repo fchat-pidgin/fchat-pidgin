@@ -448,9 +448,6 @@ static void flist_connected(gpointer user_data, int fd, const gchar *err) {
         return;
     }
 
-    // After connection to chat, get precious cookies
-    flist_get_cookie_data(fla);
-
     if(fla->secure) { // If this is a secure connection, we have to perform the SSL handshake.
         purple_debug_info(FLIST_DEBUG, "Sending SSL handshake...\n");
         fla->ssl_con = purple_ssl_connect_with_host_fd(fla->pa, fd, flist_ssl_cb, flist_ssl_error_cb, fla->server_address, fla);
