@@ -2,6 +2,8 @@
 #include "f-list_pidgin.h"
 
 #include "gtkimhtml.h"
+#include "gtkconv.h"
+#include "gtkutils.h"
 
 //TODO: fix these up so they're only one function ...
 
@@ -120,7 +122,122 @@ static gboolean flist_staff_activate(GtkIMHtml *imhtml, GtkIMHtmlLink *link) {
     return ret;
 }
 
+GtkWidget *get_account_icon(FListAccount *fla)
+{
+    PurpleStoredImage *account_image = purple_buddy_icons_find_account_icon(fla->pa);
+    GtkWidget *icon = NULL;
+    if (account_image)
+    {
+        GdkPixbuf *pixbuf = pidgin_pixbuf_from_imgstore(account_image);
+        GdkPixbuf *scale = gdk_pixbuf_scale_simple(pixbuf, 16, 16, GDK_INTERP_BILINEAR);
+        icon = gtk_image_new_from_pixbuf(scale);
+        gtk_widget_set_sensitive(icon, TRUE);
+        gdk_pixbuf_unref(pixbuf);
+        gdk_pixbuf_unref(scale);
+
+        return icon;
+    }
+
+    return NULL;
+}
+
+void conversation_created_cb(PurpleConversation *conv)
+{
+    g_return_if_fail(PIDGIN_IS_PIDGIN_CONVERSATION(conv));
+    PidginConversation *pidgin_conv;
+    g_return_if_fail((pidgin_conv = PIDGIN_CONVERSATION(conv)));
+
+    PurpleConnection *pc = purple_conversation_get_gc(conv);
+    FListAccount *fla = pc->proto_data;
+
+    // We are going to add a button to the conversation's toolbar that simply displays our characters name
+    // This helps in case you are online with more than one character
+    GtkWidget *toolbar = pidgin_conv->toolbar;
+
+    // Check, if the button already exists
+    GtkWidget *button = purple_conversation_get_data(conv, FLIST_CONV_ACCOUNT_BUTTON);
+    if (button)
+    {
+        if (fla->show_own_character)
+        {
+            /* Snippet taken from pidgin-otr 4.0.1 */
+            /* Check if we've been removed from the toolbar; purple does this
+             * when the user changes her prefs for the style of buttons to
+             * display. */
+            GList *children = gtk_container_get_children(GTK_CONTAINER(toolbar));
+            if (!g_list_find(children, button)) {
+                gtk_box_pack_start(GTK_BOX(toolbar), button, FALSE, FALSE, 0);
+            }
+            g_list_free(children);
+
+            // Let's check if we have createdthe icon widget yet
+            // In case Pidgin hasn't yet fetched the account's icon, we need to do it here
+            GtkWidget *icon = purple_conversation_get_data(conv, FLIST_CONV_ACCOUNT_ICON);
+            if (!icon)
+            {
+                icon = get_account_icon(fla);
+
+                if (icon)
+                {
+                    GList *children = gtk_container_get_children(GTK_CONTAINER(button));
+                    gtk_box_pack_start(GTK_BOX(g_list_first(children)->data), icon, TRUE, FALSE, 0);
+                }
+            }
+
+            gtk_widget_show_all(button);
+        }
+        else
+        {
+            gtk_container_remove(GTK_CONTAINER(toolbar), button);
+            gtk_widget_hide_all(button);
+        }
+        return;
+    }
+
+    if (!fla->show_own_character)
+        return;
+
+    // Everything we allocate (and add to the conversation UI) here gets destroyed automatically once the conversation is destroyed
+    button = gtk_button_new();
+    gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
+    gtk_box_pack_end(GTK_BOX(toolbar), button, FALSE, FALSE, 0);
+
+    GtkWidget *bwbox = gtk_hbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(button), bwbox);
+
+    // Add the account's icon in case we already downloaded and cached it
+    // Otherwise it will be added later on
+    GtkWidget *icon = get_account_icon(fla);
+    if (icon)
+        gtk_box_pack_start(GTK_BOX(bwbox), icon, TRUE, FALSE, 0);
+
+    GtkWidget *label = gtk_label_new(fla->proper_character);
+	gtk_label_set_use_markup (GTK_LABEL(label), TRUE);
+    gtk_box_pack_start(GTK_BOX(bwbox), label, FALSE, FALSE, 0);
+
+    gtk_widget_show_all(button);
+
+    // Store everything for later
+    purple_conversation_set_data(conv, FLIST_CONV_ACCOUNT_BUTTON, button);
+    purple_conversation_set_data(conv, FLIST_CONV_ACCOUNT_ICON, icon);
+    purple_conversation_set_data(conv, FLIST_CONV_ACCOUNT_LABEL, label);
+}
+
 void flist_pidgin_init() {
     gtk_imhtml_class_register_protocol("flistc", flist_channel_activate, NULL);
     gtk_imhtml_class_register_protocol("flistsfc", flist_staff_activate, NULL);
+}
+
+void flist_pidgin_enable_signals(FListAccount *fla)
+{
+    void *conv_handle = purple_conversations_get_handle();
+    purple_signal_connect(conv_handle, "conversation-created", fla,
+            PURPLE_CALLBACK(conversation_created_cb), NULL);
+}
+
+void flist_pidgin_disable_signals(FListAccount *fla)
+{
+    void *conv_handle = purple_conversations_get_handle();
+    purple_signal_disconnect(conv_handle, "conversation-created", fla,
+            PURPLE_CALLBACK(conversation_created_cb));
 }

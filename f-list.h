@@ -362,6 +362,7 @@ struct FListAccount_ {
     /* other options */
     gboolean receive_rtb;
     gboolean debug_mode;
+    gboolean show_own_character;
 };
 
 //f-list sources

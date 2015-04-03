@@ -482,6 +482,10 @@ void flist_close(PurpleConnection *pc) {
 
     if(fla->input_request) purple_request_close_with_handle((void*) pc);
 
+#ifndef FLIST_PURPLE_ONLY
+    flist_pidgin_disable_signals(fla);
+#endif
+
     flist_friends_unload(fla);
     flist_fetch_icon_cancel_all(fla);
     flist_global_kinks_unload(pc);
@@ -522,7 +526,6 @@ void flist_login(PurpleAccount *pa) {
         purple_account_set_alias(pa, fla->character);
     }
 
-
     /* login options */
     fla->server_address = g_strdup(purple_account_get_string(pa, "server_address", "chat.f-list.net"));
 //    fla->use_websocket_handshake = purple_account_get_bool(pa, "use_websocket_handshake", FALSE);
@@ -539,6 +542,7 @@ void flist_login(PurpleAccount *pa) {
 
     fla->receive_rtb = purple_account_get_bool(pa, "receive_rtb", TRUE);
     fla->debug_mode = purple_account_get_bool(pa, "debug_mode", FALSE);
+    fla->show_own_character = purple_account_get_bool(pa, "show_own_character", TRUE);
     fla->ignore_list = NULL;
 
     flist_channel_subsystem_load(fla);
@@ -546,6 +550,11 @@ void flist_login(PurpleAccount *pa) {
     flist_global_kinks_load(pc);
     flist_profile_load(pc);
     flist_friends_load(fla);
+
+#ifndef FLIST_PURPLE_ONLY
+    // Enable signals once we are connected. This guarantees that the conversations submodule has been loaded.
+    flist_pidgin_enable_signals(fla);
+#endif
 
     flist_ticket_timer(fla, 0);
     purple_connection_update_progress(fla->pc, "Requesting login ticket", 1 ,5);
@@ -718,6 +727,9 @@ static void plugin_init(PurplePlugin *plugin) {
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Receive notifications", "receive_rtb", TRUE);
+    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+    option = purple_account_option_bool_new("Display own character in conversations", "show_own_character", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Debug Mode", "debug_mode", FALSE);

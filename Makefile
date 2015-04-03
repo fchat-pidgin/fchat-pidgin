@@ -11,6 +11,7 @@ WIN32_CFLAGS = \
 				-DPURPLE_PLUGINS \
 				-I${WIN32_GTK_DEV_DIR}/include/glib-2.0 \
 				-I${WIN32_PIDGIN_DIR}/pidgin \
+				-I${WIN32_PIDGIN_DIR}/pidgin/win32 \
 				-I${WIN32_PIDGIN_DIR}/libpurple \
 				-I${WIN32_PIDGIN_DIR}/libpurple/win32 \
 				-I${WIN32_GTK_DEV_DIR}/include \
@@ -32,6 +33,9 @@ WIN32_LIBS = \
 				-lpurple \
 				-lpidgin \
 				-lws2_32 \
+				-lgdk-win32-2.0 \
+				-lgdk_pixbuf-2.0 \
+				-lgtk-win32-2.0 \
 				-L. \
 				-ljson-glib-1.0 \
 				-lz
