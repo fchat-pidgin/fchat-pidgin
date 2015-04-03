@@ -57,7 +57,6 @@ FListChannel *flist_channel_new(FListAccount *, const gchar *channel);
 const gchar *flist_channel_get_title(FListChannel *);
 GList *flist_channel_list_names(FListAccount *);
 GList *flist_channel_list_all(FListAccount *);
-void flist_channel_display_topic_ui(PurpleConversation *convo, const gchar *current_topic);
 
 void flist_channel_subsystem_load(FListAccount*);
 void flist_channel_subsystem_unload(FListAccount*);

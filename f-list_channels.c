@@ -830,6 +830,18 @@ PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *convo, const g
     return PURPLE_CMD_RET_OK;
 }
 
+void flist_channel_topic_ui_ok_cb(gpointer user_data, const gchar *topic) {
+    PurpleConversation *convo = (PurpleConversation*) user_data;
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    const gchar *channel = purple_conversation_get_name(convo);
+
+    JsonObject *json = json_object_new();
+    json_object_set_string_member(json, "channel", channel);
+    json_object_set_string_member(json, "description", topic);
+    flist_request(pc, FLIST_SET_CHANNEL_DESCRIPTION, json);
+    json_object_unref(json);
+}
+
 PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
@@ -861,7 +873,23 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
         FListChannel *flc = flist_channel_find(fla, channel);
         g_return_val_if_fail(flc != NULL, PURPLE_CMD_RET_FAILED);
 
-        flist_channel_display_topic_ui(convo, flc->topic);
+        purple_request_input(pc,                                                        /* handle */
+                             "Change description",                                      /* title */
+                             channel,                                                   /* primary message */
+                             "Edit your channel's description. You can use BBCode.",    /* secondary message */
+                             flc->topic,                                                /* default value */
+                             TRUE,                                                      /* multiline */
+                             FALSE,                                                     /* masked input (e.g. passwords) */
+                             "",                                                        /* hint */
+                             "Okay",                                                    /* ok text */
+                             PURPLE_CALLBACK(flist_channel_topic_ui_ok_cb),             /* ok callback */
+                             "Cancel",                                                  /* cancel text */
+                             NULL,                                                      /* cancel callback */
+                             fla->pa,                                                   /* account */
+                             NULL,                                                      /* associated buddy */
+                             convo,                                                     /* associated conversation */
+                             convo                                                      /* user data */
+                            );
     }
 
     //TODO: don't allow this on public channels? (or do we?)
@@ -1018,45 +1046,3 @@ char *flist_get_channel_name(GHashTable *components) {
          return NULL;
      }
 }
-
-/* Channel Topic UI */
-static void flist_channel_topic_ui_ok_cb(gpointer user_data, PurpleRequestFields *fields) {
-    PurpleConversation *convo = user_data;
-    PurpleConnection *pc = purple_conversation_get_gc(convo);
-    const gchar *channel = purple_conversation_get_name(convo);
-
-    const gchar *topic = purple_request_fields_get_string(fields, "topic");
-    JsonObject *json = json_object_new();
-    json_object_set_string_member(json, "channel", channel);
-    json_object_set_string_member(json, "description", topic);
-    flist_request(pc, FLIST_SET_CHANNEL_DESCRIPTION, json);
-    json_object_unref(json);
-}
-
-void flist_channel_display_topic_ui(PurpleConversation *convo, const gchar *current_topic) {
-    PurpleConnection *pc = purple_conversation_get_gc(convo);
-    PurpleAccount *pa = purple_connection_get_account(pc);
-
-    // Set up report UI
-    PurpleRequestFields *fields;
-    PurpleRequestFieldGroup *group;
-    PurpleRequestField *field;
-
-    group = purple_request_field_group_new("Channel Description");
-    fields = purple_request_fields_new();
-    purple_request_fields_add_group(fields, group);
-
-    // XXX There's a reason the field's label is so long: The label's size determines how large the field will be.
-    // We could fill it up with spaces (which would be written as "Label          :" ...) or have some useless text in there.
-    // Oh Pidgin, y u so silly.
-    field = purple_request_field_string_new("topic", "Edit your channel's description. You can use BBCode.", current_topic, TRUE);
-    purple_request_field_set_required(field, TRUE);
-    purple_request_field_group_add_field(group, field);
-
-    purple_request_fields(pc, _("Edit Channel Description"), purple_conversation_get_title(convo), _(""),
-        fields,
-        _("OK"), G_CALLBACK(flist_channel_topic_ui_ok_cb),
-        _("Cancel"), NULL, /* we don't need a cancel callback */
-        pa, NULL, NULL, convo);
-}
-
