@@ -1,0 +1,25 @@
+Source: fchat-pidgin
+Maintainer: Vobe Jackal <vobe@no-email>
+Standards-Version: 3.9.3
+Priority: optional
+Section: net
+Homepage: https://github.com/fcwill/fchat-pidgin
+Build-Depends: cdbs, debhelper (>= 9),
+	pkg-config,
+	pidgin-dev
+
+Package: fchat-pidgin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: F-Chat plugin for Pidgin IM.
+ The plugin enables the F-Chat protocol in Pidgin IM.
+
+Package: fchat-pidgin-dbg
+Priority: extra
+Section: debug
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, fchat-pidgin (= ${binary:Version})
+Description: F-Chat plugin for Pidgin IM.
+ The plugin enables the F-Chat protocol in Pidgin IM.
+ .
+ The package contains debug symbols for fchat-pidgin.

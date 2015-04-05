@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+
+VERSION  := $(shell dpkg-parsechangelog|grep ^Version|awk '{print $$2}')
+UVERSION := $(shell echo $(VERSION)|sed 's/-[[:digit:]]\+$$//')
+PACKAGE	 := fchat-pidgin
+
+
+build/$(PACKAGE)::
+	$(MAKE)
+
+install/$(PACKAGE)::
+	$(MAKE) DESTDIR=debian/$(PACKAGE)/ install
+	find debian/$(PACKAGE) -type f -exec chmod -x '{}' +
+
+clean::
+	rm -fr *.so
+
+tarball: clean
+	cd .. && tar --exclude=.git --exclude=debian \
+		-czf $(PACKAGE)_$(UVERSION).orig.tar.gz $(PACKAGE)-$(UVERSION)
