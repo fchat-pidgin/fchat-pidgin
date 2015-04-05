@@ -51,8 +51,8 @@ FLIST_ADDITIONAL_SOURCES = f-list_pidgin.c
 PIDGIN_CFLAGS = `pkg-config pidgin --cflags --libs`
 endif
 
-PIDGIN_DIR = `pkg-config --variable=plugindir purple`
-PIDGIN_DIR = ~/.purple/plugins/
+PIDGIN_PLUGINDIR = `pkg-config --variable=plugindir purple`
+PIDGIN_DATADIR = `pkg-config --variable=datadir purple`
 
 FLIST_SOURCES = \
 				f-list.c \
@@ -104,7 +104,10 @@ valgrind_linux: prepare_test_linux
 	valgrind --tool=memcheck --leak-check=yes --leak-resolution=high --num-callers=20 --trace-children=no --child-silent-after-fork=yes --track-fds=yes --track-origins=yes pidgin -m -c ${TEST_PURPLE_DIR} -d 2>&1 | tee valgrind.log
 
 install:
-	cp flist.so ${PIDGIN_DIR}
+	install -D flist.so ${DESTDIR}${PIDGIN_PLUGINDIR}/flist.so
+	install -D icons/flist16.png ${DESTDIR}${PIDGIN_DATADIR}/pixmaps/pidgin/protocols/16/flist.png
+	install -D icons/flist22.png ${DESTDIR}${PIDGIN_DATADIR}/pixmaps/pidgin/protocols/22/flist.png
+	install -D icons/flist48.png ${DESTDIR}${PIDGIN_DATADIR}/pixmaps/pidgin/protocols/48/flist.png
 
 ${TARGET}:	${FLIST_SOURCES}
 	${LINUX_COMPILER} -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
