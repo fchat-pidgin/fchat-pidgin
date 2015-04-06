@@ -533,7 +533,7 @@ void flist_login(PurpleAccount *pa) {
     fla->sync_bookmarks = purple_account_get_bool(pa, "sync_bookmarks", FALSE);
     fla->sync_friends = purple_account_get_bool(pa, "sync_friends", TRUE);
 
-    fla->secure = purple_account_get_bool(pa, "use_https", FALSE);
+    fla->secure = purple_account_get_bool(pa, "use_https", TRUE);
     if(!fla->secure) {
         fla->server_port = purple_account_get_int(pa, "server_port", FLIST_PORT);
     } else {
@@ -717,7 +717,7 @@ static void plugin_init(PurplePlugin *plugin) {
     option = purple_account_option_int_new("Server Port (Secure)", "server_port_secure", FLIST_PORT_SECURE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
-    option = purple_account_option_bool_new("Use Secure Connections", "use_https", FALSE);
+    option = purple_account_option_bool_new("Use Secure Connections", "use_https", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Download Friends List", "sync_friends", TRUE);
