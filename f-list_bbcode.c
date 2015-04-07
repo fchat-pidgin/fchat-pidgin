@@ -88,12 +88,18 @@ static gchar *format_superscript(ParserVars *vars, const gchar *ts, const gchar 
 
 static gchar *format_url(ParserVars *vars, const gchar *ts, const gchar *inner) {
     gchar *escaped, *ret;
+    // We can actually write
+    //  - [url=my_url]text[/url] (-> <a href="my_url">text</a>)
+    //  - [url]my_url[/url] (-> <a href="my_url">my_url</a>)
+    //  - [url=my_url][/url] (-> <a href="my_url">my_url</a>)
+
     if(strlen(ts) > 0) {
         escaped = flist_escape_attribute(ts);
     } else {
         escaped = flist_escape_attribute(inner);
     }
-    ret = g_strdup_printf("<a href=\"%s\">%s</a>", escaped, inner);
+
+    ret = g_strdup_printf("<a href=\"%s\">%s</a>", escaped, strlen(inner) > 0 ? inner : escaped);
     g_free(escaped);
     return ret;
 }
