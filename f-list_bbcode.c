@@ -20,6 +20,9 @@
  */
 #include "f-list_bbcode.h"
 
+#define TAG_NOPARSE_OPEN "[noparse]"
+#define TAG_NOPARSE_CLOSE "[/noparse]"
+
 static const gchar *BB_COLORS[] = { "white", "black", "red", "blue", "yellow", "green", "pink", "gray", "orange", "purple", "brown", "cyan", NULL };
 
 typedef struct ParserVars_ {
@@ -168,9 +171,11 @@ static gchar *format_channel_real(ParserVars *vars, const gchar *name, const gch
     g_free(unescaped);
     return ret;
 }
+
 static gchar *format_channel(ParserVars *vars, const gchar *ts, const gchar *inner) {
     return format_channel_real(vars, inner, inner);
 }
+
 static gchar *format_session(ParserVars *vars, const gchar *ts, const gchar *inner) {
     return format_channel_real(vars, inner, ts ? ts : inner);
 }
@@ -254,6 +259,7 @@ gchar *flist_bbcode_to_html_real(FListAccount *fla, PurpleConversation *convo, c
     BBCodeTag *tag;
     gchar *tag_argument;
     gboolean close_tag;
+    gboolean no_parse = FALSE;
 
     stack->ret = g_string_new(NULL);
 
@@ -269,6 +275,18 @@ gchar *flist_bbcode_to_html_real(FListAccount *fla, PurpleConversation *convo, c
         g_string_append_len(stack->ret, current, (gsize) (open - current));
         current = close;
 
+        if (strcmp(raw_tag, TAG_NOPARSE_OPEN) == 0)
+        {
+            no_parse = TRUE;
+            continue;
+        }
+
+        if (strcmp(raw_tag, TAG_NOPARSE_CLOSE) == 0)
+        {
+            no_parse = FALSE;
+            continue;
+        }
+
         if(bbcode_parse_tag(raw_tag, raw_tag_len, stack->tag, &tag, &tag_argument, &close_tag)) {
             if(!close_tag) { /* we have a new tag! push it onto the stack */
                 stack_tmp = g_new(BBCodeStack, 1);
@@ -281,7 +299,13 @@ gchar *flist_bbcode_to_html_real(FListAccount *fla, PurpleConversation *convo, c
                 stack->ret = g_string_new(NULL);
             } else { /* we are closing a tag! pop it off of the stack */
                 gchar *inner = g_string_free(stack->ret, FALSE);
-                gchar *final = !strip ? stack->tag->format(&vars, stack->tag_argument, inner) : g_strdup(inner);
+
+                gchar *final = NULL;
+                if (!no_parse)
+                    final = !strip ? stack->tag->format(&vars, stack->tag_argument, inner) : g_strdup(inner);
+                else
+                    final = g_strndup(stack->raw_tag, close - stack->raw_tag);
+
                 stack_tmp = stack;
                 stack = stack->next;
                 g_string_append(stack->ret, final);
