@@ -141,14 +141,17 @@ GtkWidget *get_account_icon(FListAccount *fla)
     return NULL;
 }
 
-void conversation_created_cb(PurpleConversation *conv)
+static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount *fla)
 {
     g_return_if_fail(PIDGIN_IS_PIDGIN_CONVERSATION(conv));
     PidginConversation *pidgin_conv;
     g_return_if_fail((pidgin_conv = PIDGIN_CONVERSATION(conv)));
 
     PurpleConnection *pc = purple_conversation_get_gc(conv);
-    FListAccount *fla = pc->proto_data;
+
+    // Is this a conversation of our account?
+    if (fla->pc != pc)
+        return FALSE;
 
     // We are going to add a button to the conversation's toolbar that simply displays our characters name
     // This helps in case you are online with more than one character
@@ -232,12 +235,12 @@ void flist_pidgin_enable_signals(FListAccount *fla)
 {
     void *conv_handle = purple_conversations_get_handle();
     purple_signal_connect(conv_handle, "conversation-created", fla,
-            PURPLE_CALLBACK(conversation_created_cb), NULL);
+            PURPLE_CALLBACK(flist_conversation_created_cb), fla);
 }
 
 void flist_pidgin_disable_signals(FListAccount *fla)
 {
     void *conv_handle = purple_conversations_get_handle();
     purple_signal_disconnect(conv_handle, "conversation-created", fla,
-            PURPLE_CALLBACK(conversation_created_cb));
+            PURPLE_CALLBACK(flist_conversation_created_cb));
 }
