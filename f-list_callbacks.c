@@ -623,6 +623,7 @@ void flist_callback_init() {
     g_hash_table_insert(callbacks, "LCH", flist_process_LCH); //leave channel
     g_hash_table_insert(callbacks, "CBU", flist_process_CBU); //channel ban
     g_hash_table_insert(callbacks, "CKU", flist_process_CKU); //channel kick
+    g_hash_table_insert(callbacks, "CTU", flist_process_CTU); //channel time out
     g_hash_table_insert(callbacks, "ICH", flist_process_ICH); //in channel
     g_hash_table_insert(callbacks, "MSG", flist_process_MSG); //channel message
     g_hash_table_insert(callbacks, "LRP", flist_process_LRP); //channel ad

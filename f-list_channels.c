@@ -413,6 +413,47 @@ gboolean flist_process_CBU(PurpleConnection *pc, JsonObject *root) {
     return flist_process_kickban(pc, root, TRUE);
 }
 
+gboolean flist_process_CTU(PurpleConnection *pc, JsonObject *root) {
+    PurpleAccount *pa = purple_connection_get_account(pc);
+    FListAccount *fla = pc->proto_data;
+    PurpleConversation *convo;
+    const gchar *operator, *character, *channel, *length;
+
+    channel = json_object_get_string_member(root, "channel");
+    operator = json_object_get_string_member(root, "operator");
+    character = json_object_get_string_member(root, "character");
+    length = json_object_get_int_member(root, "length");
+
+    g_return_val_if_fail(channel != NULL, TRUE);
+    g_return_val_if_fail(character != NULL, TRUE);
+
+    convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, pa);
+    if(!convo) {
+        purple_debug_error(FLIST_DEBUG, "User %s was timed out from channel %s, but we are not in this channel.\n", channel, character);
+        return TRUE;
+    }
+
+    if(!flist_strcmp(character, fla->proper_character)) { //we just got timed out
+        // TODO check if we can get rid of these operator checks ... it should be set every time anyway?
+        gchar *message = operator
+                ? g_strdup_printf("You have been timed out from the channel for %d minute(s)!", length)
+                : g_strdup_printf("%s has timed you out from the channel for %d minute(s)!", operator, length);
+        purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "System", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
+        g_free(message);
+        flist_got_channel_left(fla, channel);
+        serv_got_chat_left(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)));
+        return TRUE;
+    }
+
+    gchar *message = g_strdup_printf("timed out for %d minute(s)%s%s",
+            length,
+            operator ? " by " : "",
+            operator ? operator : "");
+    flist_got_channel_user_left(fla, channel, character, message);
+    g_free(message);
+    return TRUE;
+}
+
 gboolean flist_process_COL(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     JsonArray *users;

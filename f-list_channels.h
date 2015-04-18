@@ -85,6 +85,7 @@ gboolean flist_process_LCH(PurpleConnection *, JsonObject *);
 gboolean flist_process_ICH(PurpleConnection *, JsonObject *);
 gboolean flist_process_CKU(PurpleConnection *, JsonObject *);
 gboolean flist_process_CBU(PurpleConnection *, JsonObject *);
+gboolean flist_process_CTU(PurpleConnection *, JsonObject *);
 gboolean flist_process_CDS(PurpleConnection *, JsonObject *);
 gboolean flist_process_CIU(PurpleConnection *, JsonObject *);
 
