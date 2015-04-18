@@ -78,5 +78,5 @@ mv ${PIDGIN_BIN_DIR}/pidgin-*/* ${PIDGIN_BIN_DIR} 2>/dev/null && true
 
 echo ""
 echo "All good, run"
-echo "    make flist.dll"
+echo "    make libflist.dll"
 echo "to cross-compile"
