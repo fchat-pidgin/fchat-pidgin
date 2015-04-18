@@ -22,7 +22,7 @@
 #include "f-list_report.h"
 
 void flist_report_alert_staff(FListReport *flr) {
-    gchar *report_message = g_strdup_printf("Current Tab/Channel: %s | Reporting User: %s | %s", flr->channel_pretty, flr->fla->proper_character, flr->reason);
+    gchar *report_message = g_strdup_printf("Current Tab/Channel: %s | Reporting User: %s | %s", flr->channel_pretty, flr->character, flr->reason);
 
     // log uploaded succesfully, let's alert staff now.
     JsonObject *json = json_object_new();
