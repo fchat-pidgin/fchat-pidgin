@@ -417,7 +417,7 @@ gboolean flist_process_CTU(PurpleConnection *pc, JsonObject *root) {
     PurpleAccount *pa = purple_connection_get_account(pc);
     FListAccount *fla = pc->proto_data;
     PurpleConversation *convo;
-    const gchar *operator, *character, *channel
+    const gchar *operator, *character, *channel;
     int length;
 
     channel = json_object_get_string_member(root, "channel");
