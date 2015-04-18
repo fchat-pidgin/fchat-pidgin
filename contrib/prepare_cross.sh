@@ -22,9 +22,9 @@ PIDGIN_VERSION=2.10.11
 
 WIN32_DEV_DIR=win32/
 mkdir -p $WIN32_DEV_DIR
-GTK_BUNDLE_URL=http://ftp.gnome.org/pub/GNOME/binaries/win32/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip
-GTK_BUNDLE_FILE=${WIN32_DEV_DIR}/gtk+-bundle_2.14.7-20090119_win32.zip
-GTK_BUNDLE_DIR=${WIN32_DEV_DIR}/gtk_2_0-2.14
+GTK_BUNDLE_URL=http://ftp.acc.umu.se/pub/gnome/binaries/win32/gtk+/2.16/gtk+-bundle_2.16.6-20100912_win32.zip
+GTK_BUNDLE_FILE=${WIN32_DEV_DIR}/gtk+-bundle_2.16.6-20100912_win32.zip
+GTK_BUNDLE_DIR=${WIN32_DEV_DIR}/gtk_2_0-2.16
 PIDGIN_SRC_URL=http://sourceforge.net/projects/pidgin/files/Pidgin/${PIDGIN_VERSION}/pidgin-${PIDGIN_VERSION}.tar.gz/download
 PIDGIN_SRC_FILE=${WIN32_DEV_DIR}/pidgin-${PIDGIN_VERSION}.tar.gz
 PIDGIN_SRC_DIR=${WIN32_DEV_DIR}/pidgin-${PIDGIN_VERSION}
