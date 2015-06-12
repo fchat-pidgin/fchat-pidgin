@@ -72,8 +72,8 @@ typedef struct FListWebRequestData_ FListWebRequestData;
 typedef struct FListFriends_ FListFriends;
 
 #define FLIST_CLIENT_NAME "F-List Pidgin"
-#define FLIST_PLUGIN_VERSION    "0.4.1"
-#define USER_AGENT              "Pidgin F-Chat 0.4.1"
+#define FLIST_PLUGIN_VERSION    "0.4.2"
+#define USER_AGENT              "Pidgin F-Chat 0.4.2"
 #define FLIST_PLUGIN_ID         "prpl-flist"
 #define FLIST_PORT              9722
 #define FLIST_PORT_SECURE       9799
