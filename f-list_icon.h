@@ -23,9 +23,13 @@
 
 #include "f-list.h"
 
+#define ICON_AVATAR_URL "%sstatic.f-list.net/images/avatar/%s.png"
+#define ICON_EICON_URL "%sstatic.f-list.net/images/eicon/%s.gif"
+
 void flist_fetch_icon(FListAccount *, const gchar *who);
 void flist_fetch_account_icon(FListAccount *fla);
-void flist_fetch_emoticon(FListAccount *, const gchar *smiley, const gchar *who, PurpleConversation *convo);
+void flist_fetch_avatar(FListAccount *, const gchar *smiley, const gchar *who, PurpleConversation *convo);
+void flist_fetch_eicon(FListAccount *, const gchar *smiley, const gchar *name, PurpleConversation *convo);
 void flist_fetch_icon_cancel_all(FListAccount *);
 
 #endif	/* F_LIST_ICON_H */

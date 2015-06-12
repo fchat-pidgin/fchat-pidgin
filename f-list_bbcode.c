@@ -141,12 +141,28 @@ static gchar *format_icon(ParserVars *vars, const gchar *ts, const gchar *inner)
     if(vars->fla && vars->convo) {
         gchar *smiley = g_strdup_printf("[icon]%s[/icon]", purple_url_encode(lower));
         ret = g_strdup_printf("%s<a href=\"http://www.f-list.net/c/%s\">(%s)</a>", smiley, purple_url_encode(lower), inner);
-        flist_fetch_emoticon(vars->fla, smiley, lower, vars->convo);
+        flist_fetch_avatar(vars->fla, smiley, lower, vars->convo);
         g_free(smiley);
     } else {
         ret = g_strdup_printf("<a href=\"http://www.f-list.net/c/%s\">%s</a>", purple_url_encode(lower), inner);
     }
     g_free(lower);
+    return ret;
+}
+
+static gchar *format_eicon(ParserVars *vars, const gchar *ts, const gchar *inner) {
+    gchar *lower = g_utf8_strdown(inner, -1);
+    gchar *ret;
+
+    gchar *smiley = g_strdup_printf("[eicon]%s[/eicon]", purple_url_encode(lower));
+    ret = g_strdup(smiley);
+
+    if(vars->fla && vars->convo) {
+        flist_fetch_eicon(vars->fla, smiley, lower, vars->convo);
+    }
+
+    g_free(lower);
+    g_free(smiley);
     return ret;
 }
 
@@ -192,6 +208,7 @@ BBCodeTag tag_url = { "url", FALSE, TRUE, format_url };
 BBCodeTag tag_color = { "color", TRUE, TRUE, format_color };
 BBCodeTag tag_user = { "user", FALSE, FALSE, format_user };
 BBCodeTag tag_icon = { "icon", FALSE, FALSE, format_icon };
+BBCodeTag tag_eicon = { "eicon", FALSE, FALSE, format_eicon };
 BBCodeTag tag_channel = { "channel", FALSE, FALSE, format_channel };
 BBCodeTag tag_session = { "session", FALSE, FALSE, format_session };
 
@@ -371,6 +388,7 @@ void flist_bbcode_init() {
     g_hash_table_insert(tag_table, "color", &tag_color);
     g_hash_table_insert(tag_table, "user", &tag_user);
     g_hash_table_insert(tag_table, "icon", &tag_icon);
+    g_hash_table_insert(tag_table, "eicon", &tag_eicon);
     g_hash_table_insert(tag_table, "channel", &tag_channel);
     g_hash_table_insert(tag_table, "session", &tag_session);
 }

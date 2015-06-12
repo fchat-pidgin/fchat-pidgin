@@ -151,7 +151,7 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
 
     // Is this a conversation of our account?
     if (fla->pc != pc)
-        return FALSE;
+        return;
 
     // We are going to add a button to the conversation's toolbar that simply displays our characters name
     // This helps in case you are online with more than one character
