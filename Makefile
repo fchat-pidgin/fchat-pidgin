@@ -123,4 +123,4 @@ win_installer: ${WIN32_TARGET}
 	makensis -DPRODUCT_VERSION=${PLUGIN_VERSION} flist.nsi > /dev/null
 
 ${WIN32_TARGET}: ${FLIST_SOURCES} 
-	${WIN32_COMPILER} -Wall -I. -g -O2 -std=c99 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS}
+	${WIN32_COMPILER} -Wall -I. -g -O2 -std=c99 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS} ${FLIST_ADDITIONAL_CFLAGS}
