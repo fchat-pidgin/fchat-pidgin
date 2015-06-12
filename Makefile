@@ -43,8 +43,11 @@ WIN32_LIBS = \
 LIBPURPLE_CFLAGS = -DPURPLE_PLUGINS -DENABLE_NLS -DHAVE_ZLIB
 GLIB_CFLAGS = `pkg-config glib-2.0 json-glib-1.0 --cflags --libs`
 
+GIT_VERSION := $(shell git describe --dirty --always --tags)
+FLIST_ADDITIONAL_CFLAGS = -DGIT_VERSION=\"$(GIT_VERSION)\"
+
 ifdef FLIST_PURPLE_ONLY
-FLIST_ADDITIONAL_CFLAGS = -DFLIST_PURPLE_ONLY
+FLIST_ADDITIONAL_CFLAGS = $(FLIST_ADDITIONAL_CFLAGS) -DFLIST_PURPLE_ONLY
 PIDGIN_CFLAGS = `pkg-config purple --cflags --libs`
 else
 FLIST_ADDITIONAL_SOURCES = f-list_pidgin.c
@@ -81,6 +84,7 @@ PLUGIN_VERSION = $(shell grep FLIST_PLUGIN_VERSION f-list.h | cut -d'"' -f 2)
 
 TEST_PURPLE_DIR = purple
 TEST_PURPLE_PLUGINS_DIR = ${TEST_PURPLE_DIR}/plugins
+
 
 #Standard stuff here
 .PHONY: all clean install prepare_cross

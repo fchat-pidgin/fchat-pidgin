@@ -753,6 +753,18 @@ PurpleCmdRet flist_whoami_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     return PURPLE_CMD_RET_OK;
 }
 
+PurpleCmdRet flist_version_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    gchar *message1;
+
+    // GIT_VERSION is set via compiler flag
+    message1 = g_strdup_printf("You are running %s (%s).", USER_AGENT, GIT_VERSION);
+    purple_conversation_write(convo, NULL, message1, PURPLE_MESSAGE_SYSTEM, time(NULL));
+
+    g_free(message1);
+
+    return PURPLE_CMD_RET_OK;
+}
+
 void flist_init_commands() {
     PurpleCmdFlag channel_flags = PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_CHAT;
     PurpleCmdFlag anywhere_flags = PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_CHAT | PURPLE_CMD_FLAG_IM;
@@ -874,4 +886,7 @@ void flist_init_commands() {
 
     purple_cmd_register("report", "s", PURPLE_CMD_P_PRPL, anywhere_flags | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
         FLIST_PLUGIN_ID, flist_report_cmd, "report &lt;user&gt;: Report misbehavior of user and upload logs of current tab.", NULL);
+
+    purple_cmd_register("version", "", PURPLE_CMD_P_PRPL, anywhere_flags,
+        FLIST_PLUGIN_ID, flist_version_cmd, "version: Display the plugin's version.", NULL);
 }
