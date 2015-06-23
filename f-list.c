@@ -53,16 +53,16 @@ GHashTable *string_to_account;
 
 #define FLIST_GENDER_COUNT 8
 struct FListGenderStruct_ genders[FLIST_GENDER_COUNT] = {
-    { FLIST_GENDER_NONE, "None", "None", "#FFFFBB", "[color=#FFFFBB]None[/color]" },
-    { FLIST_GENDER_MALE, "Male", "Male", "#6699FF", "[color=#6699FF]Male[/color]" },
-    { FLIST_GENDER_FEMALE, "Female", "Female", "#FF6699", "[color=#FF6699]Female[/color]" },
-    { FLIST_GENDER_HERM, "Herm", "Herm", "#9B30FF", "[color=#9B30FF]Herm[/color]" },
-    { FLIST_GENDER_MALEHERM, "Male-Herm", "Male-Herm", "#007FFF", "[color=#007FFF]Male-Herm[/color]" },
-    { FLIST_GENDER_CUNTBOY, "Cunt-boy", "Cunt-boy", "#00CC66", "[color=#00CC66]Cunt-boy[/color]" },
-    { FLIST_GENDER_SHEMALE, "Shemale", "Shemale", "#CC66FF", "[color=#CC66FF]Shemale[/color]" },
-    { FLIST_GENDER_TRANSGENDER, "Transgender", "Transgender", "#EE8822", "[color=#EE8822]Transgender[/color]" }
+    { FLIST_GENDER_NONE, "None", "None", "#FFFFBB", "<font color=\"#FFFFBB\">None</font>" },
+    { FLIST_GENDER_MALE, "Male", "Male", "#6699FF", "<font color=\"#6699FF\">Male</font>" },
+    { FLIST_GENDER_FEMALE, "Female", "Female", "#FF6699", "<font color=\"#FF6699\">Female</font>" },
+    { FLIST_GENDER_HERM, "Herm", "Herm", "#9B30FF", "<font color=\"#9B30FF\">Herm</font>" },
+    { FLIST_GENDER_MALEHERM, "Male-Herm", "Male-Herm", "#007FFF", "<font color=\"#007FFF\">Male-Herm</font>" },
+    { FLIST_GENDER_CUNTBOY, "Cunt-boy", "Cunt-boy", "#00CC66", "<font color=\"#00CC66\">Cunt-boy</font>" },
+    { FLIST_GENDER_SHEMALE, "Shemale", "Shemale", "#CC66FF", "<font color=\"#CC66FF\">Shemale</font>" },
+    { FLIST_GENDER_TRANSGENDER, "Transgender", "Transgender", "#EE8822", "<font color=\"#EE8822\">Transgender</font>" }
 };
-struct FListGenderStruct_ gender_unknown = { FLIST_GENDER_UNKNOWN, "Unknown", "Unknown", "#FFFFBB", "[color=#FFFFBB]Unknown[/color]" };
+struct FListGenderStruct_ gender_unknown = { FLIST_GENDER_UNKNOWN, "Unknown", "Unknown", "#FFFFBB", "<font color=\"#FFFFBB\">Unknown</font>" };
 
 static gpointer _flist_lookup(GHashTable *table, gpointer key, gpointer def) {
     gpointer ret;
