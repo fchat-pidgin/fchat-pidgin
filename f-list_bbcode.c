@@ -155,15 +155,13 @@ static gchar *format_eicon(ParserVars *vars, const gchar *ts, const gchar *inner
     gchar *ret;
 
     gchar *smiley = g_strdup_printf("[eicon]%s[/eicon]", purple_url_encode(lower));
-    ret = g_strdup(smiley);
 
     if(vars->fla && vars->convo) {
         flist_fetch_eicon(vars->fla, smiley, lower, vars->convo);
     }
 
     g_free(lower);
-    g_free(smiley);
-    return ret;
+    return smiley;
 }
 
 static gchar *format_channel_real(ParserVars *vars, const gchar *name, const gchar *title) {
