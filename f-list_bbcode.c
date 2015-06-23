@@ -152,7 +152,6 @@ static gchar *format_icon(ParserVars *vars, const gchar *ts, const gchar *inner)
 
 static gchar *format_eicon(ParserVars *vars, const gchar *ts, const gchar *inner) {
     gchar *lower = g_utf8_strdown(inner, -1);
-    gchar *ret;
 
     gchar *smiley = g_strdup_printf("[eicon]%s[/eicon]", purple_url_encode(lower));
 
