@@ -29,6 +29,7 @@ void flist_report_alert_staff(FListReport *flr) {
     json_object_set_string_member(json, "action", "report");
     json_object_set_string_member(json, "report", report_message);
     json_object_set_string_member(json, "character", flr->character);
+    json_object_set_string_member(json, "tab", flr->channel_handle);
 
     // Append logid if we uploaded a log for ths report
     if (flr->log_id)
