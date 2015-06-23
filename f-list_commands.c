@@ -671,7 +671,7 @@ PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, 
     purple_debug_info(FLIST_DEBUG, "Sending warning to channel... (Character: %s) (Channel: %s) (Message: %s)\n",
         fla->character, channel, message);
 
-    purple_markup_html_to_xhtml(message, NULL, &plain_message);
+    purple_markup_html_to_xhtml(extended_message, NULL, &plain_message);
     json_object_set_string_member(json, "message", plain_message);
     json_object_set_string_member(json, "channel", channel);
     flist_request(fla->pc, FLIST_REQUEST_CHANNEL_MESSAGE, json);
