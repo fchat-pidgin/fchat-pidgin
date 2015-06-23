@@ -562,8 +562,13 @@ int flist_send_channel_message(PurpleConnection *pc, int id, const char *message
 PurpleCmdRet flist_roll_bottle(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     JsonObject *json = json_object_new();
-    const gchar *channel = purple_conversation_get_name(convo);
-    json_object_set_string_member(json, "channel", channel);
+    const gchar *target = purple_conversation_get_name(convo);
+
+    if (purple_conversation_get_type(convo) == PURPLE_CONV_TYPE_IM)
+        json_object_set_string_member(json, "recipient", target);
+    else
+        json_object_set_string_member(json, "channel", target);
+
     json_object_set_string_member(json, "dice", "bottle");
     flist_request(pc, FLIST_ROLL_DICE, json);
     json_object_unref(json);
@@ -573,8 +578,13 @@ PurpleCmdRet flist_roll_bottle(PurpleConversation *convo, const gchar *cmd, gcha
 PurpleCmdRet flist_roll_dice(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     JsonObject *json = json_object_new();
-    const gchar *channel = purple_conversation_get_name(convo);
-    json_object_set_string_member(json, "channel", channel);
+    const gchar *target = purple_conversation_get_name(convo);
+
+    if (purple_conversation_get_type(convo) == PURPLE_CONV_TYPE_IM)
+        json_object_set_string_member(json, "recipient", target);
+    else
+        json_object_set_string_member(json, "channel", target);
+
     json_object_set_string_member(json, "dice", args[0]);
     flist_request(pc, FLIST_ROLL_DICE, json);
     json_object_unref(json);
@@ -794,7 +804,7 @@ void flist_init_commands() {
     purple_cmd_register("invite", "s", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_invite_cmd, "invite &lt;character&gt;: Invites a user to the current channel.", NULL);
 
-    purple_cmd_register("roll", "s", PURPLE_CMD_P_PRPL, channel_flags,
+    purple_cmd_register("roll", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_roll_dice, "roll &lt;dice&gt;: Rolls dice.", NULL);
     purple_cmd_register("bottle", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_roll_bottle, "bottle: Spins a bottle.", NULL);

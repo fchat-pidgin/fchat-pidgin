@@ -260,6 +260,62 @@ static gboolean flist_process_FLN(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
+static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
+    FListAccount *fla = pc->proto_data;
+    PurpleAccount *pa = purple_connection_get_account(pc);
+    PurpleConversation *convo;
+    const gchar *character;
+    const gchar *message;
+    const gchar *target;
+    gchar *parsed;
+
+    character = json_object_get_string_member(root, "character");
+    message = json_object_get_string_member(root, "message");
+
+    if (flist_ignore_character_is_ignored(pc, character))
+        return TRUE;
+
+    // Roll happened in a channel
+    if (json_object_has_member(root, "channel"))
+    {
+        target = json_object_get_string_member(root, "channel");
+        convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, target, pa);
+        if(!convo) {
+            purple_debug_error(FLIST_DEBUG, "Received message for channel %s, but we are not in this channel.\n", target);
+            return TRUE;
+        }
+
+        if (flist_get_channel_show_chat(fla, target))
+            return TRUE;
+
+        parsed = flist_bbcode_to_html(fla, convo, message);
+        serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, PURPLE_MESSAGE_SYSTEM, parsed, time(NULL));
+    }
+    // Roll happened in a private message
+    else
+    {
+        target = json_object_get_string_member(root, "recipient");
+
+        // If we were the one who sent the roll we'll swap target and character variables
+        // so we can use the same code below for both cases
+        if (!flist_strcmp(target, fla->proper_character))
+            target = character;
+
+        // Get or create conversation
+        convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, target, pa);
+        if(!convo)
+            convo = purple_conversation_new(PURPLE_CONV_TYPE_IM, pa, target);
+
+        parsed = flist_bbcode_to_html(fla, convo, message);
+        purple_conv_im_write(PURPLE_CONV_IM(convo), character, parsed, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    }
+
+    purple_debug_info(FLIST_DEBUG, "Roll: %s (Target: %s, Character: %s, Message: %s)\n", parsed, target, character, message);
+
+    g_free(parsed);
+    return TRUE;
+}
+
 static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     PurpleAccount *pa = purple_connection_get_account(pc);
@@ -594,7 +650,7 @@ void flist_callback_init() {
     g_hash_table_insert(callbacks, "SYS", flist_process_SYS);
 
     //TODO: write RLL its own function
-    g_hash_table_insert(callbacks, "RLL", flist_process_MSG);
+    g_hash_table_insert(callbacks, "RLL", flist_process_RLL);
 
     /* kink search */
     g_hash_table_insert(callbacks, "FKS", flist_process_FKS);
