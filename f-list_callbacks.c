@@ -342,8 +342,13 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
 
     if (g_ascii_strncasecmp(message, "/warn", 5) == 0)
     {
-        flist_channel_print_op_warning(convo, character, &message[6]);
-        return TRUE;
+        FListChannel *fc = flist_channel_find(fla, channel);
+
+        if (fc && (g_list_find_custom(fc->operators, character, (GCompareFunc) flist_strcmp) || g_hash_table_lookup(fla->global_ops, character)))
+        {
+            flist_channel_print_op_warning(convo, character, &message[6]);
+            return TRUE;
+        }
     }
 
     parsed = flist_bbcode_to_html(fla, convo, message);
