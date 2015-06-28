@@ -285,7 +285,7 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
             return TRUE;
         }
 
-        if (flist_get_channel_show_chat(fla, target))
+        if (!flist_get_channel_show_chat(fla, target))
             return TRUE;
 
         parsed = flist_bbcode_to_html(fla, convo, message);
