@@ -100,6 +100,9 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
         case FriendRemove:
             flist_friends_removed_friend(fla);
             return TRUE;
+        default:
+            // We will handle other cases further below
+            break;
     }
 
     // --- Past this point, we're going to build a message.
@@ -176,6 +179,11 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
             msg = g_strdup_printf("%s submitted a comment on the %s \"<a href=\"%s\">%s</a>\"", name, subject, url, title);
             g_free(url);
             break;
+
+        default:
+            // We should actually never come here, all other cases are handled above.
+            purple_debug_error(FLIST_DEBUG, "Error parsing RTB: Unhandled type reached(Character: %s, Type: %s)\n", fla->character, type_str);
+            return TRUE;
     }
 
     serv_got_im(pc, GLOBAL_NAME, msg, PURPLE_MESSAGE_RECV, time(NULL));
