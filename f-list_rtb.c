@@ -143,26 +143,26 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
     switch(type)
     {
         case Note:
-            msg = g_strdup_printf("New note received from %s: %s (<a href=\"" FLIST_URL_NOTE "\">Open Note</a>)", name, title, id);
+            msg = g_strdup_printf("New note received from <a href=\"" FLIST_URL_CHARACTER "\">%s</a>: %s (<a href=\"" FLIST_URL_NOTE "\">Open Note</a>)", name, name, title, id);
             break;
 
         case BugReport:
-            msg = g_strdup_printf("%s submitted a bugreport, \"<a href=\"" FLIST_URL_BUGREPORT "\">%s</a>\"", name, id, title);
+            msg = g_strdup_printf("<a href=\"" FLIST_URL_CHARACTER "\">%s</a> submitted a bugreport, \"<a href=\"" FLIST_URL_BUGREPORT "\">%s</a>\"", name, name, id, title);
             break;
 
         case FeatureRequest:
-            msg = g_strdup_printf("%s submitted a feature request, \"<a href=\"" FLIST_URL_FEATUREREQUEST "\">%s</a>\"", name, id, title);
+            msg = g_strdup_printf("<a href=\"" FLIST_URL_CHARACTER "\">%s</a> submitted a feature request, \"<a href=\"" FLIST_URL_FEATUREREQUEST "\">%s</a>\"", name, name, id, title);
             break;
 
         // Helpdesk Tickets
         case HelpdeskTicket:
-            msg = g_strdup_printf("%s submitted a helpdesk ticket, \"<a href=\"" FLIST_URL_HELPDESKTICKET "\">%s</a>\"", name, id, title);
+            msg = g_strdup_printf("<a href=\"" FLIST_URL_CHARACTER "\">%s</a> submitted a helpdesk ticket, \"<a href=\"" FLIST_URL_HELPDESKTICKET "\">%s</a>\"", name, name, id, title);
             break;
         case TicketCreate:
-            msg = g_strdup_printf("%s submitted a helpdesk ticket via email, \"<a href=\"" FLIST_URL_HELPDESKTICKET "\">%s</a>\"", name, id, title);
+            msg = g_strdup_printf("<a href=\"" FLIST_URL_CHARACTER "\">%s</a> submitted a helpdesk ticket via email, \"<a href=\"" FLIST_URL_HELPDESKTICKET "\">%s</a>\"", name, name, id, title);
             break;
         case HelpdeskReply:
-            msg = g_strdup_printf("%s submitted a reply to your helpdesk ticket, \"<a href=\"" FLIST_URL_HELPDESKTICKET "\">%s</a>\"", name, id, title);
+            msg = g_strdup_printf("<a href=\"" FLIST_URL_CHARACTER "\">%s</a> submitted a reply to your helpdesk ticket, \"<a href=\"" FLIST_URL_HELPDESKTICKET "\">%s</a>\"", name, name, id, title);
             break;
 
         case Comment:
@@ -176,7 +176,7 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
             }
 
             url = flist_rtb_get_comment_url(subject, target_id, id);
-            msg = g_strdup_printf("%s submitted a comment on the %s \"<a href=\"%s\">%s</a>\"", name, subject, url, title);
+            msg = g_strdup_printf("<a href=\"" FLIST_URL_CHARACTER "\">%s</a> submitted a comment on the %s \"<a href=\"%s\">%s</a>\"", name, name, subject, url, title);
             g_free(url);
             break;
 
