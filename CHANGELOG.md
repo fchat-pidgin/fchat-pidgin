@@ -2,6 +2,7 @@
 
 ## ?.?.?
 ### Added
+- #40: Character names in RTB notifications (reports, new notes, ...) are links to their profile
 
 ### Fixed
 - #53: Incorrect link in bug report comment notifications
