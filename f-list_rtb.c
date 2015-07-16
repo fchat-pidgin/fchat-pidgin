@@ -20,106 +20,166 @@
  */
 #include "f-list_rtb.h"
 
+gchar *flist_rtb_get_comment_url(const gchar *type, gint target_id, gint comment_id)
+{
+    gchar *url = NULL;
+
+    if (flist_str_equal(type, "newspost"))
+        url = g_strdup_printf(FLIST_URL_NEWSPOST_COMMENT, target_id, comment_id);
+    else if(flist_str_equal(type, "bugreport"))
+        url = g_strdup_printf(FLIST_URL_BUGREPORT_COMMENT, target_id, comment_id);
+    else if(flist_str_equal(type, "changelog"))
+        url = g_strdup_printf(FLIST_URL_CHANGELOG_COMMENT, target_id, comment_id);
+    else if(flist_str_equal(type, "feature"))
+        url = g_strdup_printf(FLIST_URL_FEATURE_COMMENT, target_id, comment_id);
+
+    return url;
+}
+
+RTB_TYPE flist_rtb_get_type(const gchar *type_str)
+{
+    RTB_TYPE type = None;
+
+    if(flist_str_equal(type_str, "friendrequest"))
+        type = FriendRequest;
+    else if(flist_str_equal(type_str, "friendadd"))
+        type = FriendAdd;
+    else if(flist_str_equal(type_str, "friendremove"))
+        type = FriendRemove;
+    else if(flist_str_equal(type_str, "note"))
+        type = Note;
+    else if(flist_str_equal(type_str, "bugreport"))
+        type = BugReport;
+    else if(flist_str_equal(type_str, "helpdeskticket"))
+        type = HelpdeskTicket;
+    else if(flist_str_equal(type_str, "ticketcreate"))
+        type = TicketCreate;
+    else if(flist_str_equal(type_str, "helpdeskreply"))
+        type = HelpdeskReply;
+    else if(flist_str_equal(type_str, "featurerequest"))
+        type = FeatureRequest;
+    else if(flist_str_equal(type_str, "comment"))
+        type = Comment;
+
+    return type;
+}
+
 gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
-    const gchar *sender = NULL, *subject = NULL, *name = NULL, *title = NULL;
-    gchar *message = NULL;
+    const gchar *subject = NULL, *name = NULL, *title = NULL;
+    gchar *url = NULL;
+    gchar *msg = NULL;
     gint id;  gboolean has_id;
     gint target_id; gboolean has_target_id;
-    const gchar *type = json_object_get_string_member(root, "type");
-    GString *message_str;
-
-    purple_debug_info(FLIST_DEBUG, "Processing RTB... (Character: %s) (Type: %s)\n", fla->character, type);
+    const gchar *type_str = json_object_get_string_member(root, "type");
 
     /* Ignore notification if the user doesn't want to see it */
     if (!fla->receive_rtb) {
         return TRUE;
     }
 
-    if(flist_str_equal(type, "friendrequest")) {
-        flist_friends_received_request(fla);
-        return TRUE;
-    }
-    else if(flist_str_equal(type, "friendadd")) {
-        flist_friends_added_friend(fla);
-        return TRUE;
-    }
-    else if(flist_str_equal(type, "friendremove")) {
-        flist_friends_removed_friend(fla);
+    purple_debug_info(FLIST_DEBUG, "Processing RTB... (Character: %s, Type: %s)\n", fla->character, type_str);
+
+    RTB_TYPE type = flist_rtb_get_type(type_str);
+
+    if (type == None)
+    {
+        purple_debug_error(FLIST_DEBUG, "Error parsing RTB: Unknown type (Character: %s, Type: %s)\n", fla->character, type_str);
         return TRUE;
     }
 
-    /* Past this point, we're going to build a message. */
-    message_str = g_string_new(NULL);
+    // Handle friend list notifications
+    switch(type)
+    {
+        case FriendRequest:
+            flist_friends_received_request(fla);
+            return TRUE;
+        case FriendAdd:
+            flist_friends_added_friend(fla);
+            return TRUE;
+        case FriendRemove:
+            flist_friends_removed_friend(fla);
+            return TRUE;
+    }
 
-    if(flist_str_equal(type, "note")) {
-        sender = json_object_get_string_member(root, "sender");
-        subject = json_object_get_string_member(root, "subject");
-        id = json_object_get_parse_int_member(root, "id", &has_id);
-        g_string_append_printf(message_str,"New note received from %s: %s",sender,subject);
-        g_string_append_printf(message_str, " (<a href=\"http://www.f-list.net/view_note.php?note_id=%d\">Open Note</a>)", id);
-        message = g_string_free(message_str, FALSE);
-        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
-    }
-    else if(flist_str_equal(type, "bugreport")) {
-        name = json_object_get_string_member(root, "name");
-        title = json_object_get_string_member(root, "title");
-        id = json_object_get_parse_int_member(root, "id", &has_id);
-        g_string_append_printf(message_str,"%s submitted a bugreport, \"<a href=\"http://www.f-list.net/view_bugreport.php?id=%d\">%s</a>\"",name,id,title);
-        message = g_string_free(message_str, FALSE);
-        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
-    }
-    else if(flist_str_equal(type, "helpdeskticket")) {
-        name = json_object_get_string_member(root, "name");
-        title = json_object_get_string_member(root, "title");
-        id = json_object_get_parse_int_member(root, "id", &has_id);
-        g_string_append_printf(message_str,"%s submitted a helpdesk ticket, \"<a href=\"http://www.f-list.net/view_ticket.php?id=%d\">%s</a>\"",name,id,title);
-        message = g_string_free(message_str, FALSE);
-        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
-    }
-    else if(flist_str_equal(type, "ticketcreate")) {
+    // --- Past this point, we're going to build a message.
+
+    // Fields in some RTB message are named differently, depending on their type
+    // Normalize this here
+    if (type == TicketCreate)
+    {
         name = json_object_get_string_member(root, "user");
         title = json_object_get_string_member(root, "subject");
         id = json_object_get_parse_int_member(root, "id", &has_id);
-        g_string_append_printf(message_str,"%s submitted a helpdesk ticket via email, \"<a href=\"http://www.f-list.net/view_ticket.php?id=%d\">%s</a>\"",name,id,title);
-        message = g_string_free(message_str, FALSE);
-        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
     }
-    else if(flist_str_equal(type, "helpdeskreply")) {
-        name = json_object_get_string_member(root, "name");
-        title = json_object_get_string_member(root, "title");
+    else if (type == Note)
+    {
+        name = json_object_get_string_member(root, "sender");
+        title = json_object_get_string_member(root, "subject");
         id = json_object_get_parse_int_member(root, "id", &has_id);
-        g_string_append_printf(message_str,"%s submitted a reply to your helpdesk ticket, \"<a href=\"http://www.f-list.net/view_ticket.php?id=%d\">%s</a>\"",name,id,title);
-        message = g_string_free(message_str, FALSE);
-        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
     }
-    else if(flist_str_equal(type, "featurerequest")) {
-        name = json_object_get_string_member(root, "name");
-        title = json_object_get_string_member(root, "title");
-        id = json_object_get_parse_int_member(root, "id", &has_id);
-        g_string_append_printf(message_str,"%s submitted a feature request, \"<a href=\"http://www.f-list.net/vote.php?fid=%d\">%s</a>\"",name,id,title);
-        message = g_string_free(message_str, FALSE);
-        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
-    }
-    else if(flist_str_equal(type, "comment")) {
+    else if (type == Comment)
+    {
         name = json_object_get_string_member(root, "name");
         title = json_object_get_string_member(root, "target");
-        subject = json_object_get_string_member(root, "target_type");
         id = json_object_get_parse_int_member(root, "id", &has_id);
-        target_id = json_object_get_parse_int_member(root, "target_id", &has_target_id);
-        if (has_id && has_target_id) {
-            g_string_append_printf(message_str,"%s submitted a comment on the newspost \"<a href=\"http://www.f-list.net/%s/%d/#Comment%d\">%s</a>\"",name,subject,target_id,id,title);
-            message = g_string_free(message_str, FALSE);
-            serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
-        } else {
-            message = g_string_free(message_str, FALSE);
-        }
     }
-    else {
-        /* We'll silently ignore this for now. */
-        message = g_string_free(message_str, FALSE);
+    else
+    {
+        name = json_object_get_string_member(root, "name");
+        title = json_object_get_string_member(root, "title");
+        id = json_object_get_parse_int_member(root, "id", &has_id);
     }
 
-    g_free(message);
+    if (!has_id)
+    {
+        purple_debug_error(FLIST_DEBUG, "Error parsing RTB: Could not parse id (Character: %s, Type: %s)\n", fla->character, type_str);
+        return TRUE;
+    }
+
+    switch(type)
+    {
+        case Note:
+            msg = g_strdup_printf("New note received from %s: %s (<a href=\"" FLIST_URL_NOTE "\">Open Note</a>)", name, title, id);
+            break;
+
+        case BugReport:
+            msg = g_strdup_printf("%s submitted a bugreport, \"<a href=\"" FLIST_URL_BUGREPORT "\">%s</a>\"", name, id, title);
+            break;
+
+        case FeatureRequest:
+            msg = g_strdup_printf("%s submitted a feature request, \"<a href=\"" FLIST_URL_FEATUREREQUEST "\">%s</a>\"", name, id, title);
+            break;
+
+        // Helpdesk Tickets
+        case HelpdeskTicket:
+            msg = g_strdup_printf("%s submitted a helpdesk ticket, \"<a href=\"" FLIST_URL_HELPDESKTICKET "\">%s</a>\"", name, id, title);
+            break;
+        case TicketCreate:
+            msg = g_strdup_printf("%s submitted a helpdesk ticket via email, \"<a href=\"" FLIST_URL_HELPDESKTICKET "\">%s</a>\"", name, id, title);
+            break;
+        case HelpdeskReply:
+            msg = g_strdup_printf("%s submitted a reply to your helpdesk ticket, \"<a href=\"" FLIST_URL_HELPDESKTICKET "\">%s</a>\"", name, id, title);
+            break;
+
+        case Comment:
+            subject = json_object_get_string_member(root, "target_type");
+            target_id = json_object_get_parse_int_member(root, "target_id", &has_target_id);
+
+            if (!has_target_id)
+            {
+                purple_debug_error(FLIST_DEBUG, "Error parsing RTB: Could not parse target_id (Character: %s, Type: %s)\n", fla->character, type_str);
+                return TRUE;
+            }
+
+            url = flist_rtb_get_comment_url(subject, target_id, id);
+            msg = g_strdup_printf("%s submitted a comment on the %s \"<a href=\"%s\">%s</a>\"", name, subject, url, title);
+            g_free(url);
+            break;
+    }
+
+    serv_got_im(pc, GLOBAL_NAME, msg, PURPLE_MESSAGE_RECV, time(NULL));
+    g_free(msg);
+
     return TRUE;
 }
