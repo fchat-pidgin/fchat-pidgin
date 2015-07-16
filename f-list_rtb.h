@@ -23,21 +23,6 @@
 
 #include "f-list.h"
 
-#define FLIST_URL "https://www.f-list.net/"
-
-#define FLIST_URL_NEWSPOST          FLIST_URL "newspost/%d/"
-#define FLIST_URL_CHANGELOG         FLIST_URL "log.php?id=%d"
-#define FLIST_URL_NOTE              FLIST_URL "view_note.php?note_id=%d"
-#define FLIST_URL_BUGREPORT         FLIST_URL "view_bugreport.php?id=%d"
-#define FLIST_URL_HELPDESKTICKET    FLIST_URL "view_ticket.php?id=%d"
-#define FLIST_URL_FEATUREREQUEST    FLIST_URL "vote.php?fid=%d"
-
-#define FLIST_URL_COMMENT_ANCHOR    "#Comment%d"
-#define FLIST_URL_NEWSPOST_COMMENT  FLIST_URL_NEWSPOST FLIST_URL_COMMENT_ANCHOR
-#define FLIST_URL_BUGREPORT_COMMENT FLIST_URL_BUGREPORT FLIST_URL_COMMENT_ANCHOR
-#define FLIST_URL_CHANGELOG_COMMENT FLIST_URL_CHANGELOG FLIST_URL_COMMENT_ANCHOR
-#define FLIST_URL_FEATURE_COMMENT   FLIST_URL_FEATUREREQUEST FLIST_URL_COMMENT_ANCHOR
-
 typedef enum {
     None,
     FriendRequest,
