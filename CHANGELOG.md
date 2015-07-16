@@ -1,5 +1,11 @@
 # Change Log
 
+## ?.?.?
+### Added
+
+### Fixed
+- #53: Incorrect link in bug report comment notifications
+
 ## 0.5.0
 ### Added
 - #34: Add a command to display the plugin's version (/version)
