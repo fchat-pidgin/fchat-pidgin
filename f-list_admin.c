@@ -395,7 +395,7 @@ static void flist_sfc_report(PurpleConnection *pc, JsonObject *root) {
     escaped_reporter = purple_markup_escape_text(reporter, -1);
     escaped_report = purple_markup_escape_text(report, -1);
 
-    g_string_append_printf(message_str, "Moderator Alert. %s writes:\n", escaped_reporter);
+    g_string_append_printf(message_str, "Moderator Alert. <a href=\"" FLIST_URL_CHARACTER "\">%s</a> writes:\n", escaped_reporter, escaped_reporter);
     g_string_append_printf(message_str, "%s\n", escaped_report);
     g_string_append_printf(message_str, "<a href=\"flistsfc://%s/%s\">Confirm Alert</a>", s, purple_url_encode(callid));
     g_string_append(message_str, ", ");
