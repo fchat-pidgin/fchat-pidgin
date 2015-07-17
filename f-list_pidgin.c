@@ -132,8 +132,8 @@ GtkWidget *get_account_icon(FListAccount *fla)
         GdkPixbuf *scale = gdk_pixbuf_scale_simple(pixbuf, 16, 16, GDK_INTERP_BILINEAR);
         icon = gtk_image_new_from_pixbuf(scale);
         gtk_widget_set_sensitive(icon, TRUE);
-        gdk_pixbuf_unref(pixbuf);
-        gdk_pixbuf_unref(scale);
+        g_object_unref(pixbuf);
+        g_object_unref(scale);
 
         return icon;
     }
