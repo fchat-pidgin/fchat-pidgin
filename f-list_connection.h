@@ -40,8 +40,6 @@ void flist_request(PurpleConnection *, const gchar *, JsonObject *);
 void flist_receive_ping(PurpleConnection *);
 void flist_ticket_timer(FListAccount *, guint);
 
-void flist_get_cookie_data(FListAccount *fla);
-
 void flist_ticket_init();
 
 #endif

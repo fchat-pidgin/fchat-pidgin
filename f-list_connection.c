@@ -64,7 +64,6 @@ static void flist_write_hybi(FListAccount *fla, guint8 opcode, gchar *content, g
     gsize frame_len;
     guint8 mask[4];
     int offset;
-    gsize sent;
 
     frame = g_malloc(10 + len);
     ptr = frame;
@@ -105,8 +104,9 @@ static void flist_write_hybi(FListAccount *fla, guint8 opcode, gchar *content, g
     }
 
     frame_len = (gsize) (ptr + len - frame);
+
     // TODO: check the return value of write()
-    sent = flist_write_raw(fla, (gchar*) frame, frame_len);
+    flist_write_raw(fla, (gchar*) frame, frame_len);
     g_free(frame);
 }
 
@@ -396,7 +396,7 @@ static void flist_process_secure(gpointer data, PurpleSslConnection *ssl_con, Pu
 static void flist_handshake(FListAccount *fla) {
     GString *headers_str = g_string_new(NULL);
     gchar *headers, *b64_data;
-    int i, len;
+    int i;
     guchar nonce[16];
     for(i = 0; i < 16; i++) {
         nonce[i] = (guchar) (g_random_int() & 0xFF);
@@ -416,7 +416,7 @@ static void flist_handshake(FListAccount *fla) {
     headers = g_string_free(headers_str, FALSE);
 
     purple_debug_info(FLIST_DEBUG, "Sending WebSocket handshake...\n");
-    len = flist_write_raw(fla, headers, strlen(headers));
+    flist_write_raw(fla, headers, strlen(headers));
     fla->connection_status = FLIST_HANDSHAKE;
     purple_connection_update_progress(fla->pc, "Sending WebSocket handshake",3 ,5);
     g_free(headers);
@@ -518,39 +518,6 @@ static gboolean flist_ticket_timer_cb(gpointer data) {
     g_hash_table_destroy(args);
 
     return FALSE;
-}
-
-void flist_get_cookie_data_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message) {
-    FListAccount *fla = user_data;
-
-    if (fla->cookies)
-        g_hash_table_unref(fla->cookies);
-
-    fla->cookies = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-    flist_parse_cookies_into_hash_table(url_text, len, fla->cookies);
-
-    purple_debug_info(FLIST_DEBUG, "Got cookies for account '%s'!\n", fla->username);
-}
-
-/* This logs into f-list.net to retrieve cookie information.
- * We need that later to be able to upload logs when reporting users
- */
-void flist_get_cookie_data(FListAccount *fla) {
-    gchar *full_url = g_strdup_printf("%s%s", fla->secure ? "https://" : "http://", HTTP_LOGIN);
-
-    GHashTable *args = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
-    g_hash_table_insert(args, "username", g_strdup(fla->username));
-    g_hash_table_insert(args, "password", g_strdup(fla->password));
-
-    gchar *http = http_request(full_url, TRUE, TRUE, USER_AGENT, args, NULL);
-
-    purple_debug_info(FLIST_DEBUG, "Fetching cookies from %s ...", full_url);
-    // performs HTTP GET and calls flist_get_cookie_data_cb with the response, containing headers
-    // TODO what to do with url_data? I don't need it.
-    PurpleUtilFetchUrlData *url_data = purple_util_fetch_url_request(full_url, TRUE, USER_AGENT, TRUE, http, TRUE, flist_get_cookie_data_cb, fla);
-
-    g_free(full_url);
-    g_hash_table_destroy(args);
 }
 
 void flist_ticket_timer(FListAccount *fla, guint timeout) {

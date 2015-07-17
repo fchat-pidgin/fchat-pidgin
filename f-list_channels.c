@@ -247,6 +247,7 @@ void flist_got_channel_left(FListAccount *fla, const gchar *name) {
     purple_debug_info(FLIST_DEBUG, "We (%s) have left channel %s.\n", fla->proper_character, name);
 }
 
+// XXX rip out this shitty channel mode stuff and rewrite it
 void flist_got_channel_mode(FListAccount *fla, const gchar *channel, const gchar *mode) {
     PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
     FListChannel *fchannel = flist_channel_find(fla, channel);
@@ -479,22 +480,6 @@ gboolean flist_process_COL(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_RMO(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
-    const gchar *channel, *mode;
-
-    channel = json_object_get_string_member(root, "channel");
-    mode = json_object_get_string_member(root, "mode");
-
-    g_return_val_if_fail(channel != NULL, TRUE);
-
-    if(mode) {
-        flist_got_channel_mode(fla, channel, mode);
-    }
-
-    return TRUE;
-}
-
 gboolean flist_process_ICH(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     JsonArray *array;
@@ -576,10 +561,6 @@ gboolean flist_process_CBL(PurpleConnection *pc, JsonObject *root) {
 //    CBL {"banlist": [{"chanop": "TestTiger", "character": "TestPanther", "time": "2011-03-20T11:21:33.154111"}],
 //    "channel": "ADH-4268aebc94bd8c5362e1"}
     return TRUE;
-}
-
-void flist_channel_print_error(PurpleConversation *convo, const gchar *message) {
-    purple_conv_chat_write(PURPLE_CONV_CHAT(convo), NULL, message, PURPLE_MESSAGE_ERROR, time(NULL));
 }
 
 void flist_channel_print_op_warning(PurpleConversation *convo, const gchar *character, const gchar *message)
@@ -1062,10 +1043,6 @@ const gchar *flist_channel_get_title(FListChannel *channel) {
 
 GList *flist_channel_list_all(FListAccount *fla) {
     return g_hash_table_get_values(fla->chat_table);
-}
-
-GList *flist_channel_list_names(FListAccount *fla) {
-    return g_hash_table_get_keys(fla->chat_table);
 }
 
 void flist_channel_subsystem_load(FListAccount *fla) {

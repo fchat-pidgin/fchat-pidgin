@@ -377,14 +377,12 @@ static void flist_sfc_report(PurpleConnection *pc, JsonObject *root) {
     const gchar *callid, *reporter, *report;
     gchar *s, *escaped_reporter, *escaped_report, *message;
     GString *message_str;
-    gdouble timestamp;
     gint logid; gboolean has_logid;
 
     callid = json_object_get_string_member(root, "callid");
     reporter = json_object_get_string_member(root, "character");
     report = json_object_get_string_member(root, "report");
     logid = json_object_get_parse_int_member(root, "logid", &has_logid);
-    timestamp = json_object_get_double_member(root, "timestamp");
 
     g_return_if_fail(callid);
     g_return_if_fail(reporter);
@@ -418,11 +416,9 @@ static void flist_sfc_confirm(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     const gchar *moderator, *reporter;
     gchar *message, *escaped_message, *bbcode_message;
-    gdouble timestamp;
 
     moderator = json_object_get_string_member(root, "moderator");
     reporter = json_object_get_string_member(root, "character");
-    timestamp = json_object_get_double_member(root, "timestamp");
 
     g_return_if_fail(moderator);
     g_return_if_fail(reporter);

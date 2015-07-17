@@ -88,10 +88,6 @@ const gchar *flist_format_gender_color(FListGender k) {
     const struct FListGenderStruct_* gender = _flist_lookup(gender_to_struct, (gpointer) k, (gpointer) &gender_unknown);
     return gender->colored_name;
 }
-const gchar *flist_gender_color(FListGender k) {
-    const struct FListGenderStruct_* gender = _flist_lookup(gender_to_struct, (gpointer) k, (gpointer) &gender_unknown);
-    return gender->color;
-}
 
 FListChannelMode flist_parse_channel_mode(const gchar *k) {
     return (FListChannelMode) _flist_lookup(str_to_channel_mode, (gpointer) k, (gpointer) CHANNEL_MODE_UNKNOWN);
@@ -122,12 +118,7 @@ PurpleGroup *flist_get_filter_group(FListAccount *fla) {
     g_free(name);
     return g;
 }
-PurpleGroup *flist_get_bookmarks_group(FListAccount *fla) {
-    gchar *name = g_strdup_printf("%s - Bookmarks", fla->character);
-    PurpleGroup *g = flist_get_group(name);
-    g_free(name);
-    return g;
-}
+
 PurpleGroup *flist_get_friends_group(FListAccount *fla) {
     gchar *name = g_strdup_printf("%s - Friends", fla->character);
     PurpleGroup *g = flist_get_group(name);
@@ -185,18 +176,15 @@ guint flist_str_hash(const char *nick) {
     g_free(lc);
     return bucket;
 }
+
 gboolean flist_str_equal(const char *nick1, const char *nick2) {
     return (purple_utf8_strcasecmp(nick1, nick2) == 0);
 }
+
 gint flist_strcmp(const char *nick1, const char *nick2) {
     return purple_utf8_strcasecmp(nick1, nick2);
 }
-void flist_g_list_free(GList *to_free) {
-    while(to_free) {
-        g_free(to_free->data);
-        to_free = g_list_delete_link(to_free, to_free);
-    }
-}
+
 void flist_g_slist_free_full(GSList *to_free, GDestroyNotify f) {
     GSList *cur = to_free;
     while(cur) {
@@ -346,15 +334,6 @@ void flist_channel_show_message(FListAccount *fla, const gchar *channel) {
 
 gint json_object_get_parse_int_member(JsonObject *json, const gchar *name, gboolean *success) {
     JsonNode *node = json_object_get_member(json, name);
-    if(!node) {
-        if(success) *success = FALSE;
-        return 0;
-    }
-    return json_node_get_parse_int_member(node, success);
-}
-
-gint json_array_get_parse_int_element(JsonArray *json, guint index, gboolean *success) {
-    JsonNode *node = json_array_get_element(json, index);
     if(!node) {
         if(success) *success = FALSE;
         return 0;

@@ -181,13 +181,11 @@ static gboolean flist_process_profile(FListAccount *fla, JsonObject *root) {
 
     cur = categories;
     while(cur) {
-        const gchar *group_name;
         JsonObject *field_group;
         JsonArray *field_array;
         guint i, len;
 
         field_group = json_object_get_object_member(info, cur->data);
-        group_name = json_object_get_string_member(field_group, "group");
         field_array = json_object_get_array_member(field_group, "items");
 
         len = json_array_get_length(field_array);

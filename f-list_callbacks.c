@@ -57,12 +57,11 @@ static void flist_purple_find_chats_in_node(PurpleAccount *pa, PurpleBlistNode *
 static void flist_got_online(PurpleConnection *pc) {
     PurpleAccount *pa = purple_connection_get_account(pc);
     FListAccount *fla = pc->proto_data;
-    PurpleGroup *filter_group, *chat_group;
+    PurpleGroup *chat_group;
     GSList *chats = NULL;
     GSList *cur;
 
     chat_group = flist_get_chat_group(fla);
-    filter_group = flist_get_filter_group(fla);
 
     if(chat_group) {
         flist_purple_find_chats_in_node(pa, PURPLE_BLIST_NODE(chat_group)->child, &chats);
@@ -423,7 +422,7 @@ static gboolean flist_process_LRP(PurpleConnection *pc, JsonObject *root) {
 static gboolean flist_process_BRO(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     const gchar *message, *character;
-    gchar *parsed, *final;
+    gchar *parsed;
 
     message = json_object_get_string_member(root, "message");
     character = json_object_get_string_member(root, "character");
