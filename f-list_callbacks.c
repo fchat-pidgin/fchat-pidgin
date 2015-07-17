@@ -432,10 +432,9 @@ static gboolean flist_process_BRO(PurpleConnection *pc, JsonObject *root) {
     if(!character) character = GLOBAL_NAME;
 
     parsed = flist_bbcode_to_html(fla, NULL, message);
-    final = g_strdup_printf("(Broadcast) %s", parsed);
-    serv_got_im(pc, character, parsed, PURPLE_MESSAGE_RECV, time(NULL));
+    serv_got_im(pc, GLOBAL_NAME, parsed, PURPLE_MESSAGE_RECV, time(NULL));
 
-    g_free(parsed); g_free(final);
+    g_free(parsed);
     return TRUE;
 }
 
