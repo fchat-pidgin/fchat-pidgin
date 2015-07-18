@@ -40,34 +40,6 @@ FListFlags flist_get_flags(FListAccount *fla, const gchar *channel, const gchar 
     return ret;
 }
 
-static PurpleConvChatBuddyFlags flist_flags_lookup(FListAccount *fla, PurpleConversation *convo, const gchar *identity) {
-    const gchar *channel = purple_conversation_get_name(convo);
-    FListChannel *fchannel = flist_channel_find(fla, channel);
-    PurpleConvChatBuddyFlags flags = 0;
-
-    if(!fchannel) {
-        purple_debug_error(FLIST_DEBUG, "Flags requested for %s in channel %s, but no channel was found.\n", identity, channel);
-        return PURPLE_CBFLAGS_NONE;
-    }
-
-    if(fchannel->owner && !flist_op_strcmp(fchannel->owner, identity)) {
-        flags |= PURPLE_CBFLAGS_FOUNDER;
-    }
-    if(g_hash_table_lookup(fla->global_ops, identity) != NULL) {
-        flags |= PURPLE_CBFLAGS_OP;
-    }
-    if(g_list_find_custom(fchannel->operators, identity, flist_op_strcmp)) {
-        flags |= PURPLE_CBFLAGS_HALFOP;
-    }
-
-    // Add "voice" flag to characters with status "Looking"
-    FListCharacter *flc = flist_get_character(fla, identity);
-    if (flc && flc->status == FLIST_STATUS_LOOKING)
-      flags |= PURPLE_CBFLAGS_VOICE;
-
-    return flags;
-}
-
 void flist_update_user_chats_offline(PurpleConnection *pc, const gchar *character) {
     FListAccount *fla = pc->proto_data;
     PurpleAccount *pa = fla->pa;
@@ -95,7 +67,9 @@ void flist_update_user_chats_rank(PurpleConnection *pc, const gchar *character) 
     while(g_hash_table_iter_next(&iter, NULL, (gpointer*)&channel)) {
         if(g_hash_table_lookup_extended(channel->users, character, NULL, NULL)) {
             PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel->name, pa);
-            PurpleConvChatBuddyFlags flags = flist_flags_lookup(fla, convo, character);
+
+            PurpleConvChatBuddyFlags flags = FLIST_GET_PURPLE_PERMISSIONS(fla, character, channel->name);
+
             purple_conv_chat_user_set_flags(PURPLE_CONV_CHAT(convo), character, flags);
         }
     }
@@ -193,7 +167,7 @@ void flist_got_channel_userlist(FListAccount *fla, const gchar *channel, GList *
     g_return_if_fail(fchannel != NULL);
 
     for(cur = userlist; cur; cur = cur->next) {
-        flags = g_list_prepend(flags, GINT_TO_POINTER(flist_flags_lookup(fla, convo, cur->data)));
+        flags = g_list_prepend(flags, GINT_TO_POINTER(FLIST_GET_PURPLE_PERMISSIONS(fla, cur->data, channel)));
         g_hash_table_replace(fchannel->users, g_strdup(cur->data), NULL);
     }
     flags = g_list_reverse(flags);
@@ -212,7 +186,7 @@ void flist_got_channel_user_joined(FListAccount *fla, const gchar *channel, cons
 
     g_hash_table_replace(fchannel->users, g_strdup(character), NULL);
 
-    flags = flist_flags_lookup(fla, convo, character);
+    flags = FLIST_GET_PURPLE_PERMISSIONS(fla, character, channel);
     purple_conv_chat_add_user(PURPLE_CONV_CHAT(convo), character, NULL, flags, TRUE);
 }
 
@@ -690,14 +664,12 @@ PurpleCmdRet flist_channel_op_deop_cmd(PurpleConversation *convo, const gchar *c
     const gchar *channel, *character;
     JsonObject *json;
     const gchar *code = NULL;
-    PurpleConvChatBuddyFlags flags;
 
     channel = purple_conversation_get_name(convo);
     character = args[0];
 
-    flags = flist_flags_lookup(fla, convo, fla->proper_character);
-    if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER))) {
-        *error = g_strdup(_("You must be the channel owner or a global operator to add or remove channel operators."));
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
+        *error = g_strdup("You must be the channel owner or higher to add or remove channel operators.");
         return PURPLE_CMD_RET_FAILED;
     }
 
@@ -756,16 +728,10 @@ PurpleCmdRet flist_channel_make_cmd(PurpleConversation *convo, const gchar *cmd,
 
 PurpleCmdRet flist_channel_banlist_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
-    FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
     JsonObject *json;
-    PurpleConvChatBuddyFlags flags;
 
-    flags = flist_flags_lookup(fla, convo, fla->proper_character);
-    if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_HALFOP | PURPLE_CBFLAGS_FOUNDER))) {
-        *error = g_strdup(_("You must be a channel operator to view the channel banlist."));
-        return PURPLE_CMD_RET_FAILED;
-    }
+    // We do not check for permissions here as the server allows everyone to see the banlist
 
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
@@ -780,11 +746,9 @@ PurpleCmdRet flist_channel_open_cmd(PurpleConversation *convo, const gchar *cmd,
     FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
     JsonObject *json;
-    PurpleConvChatBuddyFlags flags;
 
-    flags = flist_flags_lookup(fla, convo, fla->proper_character);
-    if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER))) {
-        *error = g_strdup(_("You must be the channel owner or a global operator to open or close a private channel."));
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
+        *error = g_strdup("You must be the channel owner or higher to open a private channel.");
         return PURPLE_CMD_RET_FAILED;
     }
 
@@ -803,11 +767,9 @@ PurpleCmdRet flist_channel_close_cmd(PurpleConversation *convo, const gchar *cmd
     FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
     JsonObject *json = json_object_new();
-    PurpleConvChatBuddyFlags flags;
 
-    flags = flist_flags_lookup(fla, convo, fla->proper_character);
-    if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER))) {
-        *error = g_strdup(_("You must be the channel owner or a global operator to open or close a private channel."));
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
+        *error = g_strdup("You must be the channel owner or higher to close a private channel.");
         return PURPLE_CMD_RET_FAILED;
     }
 
@@ -875,15 +837,13 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
     const gchar *channel;
     const gchar *topic;
     JsonObject *json;
-    PurpleConvChatBuddyFlags flags;
-
-    flags = flist_flags_lookup(fla, convo, fla->proper_character);
-    if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER | PURPLE_CBFLAGS_HALFOP))) {
-        *error = g_strdup(_("You must be a channel or global operator to set the channel topic."));
-        return PURPLE_CMD_RET_FAILED;
-    }
 
     channel = purple_conversation_get_name(convo);
+
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
+        *error = g_strdup("You must be a channel operator or higher to set the channel topic.");
+        return PURPLE_CMD_RET_FAILED;
+    }
 
     if (args[0])
     {
@@ -919,7 +879,6 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
                             );
     }
 
-    //TODO: don't allow this on public channels? (or do we?)
     return PURPLE_CMD_RET_OK;
 }
 
@@ -929,30 +888,31 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
     const gchar *channel, *character;
     const gchar *code = NULL;
     JsonObject *json;
-    PurpleConvChatBuddyFlags flags;
-    FListCharacter *target;
-    gboolean must_be_online = TRUE;
+    gboolean must_be_online = FALSE;
 
-    flags = flist_flags_lookup(fla, convo, fla->proper_character);
-    if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER | PURPLE_CBFLAGS_HALFOP))) {
-        *error = g_strdup(_("You must be a channel or global operator to kick, ban, or unban."));
+    channel = purple_conversation_get_name(convo);
+
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
+        *error = g_strdup("You must be a channel operator or higher to kick, ban, or unban.");
         return PURPLE_CMD_RET_FAILED;
     }
 
-    if(!purple_utf8_strcasecmp(cmd, "kick")) code = FLIST_CHANNEL_KICK;
-    if(!purple_utf8_strcasecmp(cmd, "ban")) code = FLIST_CHANNEL_BAN;
-    if(!purple_utf8_strcasecmp(cmd, "unban")) {
-        code = FLIST_CHANNEL_UNBAN;
-        must_be_online = FALSE;
+    if(!purple_utf8_strcasecmp(cmd, "kick"))
+    {
+        code = FLIST_CHANNEL_KICK;
+        must_be_online = TRUE;
     }
+    else if(!purple_utf8_strcasecmp(cmd, "ban"))
+        code = FLIST_CHANNEL_BAN;
+    else if(!purple_utf8_strcasecmp(cmd, "unban"))
+        code = FLIST_CHANNEL_UNBAN;
+
     if(!code) return PURPLE_CMD_RET_FAILED;
 
-    channel = purple_conversation_get_name(convo);
     character = args[0];
 
-    target = flist_get_character(fla, character);
-    if(must_be_online && !target) {
-        *error = g_strdup(_("You may only kick or ban users that are online!"));
+    if(must_be_online && !flist_get_character(fla, character)) {
+        *error = g_strdup("You may only kick or ban users that are online!");
         return PURPLE_CMD_RET_FAILED;
     }
 
@@ -973,6 +933,13 @@ PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *convo, const gchar *cm
     channel = purple_conversation_get_name(convo);
     character = args[0];
 
+    FListAccount *fla = pc->proto_data;
+    if (!flist_get_character(fla, character))
+    {
+        *error = g_strdup("You can only invite users that are online!");
+        return PURPLE_CMD_RET_FAILED;
+    }
+
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "character", character);
@@ -986,9 +953,9 @@ PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *c
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
 
-    PurpleConvChatBuddyFlags flags = flist_flags_lookup(fla, convo, fla->proper_character);
-    if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER | PURPLE_CBFLAGS_HALFOP))) {
-        *error = g_strdup(_("You must be a channel or global operator to timeban."));
+    const gchar *channel = purple_conversation_get_name(convo);
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
+        *error = g_strdup("You must be a channel operator or higher to timeout a user in a channel.");
         return PURPLE_CMD_RET_FAILED;
     }
 
@@ -1001,7 +968,6 @@ PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *c
         return PURPLE_CMD_RET_FAILED;
     }
 
-    const gchar *channel = purple_conversation_get_name(convo);
     gchar *character = split[0];
     gchar *time = g_strchug(split[1]);
 
