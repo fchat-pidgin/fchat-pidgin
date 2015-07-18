@@ -51,6 +51,7 @@ void flist_got_channel_userlist(FListAccount *, const gchar *channel, GList *use
 void flist_got_channel_user_joined(FListAccount *, const gchar *, const gchar *);
 void flist_got_channel_user_left(FListAccount *, const gchar *, const gchar *, const gchar *);
 
+void flist_channel_show_mode(FListAccount *fla, const gchar *channel);
 
 FListChannel *flist_channel_find(FListAccount *, const gchar *channel);
 FListChannel *flist_channel_new(FListAccount *, const gchar *channel);
@@ -78,6 +79,7 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *, const gchar 
 PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_make_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data);
+PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data);
 
 gboolean flist_process_COL(PurpleConnection *, JsonObject *);
 gboolean flist_process_JCH(PurpleConnection *, JsonObject *);
@@ -88,6 +90,7 @@ gboolean flist_process_CBU(PurpleConnection *, JsonObject *);
 gboolean flist_process_CTU(PurpleConnection *, JsonObject *);
 gboolean flist_process_CDS(PurpleConnection *, JsonObject *);
 gboolean flist_process_CIU(PurpleConnection *, JsonObject *);
+gboolean flist_process_RMO(PurpleConnection *, JsonObject *);
 
 #endif	/* F_LIST_CHANNELS_H */
 

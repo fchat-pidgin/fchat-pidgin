@@ -620,7 +620,8 @@ PurpleCmdRet flist_channel_show_ads_cmd(PurpleConversation *convo, const gchar *
     }
 
     flist_set_channel_show_ads(fla, channel, TRUE);
-    flist_channel_show_message(fla, channel);
+
+    flist_channel_show_mode(fla, channel);
     return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_hide_ads_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -628,7 +629,8 @@ PurpleCmdRet flist_channel_hide_ads_cmd(PurpleConversation *convo, const gchar *
     FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_ads(fla, channel, FALSE);
-    flist_channel_show_message(fla, channel);
+
+    flist_channel_show_mode(fla, channel);
     return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_show_chat_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -646,7 +648,8 @@ PurpleCmdRet flist_channel_show_chat_cmd(PurpleConversation *convo, const gchar 
     }
 
     flist_set_channel_show_chat(fla, channel, TRUE);
-    flist_channel_show_message(fla, channel);
+
+    flist_channel_show_mode(fla, channel);
     return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_hide_chat_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -654,7 +657,8 @@ PurpleCmdRet flist_channel_hide_chat_cmd(PurpleConversation *convo, const gchar 
     FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_chat(fla, channel, FALSE);
-    flist_channel_show_message(fla, channel);
+
+    flist_channel_show_mode(fla, channel);
     return PURPLE_CMD_RET_OK;
 }
 
@@ -844,6 +848,8 @@ void flist_init_commands() {
         FLIST_PLUGIN_ID, flist_channel_show_chat_cmd, "showchat: Show chat in this channel.", NULL);
     purple_cmd_register("hidechat", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_hide_chat_cmd, "hidechat: Hide chat in this channel.", NULL);
+    purple_cmd_register("setmode", "s", PURPLE_CMD_P_PRPL, channel_flags,
+        FLIST_PLUGIN_ID, flist_channel_set_mode_cmd, "setmode: Set channel mode, determining which messages to show (ads, chat or both).", NULL);
 
     purple_cmd_register("priv", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_priv_cmd, "priv &lt;character&gt;: Opens a private conversation.", NULL);

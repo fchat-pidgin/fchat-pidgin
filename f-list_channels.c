@@ -19,7 +19,7 @@
  * along with F-List Pidgin.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "f-list_channels.h"
-#define CHAT_SHOW_DISPLAY_STATUS "CHAT_SHOW_DISPLAY_STATUS"
+#define CHANNEL_DISPLAY_MODE "CHANNEL_DISPLAY_MODE"
 
 GCompareFunc flist_op_strcmp = (GCompareFunc) flist_strcmp;
 
@@ -69,6 +69,11 @@ void flist_update_user_chats_rank(PurpleConnection *pc, const gchar *character) 
             PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel->name, pa);
 
             PurpleConvChatBuddyFlags flags = FLIST_GET_PURPLE_PERMISSIONS(fla, character, channel->name);
+
+            // Add "voice" flag to characters with status "Looking"
+            FListCharacter *flc = flist_get_character(fla, character);
+            if (flc && flc->status == FLIST_STATUS_LOOKING)
+              flags |= PURPLE_CBFLAGS_VOICE;
 
             purple_conv_chat_user_set_flags(PURPLE_CONV_CHAT(convo), character, flags);
         }
@@ -147,9 +152,9 @@ void flist_got_channel_topic(FListAccount *fla, const gchar *channel, const gcha
     purple_conv_chat_set_topic(PURPLE_CONV_CHAT(convo), NULL, stripped_description_2);
     flist_show_channel_topic(fla, channel);
 
-    if(purple_conversation_get_data(convo, CHAT_SHOW_DISPLAY_STATUS)) {
-        purple_conversation_set_data(convo, CHAT_SHOW_DISPLAY_STATUS, GINT_TO_POINTER(FALSE));
-        flist_channel_show_message(fla, channel);
+    if(purple_conversation_get_data(convo, CHANNEL_DISPLAY_MODE)) {
+        purple_conversation_set_data(convo, CHANNEL_DISPLAY_MODE, GINT_TO_POINTER(FALSE));
+        flist_channel_show_mode(fla, channel);
     }
 
     g_free(stripped_description);
@@ -221,17 +226,87 @@ void flist_got_channel_left(FListAccount *fla, const gchar *name) {
     purple_debug_info(FLIST_DEBUG, "We (%s) have left channel %s.\n", fla->proper_character, name);
 }
 
-// XXX rip out this shitty channel mode stuff and rewrite it
+gboolean flist_get_channel_show_ads(FListAccount *fla, const gchar *channel) {
+    FListChannel *fchannel = flist_channel_find(fla, channel);
+    g_return_val_if_fail(fchannel, TRUE);
+
+    gboolean show_ads = (fchannel->mode == CHANNEL_MODE_BOTH
+                            || fchannel->mode == CHANNEL_MODE_ADS_ONLY);
+
+    // We can't override this server setting locally anyway, so just skip trying
+    if (!show_ads)
+        return FALSE;
+
+    PurpleChat *chat = flist_get_chat(fla, channel);
+
+    // get_bool returns FALSE when there's no such setting
+    // so we store the inverse to get TRUE as default
+    // until purple_blist_node_has_setting is there
+    return !purple_blist_node_get_bool(&(chat->node), CONVO_SHOW_ADS);
+}
+
+gboolean flist_get_channel_show_chat(FListAccount *fla, const gchar *channel) {
+    FListChannel *fchannel = flist_channel_find(fla, channel);
+    g_return_val_if_fail(fchannel, TRUE);
+
+    gboolean show_chat = (fchannel->mode == CHANNEL_MODE_BOTH
+                            || fchannel->mode == CHANNEL_MODE_CHAT_ONLY);
+
+    // We can't override this server setting locally anyway, so just skip trying
+    if (!show_chat)
+        return FALSE;
+
+    PurpleChat *chat = flist_get_chat(fla, channel);
+
+    // get_bool returns FALSE when there's no such setting
+    // so we store the inverse to get TRUE as default
+    // until purple_blist_node_has_setting is there
+    return !purple_blist_node_get_bool(&(chat->node), CONVO_SHOW_CHAT);
+}
+
+void flist_set_channel_show_chat(FListAccount *fla, const gchar *channel, gboolean setting) {
+    PurpleChat *chat = flist_get_chat(fla, channel);
+    purple_blist_node_set_bool(&(chat->node), CONVO_SHOW_CHAT, !setting);
+}
+
+void flist_set_channel_show_ads(FListAccount *fla, const gchar *channel, gboolean setting) {
+    PurpleChat *chat = flist_get_chat(fla, channel);
+    purple_blist_node_set_bool(&(chat->node), CONVO_SHOW_ADS, !setting);
+}
+
+void flist_channel_show_mode(FListAccount *fla, const gchar *channel) {
+    PurpleConvChat *chat;
+    gchar *to_print, *to_print_formatted;
+    gboolean show_chat, show_ads;
+    show_ads = flist_get_channel_show_ads(fla, channel);
+    show_chat = flist_get_channel_show_chat(fla, channel);
+
+    chat = PURPLE_CONV_CHAT(purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa));
+    if (!chat) return;
+
+    to_print = g_strdup_printf("We are currently [i]%s[/i] and [i]%s[/i].",
+            show_chat ? "showing chat" : "[color=red]hiding chat[/color]",
+            show_ads ? "showing ads" : "[color=red]hiding ads[/color]");
+    to_print_formatted = flist_bbcode_to_html(fla, purple_conv_chat_get_conversation(chat), to_print);
+    purple_conv_chat_write(chat, "System", to_print_formatted, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    g_free(to_print);
+    g_free(to_print_formatted);
+}
+
 void flist_got_channel_mode(FListAccount *fla, const gchar *channel, const gchar *mode) {
     PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
     FListChannel *fchannel = flist_channel_find(fla, channel);
-    FListChannelMode fmode;
 
     g_return_if_fail(fchannel != NULL);
     g_return_if_fail(convo != NULL);
 
-    fmode = flist_parse_channel_mode(mode);
+    fchannel->mode = flist_parse_channel_mode(mode);
 
+    // We want the channel mode to appear below the description when joining a channel
+    // but the server sends mode before description.
+    // So we use CHANNEL_DISPLAY_MODE to determine when the topic has appeared
+    if(!purple_conversation_get_data(convo, CHANNEL_DISPLAY_MODE))
+        flist_channel_show_mode(fla, channel);
 }
 
 void flist_got_channel_oplist(FListAccount *fla, const gchar *channel, GList *ops) {
@@ -328,7 +403,7 @@ gboolean flist_process_JCH(PurpleConnection *pc, JsonObject *root) {
         convo = serv_got_joined_chat(pc, id++, channel);
         flist_got_channel_joined(fla, channel);
         purple_conv_chat_set_nick(PURPLE_CONV_CHAT(convo), fla->proper_character);
-        purple_conversation_set_data(convo, CHAT_SHOW_DISPLAY_STATUS, GINT_TO_POINTER(TRUE));
+        purple_conversation_set_data(convo, CHANNEL_DISPLAY_MODE, GINT_TO_POINTER(TRUE));
     } else {
         flist_got_channel_user_joined(fla, channel, identity);
     }
@@ -531,9 +606,19 @@ gboolean flist_process_LCH(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_CBL(PurpleConnection *pc, JsonObject *root) {
-//    CBL {"banlist": [{"chanop": "TestTiger", "character": "TestPanther", "time": "2011-03-20T11:21:33.154111"}],
-//    "channel": "ADH-4268aebc94bd8c5362e1"}
+gboolean flist_process_RMO(PurpleConnection *pc, JsonObject *root) {
+    FListAccount *fla = pc->proto_data;
+    const gchar *channel, *mode;
+
+    channel = json_object_get_string_member(root, "channel");
+    mode = json_object_get_string_member(root, "mode");
+
+    g_return_val_if_fail(channel != NULL, TRUE);
+
+    if(mode) {
+        flist_got_channel_mode(fla, channel, mode);
+    }
+
     return TRUE;
 }
 
@@ -964,7 +1049,7 @@ PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *c
 
     if(count < 2) {
         g_strfreev(split);
-        *error = g_strdup(_("You must enter a character and a time."));
+        *error = g_strdup("You must enter a character and a time.");
         return PURPLE_CMD_RET_FAILED;
     }
 
@@ -975,7 +1060,7 @@ PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *c
     gulong time_parsed = strtoul(time, &endptr, 10);
     if(time_parsed == 0 || endptr != time + strlen(time)) {
         g_strfreev(split);
-        *error = g_strdup(_("You must enter a valid length of time."));
+        *error = g_strdup("You must enter a valid length of time.");
         return PURPLE_CMD_RET_FAILED;
     }
 
@@ -984,6 +1069,32 @@ PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *c
     json_object_set_string_member(json, "character", character);
     json_object_set_string_member(json, "length", time);
     flist_request(pc, FLIST_CHANNEL_TIMEOUT, json);
+    json_object_unref(json);
+
+    return PURPLE_CMD_RET_OK;
+}
+
+PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
+
+    const gchar *channel = purple_conversation_get_name(convo);
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
+        *error = g_strdup("You must be a channel operator or higher to change a channel's mode.");
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    FListChannelMode mode = flist_parse_channel_mode(args[0]);
+    if (mode == CHANNEL_MODE_UNKNOWN)
+    {
+        *error = g_strdup("Mode can only be one of the following: chat, ads or both");
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    JsonObject *json = json_object_new();
+    json_object_set_string_member(json, "channel", channel);
+    json_object_set_string_member(json, "mode", args[0]);
+    flist_request(pc, FLIST_CHANNEL_SET_MODE, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;

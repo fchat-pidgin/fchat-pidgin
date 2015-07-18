@@ -277,61 +277,6 @@ void flist_remove_chat(FListAccount *fla, const gchar *name) {
     }
 }
 
-static gint flist_get_channel_bool_blist(FListAccount *fla, const gchar *channel, const gchar *key) {
-    PurpleChat *chat = flist_get_chat(fla, channel);
-    return purple_blist_node_get_int(&(chat->node), key);
-}
-static void flist_set_channel_bool_blist(FListAccount *fla, const gchar *channel, const gchar *key, gboolean value) {
-    PurpleChat *chat = flist_get_chat(fla, channel);
-    purple_blist_node_set_int(&(chat->node), key, value ? 1 : -1);
-}
-
-gboolean flist_get_channel_show_chat(FListAccount *fla, const gchar *channel) {
-    gint ret = flist_get_channel_bool_blist(fla, channel, CONVO_SHOW_CHAT);
-    switch(ret) {
-        case -1: return FALSE;
-        case 1: return TRUE;
-    }
-    return TRUE;
-}
-
-gboolean flist_get_channel_show_ads(FListAccount *fla, const gchar *channel) {
-    gint ret = flist_get_channel_bool_blist(fla, channel, CONVO_SHOW_ADS);
-    switch(ret) {
-        case -1: return FALSE;
-        case 1: return TRUE;
-    }
-    return TRUE;
-}
-
-void flist_set_channel_show_chat(FListAccount *fla, const gchar *channel, gboolean setting) {
-    flist_set_channel_bool_blist(fla, channel, CONVO_SHOW_CHAT, setting);
-}
-
-void flist_set_channel_show_ads(FListAccount *fla, const gchar *channel, gboolean setting) {
-    flist_set_channel_bool_blist(fla, channel, CONVO_SHOW_ADS, setting);
-}
-
-void flist_channel_show_message(FListAccount *fla, const gchar *channel) {
-    PurpleConvChat *chat;
-    gchar *to_print, *to_print_formatted;
-    gboolean show_chat, show_ads;
-    show_ads = flist_get_channel_show_ads(fla, channel);
-    show_chat = flist_get_channel_show_chat(fla, channel);
-
-    chat = PURPLE_CONV_CHAT(purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa));
-    if(!chat) return;
-
-    to_print = g_strdup_printf("We are currently [i]%s[/i] and [i]%s[/i].",
-            show_chat ? "showing chat" : "[color=red]hiding chat[/color]",
-            show_ads ? "showing ads" : "[color=red]hiding ads[/color]");
-    to_print_formatted = flist_bbcode_to_html(fla, purple_conv_chat_get_conversation(chat), to_print);
-    purple_conv_chat_write(chat, "System", to_print_formatted, PURPLE_MESSAGE_SYSTEM, time(NULL));
-    g_free(to_print);
-    g_free(to_print_formatted);
-}
-
-
 gint json_object_get_parse_int_member(JsonObject *json, const gchar *name, gboolean *success) {
     JsonNode *node = json_object_get_member(json, name);
     if(!node) {
