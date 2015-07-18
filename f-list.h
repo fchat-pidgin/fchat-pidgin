@@ -262,7 +262,6 @@ gboolean flist_str_equal(const char *, const char *);
 gint flist_strcmp(const char *nick1, const char *nick2);
 const char *flist_normalize(const PurpleAccount *, const char *);
 
-PurpleGroup *flist_get_chat_group(FListAccount*);
 PurpleChat *flist_get_chat(FListAccount*, const gchar*);
 void flist_remove_chat(FListAccount*, const gchar*);
 
