@@ -100,6 +100,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_CHANNEL_REMOVE_OP                 "COR"
 #define FLIST_CHANNEL_CREATE                    "CCR"
 #define FLIST_CHANNEL_TIMEOUT                   "CTU"
+#define FLIST_CHANNEL_SET_MODE                  "RMO"
 #define FLIST_SET_CHANNEL_DESCRIPTION           "CDS"
 #define FLIST_SET_CHANNEL_STATUS                "RST"
 #define FLIST_SET_STATUS                        "STA"
@@ -191,10 +192,10 @@ enum FListGender_ { /* flags make for quick comparisons */
 };
 
 enum FListChannelMode_ {
-    CHANNEL_MODE_BOTH = 0,
-    CHANNEL_MODE_ADS_ONLY = 1,
-    CHANNEL_MODE_CHAT_ONLY = 2,
-    CHANNEL_MODE_UNKNOWN = 16
+    CHANNEL_MODE_BOTH = 0x0,
+    CHANNEL_MODE_ADS_ONLY = 0x01,
+    CHANNEL_MODE_CHAT_ONLY = 0x02,
+    CHANNEL_MODE_UNKNOWN = 0x10
 };
 
 enum FListFriendStatus_ {
