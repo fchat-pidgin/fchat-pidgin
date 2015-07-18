@@ -507,8 +507,6 @@ void flist_login(PurpleAccount *pa) {
 
     /* login options */
     fla->server_address = g_strdup(purple_account_get_string(pa, "server_address", "chat.f-list.net"));
-//    fla->use_websocket_handshake = purple_account_get_bool(pa, "use_websocket_handshake", FALSE);
-
     fla->sync_bookmarks = purple_account_get_bool(pa, "sync_bookmarks", FALSE);
     fla->sync_friends = purple_account_get_bool(pa, "sync_friends", TRUE);
 

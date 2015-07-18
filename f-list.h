@@ -151,7 +151,6 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_URL_CHANGELOG_COMMENT FLIST_URL_CHANGELOG FLIST_URL_COMMENT_ANCHOR
 #define FLIST_URL_FEATURE_COMMENT   FLIST_URL_FEATUREREQUEST FLIST_URL_COMMENT_ANCHOR
 
-
 enum FListConnectionStatus_ {
     FLIST_OFFLINE,
     FLIST_CONNECT,
@@ -355,12 +354,10 @@ struct FListAccount_ {
     /* connection options */
     gchar *server_address;
     gint server_port;
-    gboolean use_websocket_handshake; /* enable to use handshake instead of WSH */
 
     /* filter subsystem */
     gchar *filter_channel;
     gboolean filter_looking;
-    //gint filter_gender; //TODO: implement
 
     /* kinks subsystem */
     FListKinks *flist_kinks;
@@ -400,6 +397,6 @@ struct FListAccount_ {
 #include "f-list_ignore.h"
 #include "f-list_report.h"
 #include "f-list_util.h"
-#include "f-list_pidgin.h" //TODO: maybe not include this ...
+#include "f-list_pidgin.h"
 
 #endif
