@@ -24,7 +24,19 @@
 
 #include "f-list.h"
 
+#define FLIST_PERMISSION_NONE               0x00
+#define FLIST_PERMISSION_CHANNEL_OP         0x01
+#define FLIST_PERMISSION_CHANNEL_OWNER      0x02
+#define FLIST_PERMISSION_GLOBAL_OP          0x04
+#define FLIST_HAS_PERMISSION(bitmask, permission) ((bitmask) & (permission))
+#define FLIST_HAS_MIN_PERMISSION(bitmask, permission) ((bitmask) >= (permission))
+#define FLIST_GET_PURPLE_PERMISSIONS(fla, character, channel) (flist_permissions_to_purple(flist_get_permissions((fla), (character), (channel))))
+
+typedef unsigned char FListPermissionMask;
+
+FListPermissionMask flist_get_permissions(FListAccount *fla, const gchar *character, const gchar *channel);
+PurpleConvChatBuddyFlags flist_permissions_to_purple(FListPermissionMask permission);
+
 gchar *http_request(const gchar *url, gboolean http11, gboolean post, const gchar *user_agent, GHashTable *req_table, GHashTable *cookie_table);
-void flist_parse_cookies_into_hash_table(const gchar *header, gsize len, GHashTable *hash_table);
 
 #endif
