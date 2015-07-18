@@ -25,5 +25,6 @@
 
 void flist_apply_filter(FListAccount *, GSList *characters);
 void flist_clear_filter(FListAccount *);
+void flist_convo_closed(PurpleConnection *, const char *who);
 
 #endif

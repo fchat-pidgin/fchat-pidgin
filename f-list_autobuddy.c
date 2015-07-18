@@ -63,3 +63,15 @@ void flist_apply_filter(FListAccount *fla, GSList *candidates) {
 void flist_clear_filter(FListAccount *fla) {
     flist_apply_filter(fla, NULL);
 }
+
+void flist_convo_closed(PurpleConnection *pc, const char *who) {
+    FListAccount *fla = pc->proto_data;
+    PurpleGroup *im_group = flist_get_im_group(fla);
+
+    /* Try to find if this was a temporary IM, and if it was, remove it */
+    PurpleBuddy *buddy = purple_find_buddy_in_group(fla->pa, who, im_group);
+    if (buddy) {
+        purple_debug_info(FLIST_DEBUG, "Removing temporary IM buddy %s\n", who);
+        purple_blist_remove_buddy(buddy);
+    }
+}

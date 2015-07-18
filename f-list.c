@@ -647,7 +647,7 @@ static PurplePluginProtocolInfo prpl_info = {
     NULL,                    /* group_buddy */
     NULL,                    /* rename_group */
     NULL,                    /* buddy_free */
-    NULL,                    /* convo_closed */
+    flist_convo_closed,      /* convo_closed */
     flist_normalize,/* normalize */
     NULL,                   /* set_buddy_icon */
     NULL,                    /* remove_group */
