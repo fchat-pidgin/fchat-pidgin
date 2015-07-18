@@ -75,3 +75,15 @@ void flist_convo_closed(PurpleConnection *pc, const char *who) {
         purple_blist_remove_buddy(buddy);
     }
 }
+
+void flist_temp_im_check(FListAccount *fla, const char *character) {
+    PurpleBuddy *buddy = purple_find_buddy(fla->pa, character);
+    if (!buddy) {
+        purple_debug_info(FLIST_DEBUG, "Adding temporary IM buddy %s\n", character);
+        PurpleGroup *im_group = flist_get_im_group(fla);
+        PurpleBuddy *b = purple_buddy_new(fla->pa, character, NULL);
+        purple_blist_add_buddy(b, NULL, im_group, NULL);
+        purple_account_add_buddy(fla->pa, b);
+    }
+}
+
