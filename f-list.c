@@ -140,6 +140,12 @@ PurpleGroup *flist_get_chat_group(FListAccount *fla) {
     g_free(name);
     return g;
 }
+PurpleGroup *flist_get_im_group(FListAccount *fla) {
+    gchar *name = g_strdup_printf("%s - Temporary IMs", fla->character);
+    PurpleGroup *g = flist_get_group(name);
+    g_free(name);
+    return g;
+}
 
 const gchar *flist_serialize_account(PurpleAccount *pa) {
     const gchar *name = pa->username;

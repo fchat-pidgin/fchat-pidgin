@@ -248,6 +248,7 @@ PurpleGroup *flist_get_filter_group(FListAccount*);
 PurpleGroup *flist_get_bookmarks_group(FListAccount*);
 PurpleGroup *flist_get_friends_group(FListAccount*);
 PurpleGroup *flist_get_chat_group(FListAccount*);
+PurpleGroup *flist_get_im_group(FListAccount*);
 
 PurpleTypingState flist_typing_state(const gchar *state);
 const gchar *flist_typing_state_string(PurpleTypingState state);
