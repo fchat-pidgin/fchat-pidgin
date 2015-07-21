@@ -140,6 +140,12 @@ PurpleGroup *flist_get_chat_group(FListAccount *fla) {
     g_free(name);
     return g;
 }
+PurpleGroup *flist_get_im_group(FListAccount *fla) {
+    gchar *name = g_strdup_printf("%s - Temporary IMs", fla->character);
+    PurpleGroup *g = flist_get_group(name);
+    g_free(name);
+    return g;
+}
 
 const gchar *flist_serialize_account(PurpleAccount *pa) {
     const gchar *name = pa->username;
@@ -546,7 +552,7 @@ void flist_login(PurpleAccount *pa) {
     fla->ignore_list = NULL;
 
     flist_channel_subsystem_load(fla);
-    flist_clear_filter(fla);
+    flist_clear_temp_groups(fla);
     flist_global_kinks_load(pc);
     flist_profile_load(pc);
     flist_friends_load(fla);
@@ -641,7 +647,7 @@ static PurplePluginProtocolInfo prpl_info = {
     NULL,                    /* group_buddy */
     NULL,                    /* rename_group */
     NULL,                    /* buddy_free */
-    NULL,                    /* convo_closed */
+    flist_convo_closed,      /* convo_closed */
     flist_normalize,/* normalize */
     NULL,                   /* set_buddy_icon */
     NULL,                    /* remove_group */

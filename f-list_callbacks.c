@@ -644,6 +644,8 @@ static gboolean flist_process_PRI(PurpleConnection *pc, JsonObject *root) {
         PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, character, fla->pa);
         gchar *parsed = flist_bbcode_to_html(fla, convo, message);
 
+        /* If we do not have this person in our buddy list, add them to temporary IMs */
+        flist_temp_im_check(fla, character);
         serv_got_im(pc, character, parsed, PURPLE_MESSAGE_RECV, time(NULL));
 
         g_free(parsed);

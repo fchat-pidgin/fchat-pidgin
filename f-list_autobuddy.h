@@ -24,6 +24,8 @@
 #include "f-list.h"
 
 void flist_apply_filter(FListAccount *, GSList *characters);
-void flist_clear_filter(FListAccount *);
+void flist_clear_temp_groups(FListAccount *);
+void flist_convo_closed(PurpleConnection *, const char *who);
+void flist_temp_im_check(FListAccount *, const char *character);
 
 #endif

@@ -60,6 +60,45 @@ void flist_apply_filter(FListAccount *fla, GSList *candidates) {
     }
 }
 
-void flist_clear_filter(FListAccount *fla) {
-    flist_apply_filter(fla, NULL);
+void flist_clear_temp_groups(FListAccount *fla) {
+    PurpleGroup *filter_group = NULL;
+    PurpleGroup *im_group = NULL;
+    GSList *buddies, *cur;
+
+    filter_group = flist_get_filter_group(fla);
+    im_group = flist_get_im_group(fla);
+
+    buddies = purple_find_buddies(fla->pa, NULL);
+    cur = buddies;
+    while(cur) {
+        PurpleBuddy *b = cur->data; cur = g_slist_next(cur);
+        if(purple_buddy_get_group(b) == filter_group || purple_buddy_get_group(b) == im_group) {
+            purple_blist_remove_buddy(b);
+        }
+    }
+    g_slist_free(buddies);
 }
+
+void flist_convo_closed(PurpleConnection *pc, const char *who) {
+    FListAccount *fla = pc->proto_data;
+    PurpleGroup *im_group = flist_get_im_group(fla);
+
+    /* Try to find if this was a temporary IM, and if it was, remove it */
+    PurpleBuddy *buddy = purple_find_buddy_in_group(fla->pa, who, im_group);
+    if (buddy) {
+        purple_debug_info(FLIST_DEBUG, "Removing temporary IM buddy %s\n", who);
+        purple_blist_remove_buddy(buddy);
+    }
+}
+
+void flist_temp_im_check(FListAccount *fla, const char *character) {
+    PurpleBuddy *buddy = purple_find_buddy(fla->pa, character);
+    if (!buddy) {
+        purple_debug_info(FLIST_DEBUG, "Adding temporary IM buddy %s\n", character);
+        PurpleGroup *im_group = flist_get_im_group(fla);
+        PurpleBuddy *b = purple_buddy_new(fla->pa, character, NULL);
+        purple_blist_add_buddy(b, NULL, im_group, NULL);
+        purple_account_add_buddy(fla->pa, b);
+    }
+}
+
