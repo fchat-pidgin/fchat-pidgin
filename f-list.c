@@ -552,7 +552,7 @@ void flist_login(PurpleAccount *pa) {
     fla->ignore_list = NULL;
 
     flist_channel_subsystem_load(fla);
-    flist_clear_filter(fla);
+    flist_clear_temp_groups(fla);
     flist_global_kinks_load(pc);
     flist_profile_load(pc);
     flist_friends_load(fla);

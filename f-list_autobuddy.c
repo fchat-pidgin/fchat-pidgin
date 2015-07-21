@@ -60,8 +60,23 @@ void flist_apply_filter(FListAccount *fla, GSList *candidates) {
     }
 }
 
-void flist_clear_filter(FListAccount *fla) {
-    flist_apply_filter(fla, NULL);
+void flist_clear_temp_groups(FListAccount *fla) {
+    PurpleGroup *filter_group = NULL;
+    PurpleGroup *im_group = NULL;
+    GSList *buddies, *cur;
+
+    filter_group = flist_get_filter_group(fla);
+    im_group = flist_get_im_group(fla);
+
+    buddies = purple_find_buddies(fla->pa, NULL);
+    cur = buddies;
+    while(cur) {
+        PurpleBuddy *b = cur->data; cur = g_slist_next(cur);
+        if(purple_buddy_get_group(b) == filter_group || purple_buddy_get_group(b) == im_group) {
+            purple_blist_remove_buddy(b);
+        }
+    }
+    g_slist_free(buddies);
 }
 
 void flist_convo_closed(PurpleConnection *pc, const char *who) {
