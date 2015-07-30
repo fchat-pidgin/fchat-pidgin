@@ -485,7 +485,12 @@ static void flist_receive_ticket(FListWebRequestData *req_data, gpointer data, J
 
     error = json_object_get_string_member(root, "error");
     if(error && strlen(error)) {
-        if(first) purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, error);
+
+        if(!g_strcmp0(error, FLIST_SERVER_MESSAGE_PASSWORD_MISMATCH)) {
+            purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_AUTHENTICATION_FAILED, error);
+        } else if(first) {
+            purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, error);
+        }
         return;
     }
 

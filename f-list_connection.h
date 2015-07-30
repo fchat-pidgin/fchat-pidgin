@@ -30,6 +30,8 @@
 #define WS_OPCODE_TYPE_PING 9
 #define WS_OPCODE_TYPE_PONG 10
 
+#define FLIST_SERVER_MESSAGE_PASSWORD_MISMATCH "Password mismatch."
+
 #include "f-list.h"
 
 #define HTTP_LOGIN "www.f-list.net/action/script_login.php"
