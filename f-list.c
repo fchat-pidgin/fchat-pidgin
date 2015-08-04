@@ -686,7 +686,7 @@ static PurplePluginInfo info = {
     "F-List Protocol Plugin",         /* summary */
     "F-List Protocol Plugin",         /* description */
     "TestPanther, Nelwill, Sabhak",         /* author */
-    "http://f-list.net/",    /* homepage */
+    "https://www.f-list.net/",    /* homepage */
     plugin_load,                     /* load */
     plugin_unload,                     /* unload */
     NULL,                         /* destroy */
