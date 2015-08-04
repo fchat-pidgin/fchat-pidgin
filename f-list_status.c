@@ -45,3 +45,54 @@ FListStatus flist_get_status(FListAccount *fla) {
 const gchar *flist_get_status_message(FListAccount *fla) {
     return purple_account_get_string(fla->pa, "_status_message", "");
 }
+
+void flist_purple_set_status(PurpleAccount *account, PurpleStatus *status) {
+    PurpleConnection *pc = purple_account_get_connection(account);
+    FListAccount *fla = pc->proto_data;
+    PurpleStatusType *statusType = purple_status_get_type(status);
+    GList *statusTypes = flist_status_types(account);
+    GList *cur = statusTypes;
+    FListStatus fStatus = FLIST_STATUS_UNKNOWN;
+    
+    // The status isn't active! bail!
+    if (!purple_status_is_active(status))
+        return;
+    
+    // First, get the presence. If it's idle, we default to idle.
+    PurplePresence *presence = purple_status_get_presence(status);
+    if(purple_presence_is_idle(presence)) {
+        flist_set_status(fla, FLIST_STATUS_IDLE, purple_status_get_attr_string(status, FLIST_STATUS_MESSAGE_KEY));
+    }
+    
+    // Alright, not idle. Next, compare StatusType IDs. If it's a match, use that.
+    while(cur) {
+        PurpleStatusType *type = cur->data;
+        if(strcmp(purple_status_type_get_id(type), purple_status_type_get_id(statusType)) == 0){
+            fStatus = flist_parse_status(purple_status_type_get_id(statusType));
+            break;
+        } else {
+            cur = g_list_next(cur);
+        }
+    }
+    // Found a matching F-list Status. Use it!
+    if(fStatus != FLIST_STATUS_UNKNOWN) {
+        flist_set_status(fla, fStatus, 	purple_status_get_attr_string(status, FLIST_STATUS_MESSAGE_KEY));
+    } else {
+        // Alright, seems the status we chose isn't an F-list one. Let's convert to the next best primitive.
+        switch (purple_status_type_get_primitive(statusType)) {
+            case PURPLE_STATUS_AWAY:
+            case PURPLE_STATUS_EXTENDED_AWAY:
+                flist_set_status(fla, FLIST_STATUS_AWAY, purple_status_get_attr_string(status, FLIST_STATUS_MESSAGE_KEY));
+                break;
+            case PURPLE_STATUS_UNAVAILABLE:
+                flist_set_status(fla, FLIST_STATUS_DND, purple_status_get_attr_string(status, FLIST_STATUS_MESSAGE_KEY));
+                break;
+                
+                // Assume AVAILABLE by default if it's not an AWAY/DND status
+            default:
+                flist_set_status(fla, FLIST_STATUS_AVAILABLE, purple_status_get_attr_string(status, FLIST_STATUS_MESSAGE_KEY));
+        }
+    }
+    g_list_free(statusTypes);
+    flist_update_server_status(fla);
+}
