@@ -681,7 +681,7 @@ static PurplePluginInfo info = {
     NULL,                         /* dependencies */
     PURPLE_PRIORITY_DEFAULT,             /* priority */
     FLIST_PLUGIN_ID,                /* id */
-    "FList (dev)",                     /* name */
+    "FList",                     /* name */
     FLIST_PLUGIN_VERSION,             /* version */
     "F-List Protocol Plugin",         /* summary */
     "F-List Protocol Plugin",         /* description */
