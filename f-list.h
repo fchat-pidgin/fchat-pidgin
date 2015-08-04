@@ -253,6 +253,8 @@ PurpleGroup *flist_get_im_group(FListAccount*);
 PurpleTypingState flist_typing_state(const gchar *state);
 const gchar *flist_typing_state_string(PurpleTypingState state);
 
+GList *flist_status_types(PurpleAccount *account);
+
 void flist_g_list_free(GList *to_free);
 void flist_g_list_free_full(GList *to_free, GDestroyNotify f);
 void flist_g_slist_free_full(GSList *to_free, GDestroyNotify f);
