@@ -567,7 +567,7 @@ void flist_login(PurpleAccount *pa) {
     g_strfreev(ac_split);
 }
 
-static GList *flist_status_types(PurpleAccount *account) {
+GList *flist_status_types(PurpleAccount *account) {
     GList *types = NULL;
     PurpleStatusType *status;
 
@@ -620,7 +620,7 @@ static PurplePluginProtocolInfo prpl_info = {
     NULL,                           /* set_info */
     flist_send_typing,        /* send_typing */
     flist_get_profile,        /* get_info */
-    NULL,               /* set_status */
+    flist_purple_set_status,               /* set_status */
     NULL,                    /* set_idle */
     NULL,                    /* change_passwd */
     flist_pidgin_add_buddy,        /* add_buddy */
@@ -686,7 +686,7 @@ static PurplePluginInfo info = {
     "F-List Protocol Plugin",         /* summary */
     "F-List Protocol Plugin",         /* description */
     "TestPanther, Nelwill, Sabhak",         /* author */
-    "http://f-list.net/",    /* homepage */
+    "https://www.f-list.net/",    /* homepage */
     plugin_load,                     /* load */
     plugin_unload,                     /* unload */
     NULL,                         /* destroy */
