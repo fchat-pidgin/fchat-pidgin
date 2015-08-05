@@ -77,6 +77,12 @@ static void flist_got_online(PurpleConnection *pc) {
     purple_connection_set_state(pc, PURPLE_CONNECTED);
     fla->online = TRUE;
 
+    /* If we're syncing status, set protocol internal status from purple one */
+    if (fla->sync_status) {
+        PurpleStatus *ps = purple_account_get_active_status(pa);
+        flist_set_internal_status_from_purple_status(fla, ps);
+    }
+
     flist_update_server_status(fla);
 
     /* Start managing the friends list. */

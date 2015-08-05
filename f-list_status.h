@@ -26,6 +26,7 @@
 void flist_update_server_status(FListAccount *fla);
 void flist_set_status(FListAccount *fla, FListStatus status, const gchar *status_message);
 void flist_purple_set_status(PurpleAccount *account, PurpleStatus *status);
+void flist_set_internal_status_from_purple_status(FListAccount *account, PurpleStatus *status);
 
 const gchar *flist_get_status_message(FListAccount *fla);
 FListStatus flist_get_status(FListAccount *fla);

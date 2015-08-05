@@ -375,6 +375,9 @@ struct FListAccount_ {
     gboolean sync_friends;
     FListFriends *flist_friends;
 
+    /* status handling */
+    gboolean sync_status;
+
     /* ignore list */
     GList *ignore_list;
 

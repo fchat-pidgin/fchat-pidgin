@@ -538,6 +538,7 @@ void flist_login(PurpleAccount *pa) {
 
     fla->sync_bookmarks = purple_account_get_bool(pa, "sync_bookmarks", FALSE);
     fla->sync_friends = purple_account_get_bool(pa, "sync_friends", TRUE);
+    fla->sync_status = purple_account_get_bool(pa, "sync_status", TRUE);
 
     fla->secure = purple_account_get_bool(pa, "use_https", TRUE);
     if(!fla->secure) {
@@ -730,6 +731,9 @@ static void plugin_init(PurplePlugin *plugin) {
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Download Bookmarks", "sync_bookmarks", FALSE);
+    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+    option = purple_account_option_bool_new("Synchronize status", "sync_status", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Receive notifications", "receive_rtb", TRUE);
