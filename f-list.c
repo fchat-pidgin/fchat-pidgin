@@ -580,20 +580,20 @@ GList *flist_status_types(PurpleAccount *account) {
         TRUE, TRUE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
     types = g_list_append(types, status);
 
-    status = purple_status_type_new_with_attrs(PURPLE_STATUS_AWAY, "busy", _("Busy"),
-        TRUE, TRUE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
+    status = purple_status_type_new_with_attrs(PURPLE_STATUS_AWAY, "idle", _("Idle"),
+        TRUE, FALSE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
     types = g_list_append(types, status);
 
     status = purple_status_type_new_with_attrs(PURPLE_STATUS_AWAY, "away", _("Away"),
         TRUE, TRUE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
     types = g_list_append(types, status);
 
-    status = purple_status_type_new_with_attrs(PURPLE_STATUS_UNAVAILABLE, "dnd", _("Do Not Disturb"),
+    status = purple_status_type_new_with_attrs(PURPLE_STATUS_UNAVAILABLE, "busy", _("Busy"),
         TRUE, TRUE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
     types = g_list_append(types, status);
 
-    status = purple_status_type_new_with_attrs(PURPLE_STATUS_AWAY, "idle", _("Idle"),
-        TRUE, FALSE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
+    status = purple_status_type_new_with_attrs(PURPLE_STATUS_UNAVAILABLE, "dnd", _("Do Not Disturb"),
+        TRUE, TRUE, FALSE, FLIST_STATUS_MESSAGE_KEY, _("Message"), purple_value_new(PURPLE_TYPE_STRING), NULL);
     types = g_list_append(types, status);
 
     status = purple_status_type_new(PURPLE_STATUS_OFFLINE, NULL, NULL, TRUE);
