@@ -26,6 +26,16 @@ void flist_update_server_status(FListAccount *fla) {
     JsonObject *json = json_object_new();
     const gchar *status = purple_account_get_string(fla->pa, "_status", "online");
     const gchar *status_message = purple_account_get_string(fla->pa, "_status_message", "");
+
+    // If _status_message was stored as NULL, purple_account_get_string will
+    // return a NULL instead of the default value. We do not want this, as NULL
+    // values are encoded as (null) by recent versions of libjson-glib, we send
+    // an empty string instead, as the F-Chat protocol mandates the statusmsg
+    // parameter
+    if (status_message == NULL) {
+        status_message = "";
+    }
+
     json_object_set_string_member(json, "status", status);
     json_object_set_string_member(json, "statusmsg", status_message);
     flist_request(fla->pc, FLIST_SET_STATUS, json);
