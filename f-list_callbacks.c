@@ -89,25 +89,6 @@ static void flist_got_online(PurpleConnection *pc) {
     flist_friends_login(fla);
 }
 
-void flist_update_user_im_status(PurpleConnection *pc, const gchar *character, gboolean online) {
-    FListAccount *fla = pc->proto_data;
-    PurpleAccount *pa = fla->pa;
-    PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, character, pa);
-
-    if (convo)
-    {
-        gchar *message;
-
-        if (online == TRUE)
-            message = g_strdup_printf("%s has connected.", character);
-        else
-            message = g_strdup_printf("%s has disconnected.", character);
-
-        purple_conversation_write(convo, NULL, message, PURPLE_MESSAGE_SYSTEM, time(NULL));
-        g_free(message);
-    }
-}
-
 static gboolean flist_process_ERR(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     const gchar *message;
@@ -150,12 +131,9 @@ static gboolean flist_process_NLN(PurpleConnection *pc, JsonObject *root) {
 
     flist_update_friend(pc, character->name, TRUE, FALSE);
 
-    // The user connecting is us! Yeah!
     if(!fla->online && flist_str_equal(fla->proper_character, character->name)) {
         flist_got_online(pc);
     }
-
-    flist_update_user_im_status(pc, character->name, TRUE);
 
     return TRUE;
 }
@@ -284,7 +262,6 @@ static gboolean flist_process_FLN(PurpleConnection *pc, JsonObject *root) {
 
     flist_update_friend(pc, character, FALSE, FALSE);
     flist_update_user_chats_offline(pc, character);
-    flist_update_user_im_status(pc, character, FALSE);
 
     return TRUE;
 }
