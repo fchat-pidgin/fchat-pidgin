@@ -208,6 +208,7 @@ static void flist_filter_done(FListAccount *fla) {
     FListKinks *flk = _flist_kinks(fla);
     JsonObject *json;
     JsonArray *kinks, *genders, *roles;
+    GSList *results;
 
     if(!flk->local) {
         const gchar *kink1, *kink2, *kink3;
@@ -239,7 +240,14 @@ static void flist_filter_done(FListAccount *fla) {
         json_array_unref(roles);
         json_object_unref(json);
     } else {
-        flist_apply_filter(fla, flist_get_filter_characters(fla, FALSE, NULL));
+        // Doing an internal search, we must make sure there are not too many
+        // results, or we might overload pidgin with thousands of buddy adds
+        results = flist_get_filter_characters(fla, FALSE, NULL);
+        if (g_slist_length(results) <= FLIST_SEARCH_MAX_RESULTS) {
+            flist_apply_filter(fla, results);
+        } else {
+            purple_notify_warning(fla->pc, "F-List Error", "An error has occurred on F-List.", FLIST_MESSAGE_TOO_MANY_RESULTS);
+        }
     }
 
     purple_account_set_int(fla->pa, LAST_GENDERS, flk->genders);

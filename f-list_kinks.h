@@ -24,6 +24,8 @@
 #include "f-list.h"
 
 #define FLIST_GLOBAL_KINKS_URL "http://www.f-list.net/api/get/kinklist/?mode=extended"
+#define FLIST_SEARCH_MAX_RESULTS 350
+#define FLIST_MESSAGE_TOO_MANY_RESULTS "There are too many search results, please narrow your search."
 
 gboolean flist_process_FKS(PurpleConnection *, JsonObject *);
 
