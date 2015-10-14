@@ -269,6 +269,7 @@ static gboolean flist_process_FLN(PurpleConnection *pc, JsonObject *root) {
 static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     PurpleAccount *pa = purple_connection_get_account(pc);
+    PurpleMessageFlags flags = PURPLE_MESSAGE_SEND;
     PurpleConversation *convo;
     const gchar *character;
     const gchar *message;
@@ -294,9 +295,15 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
         if (!flist_get_channel_show_chat(fla, target))
             return TRUE;
 
+        if (flist_strcmp(character, fla->proper_character)){
+            flags = PURPLE_MESSAGE_RECV;
+        }
+
         parsed = flist_bbcode_to_html(fla, convo, message);
-        serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, PURPLE_MESSAGE_SYSTEM, parsed, time(NULL));
+        serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
+
     }
+
     // Roll happened in a private message
     else
     {
@@ -304,8 +311,10 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
 
         // If we were the one who sent the roll we'll swap target and character variables
         // so we can use the same code below for both cases
-        if (!flist_strcmp(target, fla->proper_character))
+        if (flist_strcmp(character, fla->proper_character)){
             target = character;
+            flags = PURPLE_MESSAGE_RECV;
+        }
 
         // Get or create conversation
         convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, target, pa);
@@ -313,7 +322,7 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
             convo = purple_conversation_new(PURPLE_CONV_TYPE_IM, pa, target);
 
         parsed = flist_bbcode_to_html(fla, convo, message);
-        purple_conv_im_write(PURPLE_CONV_IM(convo), character, parsed, PURPLE_MESSAGE_SYSTEM, time(NULL));
+        purple_conv_im_write(PURPLE_CONV_IM(convo), character, parsed, flags, time(NULL));
     }
 
     purple_debug_info(FLIST_DEBUG, "Roll: %s (Target: %s, Character: %s, Message: %s)\n", parsed, target, character, message);
