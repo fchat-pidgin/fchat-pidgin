@@ -675,7 +675,7 @@ void flist_callback_init() {
     /* system message */
     g_hash_table_insert(callbacks, "SYS", flist_process_SYS);
 
-    //TODO: write RLL its own function
+    /* dice rolls and bottle */
     g_hash_table_insert(callbacks, "RLL", flist_process_RLL);
 
     /* kink search */
