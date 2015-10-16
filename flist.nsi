@@ -28,7 +28,7 @@ SetCompress off
 !define MUI_LICENSEPAGE_TEXT_TOP "Press Page Down to see the rest of the readme."
 !define MUI_LICENSEPAGE_TEXT_BOTTOM "Thanks for reading!"
 !define MUI_LICENSEPAGE_BUTTON "&Next >"
-!insertmacro MUI_PAGE_LICENSE "README.md"
+!insertmacro MUI_PAGE_LICENSE "README_USERS"
 
 
 !define MUI_PAGE_CUSTOMFUNCTION_PRE CheckPidginDirReg
