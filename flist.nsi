@@ -30,6 +30,10 @@ SetCompress off
 !define MUI_LICENSEPAGE_BUTTON "&Next >"
 !insertmacro MUI_PAGE_LICENSE "README.md"
 
+
+!define MUI_PAGE_CUSTOMFUNCTION_PRE CheckPidginDirReg
+!insertmacro MUI_PAGE_DIRECTORY
+
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES
 
@@ -55,9 +59,16 @@ ShowInstDetails show
 ShowUnInstDetails show
 ; 
 Section "MainSection" SEC01
-    ;Check for pidgin installation
-    Call GetPidginInstPath
+    ; If PidginDir was not auto detected, use the manually set path
+    StrCmp "$PidginDir" "" 0 check
+    StrCpy $PidginDir $INSTDIR
+
+    check:
+    IfFileExists "$PidginDir\plugins" install
+    MessageBox MB_OK|MB_ICONINFORMATION "Failed to find Pidgin installation."
+    Abort "The provided folder does not contains a 'plugins' subdirectory"
     
+    install:
     SetOverwrite try
     
     SetOutPath "$PidginDir\pixmaps\pidgin"
@@ -85,18 +96,23 @@ Section "MainSection" SEC01
     
 SectionEnd
 
-Function GetPidginInstPath
+Function CheckPidginDirReg
   Push $0
   ReadRegStr $0 HKLM "Software\pidgin" ""
     IfFileExists "$0\pidgin.exe" cont
     ReadRegStr $0 HKCU "Software\pidgin" ""
     IfFileExists "$0\pidgin.exe" cont
-        MessageBox MB_OK|MB_ICONINFORMATION "Failed to find Pidgin installation."
-        Abort "Failed to find Pidgin installation. Please install Pidgin first."
+    Return
   cont:
     StrCpy $PidginDir $0
+    Abort
 FunctionEnd
 
 Function RunPidgin
+    IfFileExists "$PidginDir\pidgin.exe" run
+    MessageBox MB_OK|MB_ICONINFORMATION "Could not find pidgin.exe, pleast start Pidgin manually."
+    Return
+
+    run:
     ExecShell "" "$PidginDir\pidgin.exe"
 FunctionEnd
