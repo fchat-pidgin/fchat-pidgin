@@ -101,6 +101,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_CHANNEL_CREATE                    "CCR"
 #define FLIST_CHANNEL_TIMEOUT                   "CTU"
 #define FLIST_SET_CHANNEL_DESCRIPTION           "CDS"
+#define FLIST_SET_CHANNEL_MODE                  "RMO"
 #define FLIST_SET_CHANNEL_STATUS                "RST"
 #define FLIST_SET_STATUS                        "STA"
 #define FLIST_CHANNEL_JOIN                      "JCH"

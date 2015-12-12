@@ -833,12 +833,16 @@ void flist_init_commands() {
     purple_cmd_register("makeroom", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_channel_make_cmd, "makeroom &lt;channel&gt;: Creates a private channel.", NULL);
 
+    purple_cmd_register("getmode", "", PURPLE_CMD_P_PRPL, channel_flags,
+        FLIST_PLUGIN_ID, flist_channel_get_mode_cmd, "getmode: Displays the current channel mode (chat only, ads only or both).", NULL);
+    purple_cmd_register("setmode", "s", PURPLE_CMD_P_PRPL, channel_flags,
+        FLIST_PLUGIN_ID, flist_channel_set_mode_cmd, "setmode: &lt;chat|ads|both&gt;: Sets the mode for the current channel to chat only, ads only or both.", NULL);
     purple_cmd_register("setdescription", "s", PURPLE_CMD_P_PRPL, channel_flags | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
-        FLIST_PLUGIN_ID, flist_channel_set_topic_cmd, "setdescription &lt;message&gt: Sets the topic for the current channel.", NULL);
+        FLIST_PLUGIN_ID, flist_channel_set_topic_cmd, "setdescription &lt;message&gt;: Sets the topic for the current channel.", NULL);
     purple_cmd_register("getdescription", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_show_raw_topic_cmd, "getdescripton: Shows the unparsed topic for the current channel.", NULL);
     purple_cmd_register("showdescription", "", PURPLE_CMD_P_PRPL, channel_flags,
-        FLIST_PLUGIN_ID, flist_channel_show_topic_cmd, "getdescripton: Shows the topic for the current channel.", NULL);
+        FLIST_PLUGIN_ID, flist_channel_show_topic_cmd, "showdescripton: Shows the topic for the current channel.", NULL);
 
     purple_cmd_register("code", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_code_cmd, "code: Shows the BBCode to advertise the channel.", NULL);

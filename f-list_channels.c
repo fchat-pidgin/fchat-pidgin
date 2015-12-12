@@ -153,6 +153,26 @@ static void flist_show_channel_topic(FListAccount *fla, const gchar *channel) {
     g_free(html_description);
 }
 
+static void flist_show_channel_mode(FListAccount *fla, const gchar *channel) {
+    PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
+    FListChannel *fchannel = flist_channel_find(fla, channel);
+    gchar *message;
+
+    g_return_if_fail(convo != NULL);
+    g_return_if_fail(fchannel != NULL);
+
+    if (fchannel->mode == CHANNEL_MODE_ADS_ONLY)
+        message = g_strdup_printf("Channel allows roleplay ads only.");
+    else if (fchannel->mode == CHANNEL_MODE_CHAT_ONLY)
+        message = g_strdup_printf("Channel allows chat only.");
+    else
+        message = g_strdup_printf("Channel allows both chat and roleplay ads.");
+
+    purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
+
+    g_free(message);
+}
+
 void flist_got_channel_topic(FListAccount *fla, const gchar *channel, const gchar *topic) {
     PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
     FListChannel *fchannel = flist_channel_find(fla, channel);
@@ -181,6 +201,27 @@ void flist_got_channel_topic(FListAccount *fla, const gchar *channel, const gcha
     g_free(stripped_description);
     g_free(stripped_description_2);
     g_free(unescaped_description);
+}
+
+void flist_got_channel_mode(FListAccount *fla, const gchar *channel, const gchar *mode) {
+    PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
+    FListChannel *fchannel = flist_channel_find(fla, channel);
+    FListChannelMode fmode;
+
+    g_return_if_fail(mode != NULL);
+    g_return_if_fail(convo != NULL);
+    g_return_if_fail(fchannel != NULL);
+
+    fmode = flist_parse_channel_mode(mode);
+
+    if (fmode == CHANNEL_MODE_UNKNOWN) {
+        purple_debug_error(FLIST_DEBUG, "Server sent us unknown mode '%s' for channel '%s'\n", mode, channel);
+        return;
+    }
+
+    fchannel->mode = fmode;
+
+    flist_show_channel_mode(fla, channel);
 }
 
 void flist_got_channel_userlist(FListAccount *fla, const gchar *channel, GList *userlist) {
@@ -245,18 +286,6 @@ void flist_got_channel_left(FListAccount *fla, const gchar *name) {
     flist_remove_chat(fla, name);
     g_hash_table_remove(fla->chat_table, name);
     purple_debug_info(FLIST_DEBUG, "We (%s) have left channel %s.\n", fla->proper_character, name);
-}
-
-void flist_got_channel_mode(FListAccount *fla, const gchar *channel, const gchar *mode) {
-    PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, fla->pa);
-    FListChannel *fchannel = flist_channel_find(fla, channel);
-    FListChannelMode fmode;
-
-    g_return_if_fail(fchannel != NULL);
-    g_return_if_fail(convo != NULL);
-
-    fmode = flist_parse_channel_mode(mode);
-
 }
 
 void flist_got_channel_oplist(FListAccount *fla, const gchar *channel, GList *ops) {
@@ -479,22 +508,6 @@ gboolean flist_process_COL(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_RMO(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
-    const gchar *channel, *mode;
-
-    channel = json_object_get_string_member(root, "channel");
-    mode = json_object_get_string_member(root, "mode");
-
-    g_return_val_if_fail(channel != NULL, TRUE);
-
-    if(mode) {
-        flist_got_channel_mode(fla, channel, mode);
-    }
-
-    return TRUE;
-}
-
 gboolean flist_process_ICH(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     JsonArray *array;
@@ -542,6 +555,21 @@ gboolean flist_process_CDS(PurpleConnection *pc, JsonObject *root) {
     channel = json_object_get_string_member(root, "channel");
     description = json_object_get_string_member(root, "description");
     flist_got_channel_topic(fla, channel, description);
+    return TRUE;
+}
+
+gboolean flist_process_RMO(PurpleConnection *pc, JsonObject *root) {
+    FListAccount *fla = pc->proto_data;
+    const gchar *channel, *modestr;
+
+    channel = json_object_get_string_member(root, "channel");
+    modestr = json_object_get_string_member(root, "mode");
+
+    g_return_val_if_fail(channel != NULL, TRUE);
+    g_return_val_if_fail(modestr != NULL, TRUE);
+
+    flist_got_channel_mode(fla, channel, modestr);
+
     return TRUE;
 }
 
@@ -939,6 +967,51 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
     }
 
     //TODO: don't allow this on public channels? (or do we?)
+    return PURPLE_CMD_RET_OK;
+}
+
+PurpleCmdRet flist_channel_get_mode_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc ? pc->proto_data : NULL;
+    const gchar *channel;
+
+    g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
+
+    channel = purple_conversation_get_name(convo);
+    flist_show_channel_mode(fla, channel);
+
+    return PURPLE_CMD_RET_OK;
+}
+
+PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
+    const gchar *channel;
+    const gchar *modestr = args[0];
+    FListChannelMode mode;
+    JsonObject *json;
+    PurpleConvChatBuddyFlags flags;
+
+    flags = flist_flags_lookup(fla, convo, fla->proper_character);
+    if(!(flags & (PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER | PURPLE_CBFLAGS_HALFOP))) {
+        *error = g_strdup(_("You must be a channel or global operator to set the channel mode."));
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    channel = purple_conversation_get_name(convo);
+    mode = flist_parse_channel_mode(modestr);
+
+    if (mode == CHANNEL_MODE_UNKNOWN) {
+        *error = g_strdup(_("Valid channel modes are: chat, ads, both"));
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    json = json_object_new();
+    json_object_set_string_member(json, "channel", channel);
+    json_object_set_string_member(json, "mode", modestr);
+    flist_request(pc, FLIST_SET_CHANNEL_MODE, json);
+    json_object_unref(json);
+
     return PURPLE_CMD_RET_OK;
 }
 
