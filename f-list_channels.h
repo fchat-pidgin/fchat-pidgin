@@ -44,13 +44,14 @@ void flist_update_user_chats_offline(PurpleConnection *, const gchar *);
 void flist_update_user_chats_rank(PurpleConnection *, const gchar *);
 void flist_update_users_chats_rank(PurpleConnection *, GList *);
 
+void flist_got_channel_topic(FListAccount *, const gchar *channel, const gchar *topic);
+void flist_got_channel_mode(FListAccount *, const gchar *channel, const gchar *mode);
 void flist_got_channel_joined(FListAccount *, const gchar *);
 void flist_got_channel_left(FListAccount *, const gchar *);
 void flist_got_channel_oplist(FListAccount *, const gchar *channel, GList *oplist);
 void flist_got_channel_userlist(FListAccount *, const gchar *channel, GList *users);
 void flist_got_channel_user_joined(FListAccount *, const gchar *, const gchar *);
 void flist_got_channel_user_left(FListAccount *, const gchar *, const gchar *, const gchar *);
-
 
 FListChannel *flist_channel_find(FListAccount *, const gchar *channel);
 FListChannel *flist_channel_new(FListAccount *, const gchar *channel);
@@ -71,6 +72,8 @@ PurpleCmdRet flist_channel_banlist_cmd(PurpleConversation *, const gchar *, gcha
 PurpleCmdRet flist_channel_who_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_open_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_close_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
+PurpleCmdRet flist_channel_get_mode_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
+PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_show_topic_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
@@ -87,6 +90,7 @@ gboolean flist_process_CKU(PurpleConnection *, JsonObject *);
 gboolean flist_process_CBU(PurpleConnection *, JsonObject *);
 gboolean flist_process_CTU(PurpleConnection *, JsonObject *);
 gboolean flist_process_CDS(PurpleConnection *, JsonObject *);
+gboolean flist_process_RMO(PurpleConnection *, JsonObject *);
 gboolean flist_process_CIU(PurpleConnection *, JsonObject *);
 
 #endif	/* F_LIST_CHANNELS_H */

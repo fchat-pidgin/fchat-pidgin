@@ -709,7 +709,8 @@ void flist_callback_init() {
     g_hash_table_insert(callbacks, "ICH", flist_process_ICH); //in channel
     g_hash_table_insert(callbacks, "MSG", flist_process_MSG); //channel message
     g_hash_table_insert(callbacks, "LRP", flist_process_LRP); //channel ad
-    g_hash_table_insert(callbacks, "CDS", flist_process_CDS);
+    g_hash_table_insert(callbacks, "CDS", flist_process_CDS); //channel description
+    g_hash_table_insert(callbacks, "RMO", flist_process_RMO); //channel mode
     g_hash_table_insert(callbacks, "CIU", flist_process_CIU); //channel invite
 
     // Ignore list handling
