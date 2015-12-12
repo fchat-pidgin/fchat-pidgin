@@ -1001,8 +1001,7 @@ PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *convo, const gchar *
     channel = purple_conversation_get_name(convo);
     mode = flist_parse_channel_mode(modestr);
 
-    if (mode == CHANNEL_MODE_UNKNOWN)
-    {
+    if (mode == CHANNEL_MODE_UNKNOWN) {
         *error = g_strdup(_("Valid channel modes are: chat, ads, both"));
         return PURPLE_CMD_RET_FAILED;
     }
