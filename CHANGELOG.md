@@ -3,9 +3,13 @@
 ## ?.?.?
 ### Added
 - #40: Character names in RTB notifications (reports, new notes, ...) are links to their profile
+- #49: Add missing /setmode command
+- /gban and /gunban now work on offline users
 
 ### Fixed
 - #53: Incorrect link in bug report comment notifications
+- /showads, /hideads, /showchat, /hidechat now actually work
+- Commands should now check for the correct permissions
 
 ## 0.5.0
 ### Added
