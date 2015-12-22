@@ -28,6 +28,7 @@
 #define FLIST_PERMISSION_CHANNEL_OP         0x01
 #define FLIST_PERMISSION_CHANNEL_OWNER      0x02
 #define FLIST_PERMISSION_GLOBAL_OP          0x04
+#define FLIST_PERMISSION_ADMINISTRATOR      0x08
 #define FLIST_HAS_PERMISSION(bitmask, permission) ((bitmask) & (permission))
 #define FLIST_HAS_MIN_PERMISSION(bitmask, permission) ((bitmask) >= (permission))
 #define FLIST_GET_PURPLE_PERMISSIONS(fla, character, channel) (flist_permissions_to_purple(flist_get_permissions((fla), (character), (channel))))
