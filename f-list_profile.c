@@ -51,7 +51,7 @@ static inline FListProfiles *_flist_profiles(FListAccount *fla) {
 }
 
 static int flist_profile_field_cmp(FListProfileField *field1, FListProfileField *field2) {
-    return flist_strcmp(field1->name, field2->name);
+    return purple_utf8_strcasecmp(field1->name, field2->name);
 }
 
 static void flist_show_profile(PurpleConnection *pc, const gchar *character, GHashTable *profile,
@@ -106,7 +106,7 @@ static void flist_show_profile(PurpleConnection *pc, const gchar *character, GHa
     remaining = g_hash_table_get_keys(profile);
     if(remaining) {
         GList *cur;
-        remaining = g_list_sort(remaining, (GCompareFunc) flist_strcmp);
+        remaining = g_list_sort(remaining, (GCompareFunc) purple_utf8_strcasecmp);
         cur = remaining;
         purple_notify_user_info_add_section_break(info);
         //purple_notify_user_info_add_section_header(info, FLIST_PROFILE_DEFAULT_CATEGORY);

@@ -21,16 +21,14 @@
 #include "f-list_channels.h"
 #define CHANNEL_DISPLAY_MODE "CHANNEL_DISPLAY_MODE"
 
-GCompareFunc flist_op_strcmp = (GCompareFunc) flist_strcmp;
-
 FListFlags flist_get_flags(FListAccount *fla, const gchar *channel, const gchar *identity) {
     FListFlags ret = 0;
     FListChannel *fchannel = channel ? flist_channel_find(fla, channel) : NULL;
 
-    if(fchannel && fchannel->owner && !flist_op_strcmp(fchannel->owner, identity)) {
+    if(fchannel && fchannel->owner && !purple_utf8_strcasecmp(fchannel->owner, identity)) {
         ret |= FLIST_FLAG_CHANNEL_FOUNDER;
     }
-    if(fchannel && g_list_find_custom(fchannel->operators, identity, flist_op_strcmp)) {
+    if(fchannel && g_list_find_custom(fchannel->operators, identity, (GCompareFunc) purple_utf8_strcasecmp)) {
         ret |= FLIST_FLAG_CHANNEL_OP;
     }
     if(g_hash_table_lookup(fla->global_ops, identity) != NULL) {
@@ -436,7 +434,7 @@ gboolean flist_process_kickban(PurpleConnection *pc, JsonObject *root, gboolean 
         return TRUE;
     }
 
-    if(!flist_strcmp(character, fla->proper_character)) { //we just got kicked
+    if(!purple_utf8_strcasecmp(character, fla->proper_character)) { //we just got kicked
         gchar *message = operator
                 ? g_strdup_printf("You have been %s from the channel!", ban ? "kicked and banned" : "kicked")
                 : g_strdup_printf("%s has %s you from the channel!", operator, ban ? "kicked and banned" : "kicked");
@@ -484,7 +482,7 @@ gboolean flist_process_CTU(PurpleConnection *pc, JsonObject *root) {
         return TRUE;
     }
 
-    if(!flist_strcmp(character, fla->proper_character)) { //we just got timed out
+    if(!purple_utf8_strcasecmp(character, fla->proper_character)) { //we just got timed out
         // TODO check if we can get rid of these operator checks ... it should be set every time anyway?
         gchar *message = operator
                 ? g_strdup_printf("You have been timed out from the channel for %d minute(s)!", length)
@@ -665,7 +663,7 @@ static void flist_who_single(FListAccount *fla, PurpleConversation *convo, FList
 
 static gint flist_who_compare(gconstpointer a, gconstpointer b) {
     const FListCharacter *c1 = a, *c2 = b;
-    return flist_strcmp(c1->name, c2->name);
+    return purple_utf8_strcasecmp(c1->name, c2->name);
 }
 
 static void flist_who(FListAccount *fla, PurpleConversation *convo, GList *who, gboolean icons) {

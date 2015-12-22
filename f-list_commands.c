@@ -685,7 +685,7 @@ PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, 
     const gchar *channel = purple_conversation_get_name(convo);
     FListChannel *fc = flist_channel_find(fla, channel);
 
-    if (!fc || (!g_list_find_custom(fc->operators, fla->character, (GCompareFunc) flist_strcmp) && !g_hash_table_lookup(fla->global_ops, fla->character)))
+    if (!fc || (!g_list_find_custom(fc->operators, fla->character, (GCompareFunc) purple_utf8_strcasecmp) && !g_hash_table_lookup(fla->global_ops, fla->character)))
     {
         *error = g_strdup("Insufficient permissions.");
         return PURPLE_CMD_RET_FAILED;

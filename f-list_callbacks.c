@@ -320,7 +320,7 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
 
         // If we were the one who sent the roll we'll swap target and character variables
         // so we can use the same code below for both cases
-        if (!flist_strcmp(target, fla->proper_character))
+        if (!purple_utf8_strcasecmp(target, fla->proper_character))
             target = character;
 
         // Get or create conversation
@@ -366,7 +366,7 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
     {
         FListChannel *fc = flist_channel_find(fla, channel);
 
-        if (fc && (g_list_find_custom(fc->operators, character, (GCompareFunc) flist_strcmp) || g_hash_table_lookup(fla->global_ops, character)))
+        if (fc && (g_list_find_custom(fc->operators, character, (GCompareFunc) purple_utf8_strcasecmp) || g_hash_table_lookup(fla->global_ops, character)))
         {
             flist_channel_print_op_warning(convo, character, &message[6]);
             return TRUE;

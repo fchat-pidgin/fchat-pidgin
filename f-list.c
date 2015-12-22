@@ -181,10 +181,6 @@ gboolean flist_str_equal(const char *nick1, const char *nick2) {
     return (purple_utf8_strcasecmp(nick1, nick2) == 0);
 }
 
-gint flist_strcmp(const char *nick1, const char *nick2) {
-    return purple_utf8_strcasecmp(nick1, nick2);
-}
-
 void flist_g_slist_free_full(GSList *to_free, GDestroyNotify f) {
     GSList *cur = to_free;
     while(cur) {
@@ -519,97 +515,97 @@ static GList *flist_status_types(PurpleAccount *account) {
 
 static PurplePluginProtocolInfo prpl_info = {
     OPT_PROTO_CHAT_TOPIC | OPT_PROTO_SLASH_COMMANDS_NATIVE,
-    NULL,                   /* user_splits */
-    NULL,                   /* protocol_options */
+    NULL,                                               /* user_splits */
+    NULL,                                               /* protocol_options */
     {"png", 0, 0, 100, 100, 0, PURPLE_ICON_SCALE_SEND}, /* icon_spec */
-    flist_list_icon,        /* list_icon */
-    NULL,                       /* list_emblems */
-    flist_get_status_text,          /* status_text */
-    flist_get_tooltip,                  /* tooltip_text */
-    flist_status_types,                 /* status_types */
-    flist_blist_node_menu,              /* blist_node_menu */
-    flist_chat_info,                    /* chat_info */
-    flist_chat_info_defaults,           /* chat_info_defaults */
-    flist_login,            /* login */
-    flist_close,            /* close */
-    flist_send_message,        /* send_im */
-    NULL,                           /* set_info */
-    flist_send_typing,        /* send_typing */
-    flist_get_profile,        /* get_info */
-    NULL,               /* set_status */
-    NULL,                    /* set_idle */
-    NULL,                    /* change_passwd */
-    flist_pidgin_add_buddy,        /* add_buddy */
-    NULL,                    /* add_buddies */
-    flist_pidgin_remove_buddy,        /* remove_buddy */
-    NULL,                    /* remove_buddies */
-    NULL,                   /* add_permit */
-    NULL,                   /* add_deny */
-    NULL,                   /* rem_permit */
-    NULL,                   /* rem_deny */
-    NULL,                   /* set_permit_deny */
-    flist_join_channel,        /* join_chat */
-    NULL,                   /* reject chat invite */
-    flist_get_channel_name, /* get_chat_name */
-    NULL,                   /* chat_invite */
-    flist_leave_channel,    /* chat_leave */
-    NULL,                   /* chat_whisper */
-    flist_send_channel_message,        /* chat_send */
-    NULL,                   /* keepalive */
-    NULL,                   /* register_user */
-    NULL,                   /* get_cb_info */
-    NULL,                   /* get_cb_away */
-    NULL,                   /* alias_buddy */
-    NULL,                    /* group_buddy */
-    NULL,                    /* rename_group */
-    NULL,                    /* buddy_free */
-    NULL,                    /* convo_closed */
-    flist_normalize,/* normalize */
-    NULL,                   /* set_buddy_icon */
-    NULL,                    /* remove_group */
-    NULL,                   /* get_cb_real_name */
-    NULL,                   /* set_chat_topic */
-    NULL,                   /* find_blist_chat */
-    flist_get_roomlist,        /* roomlist_get_list */
-    flist_cancel_roomlist,    /* roomlist_cancel */
-    NULL,                   /* roomlist_expand_category */
-    NULL,                   /* can_receive_file */
-    NULL,                   /* send_file */
-    NULL,                   /* new_xfer */
-    NULL,                   /* offline_message */
-    NULL,                   /* whiteboard_prpl_ops */
-    NULL,                   /* send_raw */
-    NULL,                   /* roomlist_room_serialize */
-    NULL,                   /* unregister_user */
-    NULL,                   /* send_attention */
-    NULL,                   /* attention_types */
-    sizeof(PurplePluginProtocolInfo), /* struct_size */
-    NULL, /* get_account_text_table */
+    flist_list_icon,                                    /* list_icon */
+    NULL,                                               /* list_emblems */
+    flist_get_status_text,                              /* status_text */
+    flist_get_tooltip,                                  /* tooltip_text */
+    flist_status_types,                                 /* status_types */
+    flist_blist_node_menu,                              /* blist_node_menu */
+    flist_chat_info,                                    /* chat_info */
+    flist_chat_info_defaults,                           /* chat_info_defaults */
+    flist_login,                                        /* login */
+    flist_close,                                        /* close */
+    flist_send_message,                                 /* send_im */
+    NULL,                                               /* set_info */
+    flist_send_typing,                                  /* send_typing */
+    flist_get_profile,                                  /* get_info */
+    NULL,                                               /* set_status */
+    NULL,                                               /* set_idle */
+    NULL,                                               /* change_passwd */
+    flist_pidgin_add_buddy,                             /* add_buddy */
+    NULL,                                               /* add_buddies */
+    flist_pidgin_remove_buddy,                          /* remove_buddy */
+    NULL,                                               /* remove_buddies */
+    NULL,                                               /* add_permit */
+    NULL,                                               /* add_deny */
+    NULL,                                               /* rem_permit */
+    NULL,                                               /* rem_deny */
+    NULL,                                               /* set_permit_deny */
+    flist_join_channel,                                 /* join_chat */
+    NULL,                                               /* reject chat invite */
+    flist_get_channel_name,                             /* get_chat_name */
+    NULL,                                               /* chat_invite */
+    flist_leave_channel,                                /* chat_leave */
+    NULL,                                               /* chat_whisper */
+    flist_send_channel_message,                         /* chat_send */
+    NULL,                                               /* keepalive */
+    NULL,                                               /* register_user */
+    NULL,                                               /* get_cb_info */
+    NULL,                                               /* get_cb_away */
+    NULL,                                               /* alias_buddy */
+    NULL,                                               /* group_buddy */
+    NULL,                                               /* rename_group */
+    NULL,                                               /* buddy_free */
+    NULL,                                               /* convo_closed */
+    flist_normalize,                                    /* normalize */
+    NULL,                                               /* set_buddy_icon */
+    NULL,                                               /* remove_group */
+    NULL,                                               /* get_cb_real_name */
+    NULL,                                               /* set_chat_topic */
+    NULL,                                               /* find_blist_chat */
+    flist_get_roomlist,                                 /* roomlist_get_list */
+    flist_cancel_roomlist,                              /* roomlist_cancel */
+    NULL,                                               /* roomlist_expand_category */
+    NULL,                                               /* can_receive_file */
+    NULL,                                               /* send_file */
+    NULL,                                               /* new_xfer */
+    NULL,                                               /* offline_message */
+    NULL,                                               /* whiteboard_prpl_ops */
+    NULL,                                               /* send_raw */
+    NULL,                                               /* roomlist_room_serialize */
+    NULL,                                               /* unregister_user */
+    NULL,                                               /* send_attention */
+    NULL,                                               /* attention_types */
+    sizeof(PurplePluginProtocolInfo),                   /* struct_size */
+    NULL,                                               /* get_account_text_table */
 };
 
 static PurplePluginInfo info = {
     PURPLE_PLUGIN_MAGIC,
     PURPLE_MAJOR_VERSION,
     PURPLE_MINOR_VERSION,
-    PURPLE_PLUGIN_PROTOCOL,             /* type */
-    NULL,                         /* ui_requirement */
-    0,                         /* flags */
-    NULL,                         /* dependencies */
-    PURPLE_PRIORITY_DEFAULT,             /* priority */
+    PURPLE_PLUGIN_PROTOCOL,         /* type */
+    NULL,                           /* ui_requirement */
+    0,                              /* flags */
+    NULL,                           /* dependencies */
+    PURPLE_PRIORITY_DEFAULT,        /* priority */
     FLIST_PLUGIN_ID,                /* id */
-    "FList",                     /* name */
-    FLIST_PLUGIN_VERSION,             /* version */
-    "F-List Protocol Plugin",         /* summary */
-    "F-List Protocol Plugin",         /* description */
-    "TestPanther, Nelwill, Sabhak",         /* author */
-    "http://f-list.net/",    /* homepage */
-    plugin_load,                     /* load */
-    plugin_unload,                     /* unload */
-    NULL,                         /* destroy */
-    NULL,                         /* ui_info */
+    "FList",                        /* name */
+    FLIST_PLUGIN_VERSION,           /* version */
+    "F-List Protocol Plugin",       /* summary */
+    "F-List Protocol Plugin",       /* description */
+    "TestPanther, Nelwill, Sabhak", /* author */
+    "http://f-list.net/",           /* homepage */
+    plugin_load,                    /* load */
+    plugin_unload,                  /* unload */
+    NULL,                           /* destroy */
+    NULL,                           /* ui_info */
     &prpl_info,                     /* extra_info */
-    NULL,                         /* prefs_info */
-    flist_actions,                     /* actions */
+    NULL,                           /* prefs_info */
+    flist_actions,                  /* actions */
     /* padding */
     NULL,
     NULL,
@@ -623,12 +619,6 @@ static void plugin_init(PurplePlugin *plugin) {
 
     split = purple_account_user_split_new("Character", "", ':');
     prpl_info.user_splits = g_list_append(prpl_info.user_splits, split);
-
-//    option = purple_account_option_bool_new("Sync Status", "sync_status", FALSE);
-//    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-
-//    option = purple_account_option_bool_new("Sync Status Message", "sync_status_message", FALSE);
-//    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_string_new("Server Address", "server_address", "chat.f-list.net");
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);

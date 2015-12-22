@@ -353,7 +353,7 @@ static void flist_friends_add_buddies(FListAccount *fla) {
             GList *list = flf->auth_requests;
             while(list) {
                 FListFriendAuth *auth = list->data;
-                if(!flist_strcmp(auth->name, friend->name)) {
+                if(!purple_utf8_strcasecmp(auth->name, friend->name)) {
                     requests_auth = FALSE;
                     break;
                 }
@@ -430,7 +430,7 @@ static void flist_handle_friends_list(FListAccount *fla, JsonArray *array, FList
         FListFriend *friend;
 
         //We are only interested in friends of the current character.
-        if(flist_strcmp(fla->character, source)) continue;
+        if(purple_utf8_strcasecmp(fla->character, source)) continue;
 
         friend = flist_friend_get(flf->friends, dest);
         friend->status = status;
