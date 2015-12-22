@@ -33,7 +33,7 @@ void flist_apply_filter(FListAccount *fla, GSList *candidates) {
         PurpleBuddy *b = cur->data; cur = g_slist_next(cur);
         const gchar *name = purple_buddy_get_name(b);
         if(purple_buddy_get_group(b) == filter_group) {
-            if(!g_slist_find_custom(candidates, name, (GCompareFunc) flist_strcmp)) { //TODO: this is extremely inefficient, fix it!
+            if(!g_slist_find_custom(candidates, name, (GCompareFunc) purple_utf8_strcasecmp)) { //TODO: this is extremely inefficient, fix it!
                 removed = g_slist_prepend(removed, b);
             }
         }

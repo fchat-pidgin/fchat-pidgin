@@ -295,7 +295,7 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
         if (!flist_get_channel_show_chat(fla, target))
             return TRUE;
 
-        if (flist_strcmp(character, fla->proper_character)){
+        if (purple_utf8_strcasecmp(character, fla->proper_character)){
             flags = PURPLE_MESSAGE_RECV;
         }
 
@@ -311,7 +311,7 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
 
         // If we were the one who sent the roll we'll swap target and character variables
         // so we can use the same code below for both cases
-        if (flist_strcmp(character, fla->proper_character)){
+        if (!purple_utf8_strcasecmp(target, fla->proper_character)) {
             target = character;
             flags = PURPLE_MESSAGE_RECV;
         }
@@ -359,7 +359,7 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
     {
         FListChannel *fc = flist_channel_find(fla, channel);
 
-        if (fc && (g_list_find_custom(fc->operators, character, (GCompareFunc) flist_strcmp) || g_hash_table_lookup(fla->global_ops, character)))
+        if (fc && (g_list_find_custom(fc->operators, character, (GCompareFunc) purple_utf8_strcasecmp) || g_hash_table_lookup(fla->global_ops, character)))
         {
             flist_channel_print_op_warning(convo, character, &message[6]);
             return TRUE;
@@ -415,7 +415,7 @@ static gboolean flist_process_LRP(PurpleConnection *pc, JsonObject *root) {
 static gboolean flist_process_BRO(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     const gchar *message, *character;
-    gchar *parsed, *final;
+    gchar *parsed;
 
     message = json_object_get_string_member(root, "message");
     character = json_object_get_string_member(root, "character");
@@ -424,10 +424,9 @@ static gboolean flist_process_BRO(PurpleConnection *pc, JsonObject *root) {
     if(!character) character = GLOBAL_NAME;
 
     parsed = flist_bbcode_to_html(fla, NULL, message);
-    final = g_strdup_printf("(Broadcast) %s", parsed);
-    serv_got_im(pc, character, parsed, PURPLE_MESSAGE_RECV, time(NULL));
+    serv_got_im(pc, GLOBAL_NAME, parsed, PURPLE_MESSAGE_RECV, time(NULL));
 
-    g_free(parsed); g_free(final);
+    g_free(parsed);
     return TRUE;
 }
 

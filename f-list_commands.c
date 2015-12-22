@@ -610,8 +610,19 @@ PurpleCmdRet flist_channel_show_ads_cmd(PurpleConversation *convo, const gchar *
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
+
+    FListChannel *fchannel = flist_channel_find(fla, channel);
+    g_return_val_if_fail(fchannel, PURPLE_CMD_RET_OK);
+
+    if (fchannel->mode == CHANNEL_MODE_CHAT_ONLY)
+    {
+        *error = g_strdup("Ads are hidden by server settings, can't show them.");
+        return PURPLE_CMD_RET_FAILED;
+    }
+
     flist_set_channel_show_ads(fla, channel, TRUE);
-    flist_channel_show_message(fla, channel);
+
+    flist_show_channel_mode(fla, channel);
     return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_hide_ads_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -619,15 +630,27 @@ PurpleCmdRet flist_channel_hide_ads_cmd(PurpleConversation *convo, const gchar *
     FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_ads(fla, channel, FALSE);
-    flist_channel_show_message(fla, channel);
+
+    flist_show_channel_mode(fla, channel);
     return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_show_chat_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
+
+    FListChannel *fchannel = flist_channel_find(fla, channel);
+    g_return_val_if_fail(fchannel, PURPLE_CMD_RET_OK);
+
+    if (fchannel->mode == CHANNEL_MODE_ADS_ONLY)
+    {
+        *error = g_strdup("Chat is hidden by server settings, can't show it.");
+        return PURPLE_CMD_RET_FAILED;
+    }
+
     flist_set_channel_show_chat(fla, channel, TRUE);
-    flist_channel_show_message(fla, channel);
+
+    flist_show_channel_mode(fla, channel);
     return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_hide_chat_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -635,7 +658,8 @@ PurpleCmdRet flist_channel_hide_chat_cmd(PurpleConversation *convo, const gchar 
     FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_chat(fla, channel, FALSE);
-    flist_channel_show_message(fla, channel);
+
+    flist_show_channel_mode(fla, channel);
     return PURPLE_CMD_RET_OK;
 }
 
@@ -662,7 +686,7 @@ PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, 
     const gchar *channel = purple_conversation_get_name(convo);
     FListChannel *fc = flist_channel_find(fla, channel);
 
-    if (!fc || (!g_list_find_custom(fc->operators, fla->character, (GCompareFunc) flist_strcmp) && !g_hash_table_lookup(fla->global_ops, fla->character)))
+    if (!fc || (!g_list_find_custom(fc->operators, fla->character, (GCompareFunc) purple_utf8_strcasecmp) && !g_hash_table_lookup(fla->global_ops, fla->character)))
     {
         *error = g_strdup("Insufficient permissions.");
         return PURPLE_CMD_RET_FAILED;

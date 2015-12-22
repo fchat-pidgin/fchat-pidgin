@@ -21,28 +21,42 @@
 
 #include "f-list_util.h"
 
-void flist_parse_cookies_into_hash_table(const gchar *header, gsize len, GHashTable *hash_table)
+FListPermissionMask flist_get_permissions(FListAccount *fla, const gchar *character, const gchar *channel)
 {
-    const static gchar* ident = "Set-Cookie: ";
-    gsize ident_len = strlen(ident);
+    FListPermissionMask ret = FLIST_PERMISSION_NONE;
+    FListChannel *fchannel = channel ? flist_channel_find(fla, channel) : NULL;
 
-    gchar *start = g_strstr_len(header, len, ident);
-    while (start)
-    {
-        gchar *key_end = g_strstr_len(start, len, "=");
-        gchar *value_end = g_strstr_len(start, len, ";");
-
-        if (!key_end || !value_end)
-            break;
-
-        gchar *key = g_strndup(start + ident_len, key_end-(start+ident_len));
-        gchar *value = g_strndup(key_end + 1, value_end-(key_end+1));
-
-        g_hash_table_insert(hash_table, key, value);
-        purple_debug_info(FLIST_DEBUG, "Adding cookie '%s' (%s) to cookie jar!\n", key, value);
-
-        start = g_strstr_len(start+1, len, ident);
+    if(channel && !fchannel) {
+        purple_debug_error(FLIST_DEBUG, "Flags requested for %s in channel %s, but no channel was found.\n", character, channel);
+        return ret;
     }
+
+    if(fchannel && fchannel->owner && !purple_utf8_strcasecmp(fchannel->owner, character))
+        ret |= FLIST_PERMISSION_CHANNEL_OWNER;
+
+    if(fchannel && g_list_find_custom(fchannel->operators, character, (GCompareFunc)purple_utf8_strcasecmp))
+        ret |= FLIST_PERMISSION_CHANNEL_OP;
+
+    if(g_hash_table_lookup(fla->global_ops, character) != NULL)
+        ret |= FLIST_PERMISSION_GLOBAL_OP;
+
+    return ret;
+}
+
+PurpleConvChatBuddyFlags flist_permissions_to_purple(FListPermissionMask permission)
+{
+    PurpleConvChatBuddyFlags flags = 0;
+
+    if (FLIST_HAS_PERMISSION(permission, FLIST_PERMISSION_CHANNEL_OWNER))
+        flags |= PURPLE_CBFLAGS_FOUNDER;
+
+    if (FLIST_HAS_PERMISSION(permission, FLIST_PERMISSION_CHANNEL_OP))
+        flags |= PURPLE_CBFLAGS_HALFOP;
+
+    if (FLIST_HAS_PERMISSION(permission, FLIST_PERMISSION_GLOBAL_OP))
+        flags |= PURPLE_CBFLAGS_OP;
+
+    return flags;
 }
 
 //TODO: you're supposed to change spaces to "+" values??

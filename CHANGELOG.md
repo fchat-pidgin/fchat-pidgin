@@ -3,11 +3,15 @@
 ## ?.?.?
 ### Added
 - #40: Character names in RTB notifications (reports, new notes, ...) are links to their profile
-- #5: New option to sync status from Pidgin automatically (WARNING: on by default,  be wary or privacy implications when using multiple IM accounts at the same time)
+- #49: Add missing /setmode command
+- /gban and /gunban now work on offline users
+- #5: New option to sync status from Pidgin automatically (WARNING: on by default,  be wary of privacy implications when using multiple IM accounts at the same time)
 - #61: Non-friends (or bookmarks) are now added to a temporary group when they IM the user, allowing to see their avatar and status info and to interact with them more easily
 
 ### Fixed
 - #53: Incorrect link in bug report comment notifications
+- /showads, /hideads, /showchat, /hidechat now actually work
+- Commands should now check for the correct permissions
 - #61: Avoid getting banned by multiple connection retries after password change. After a password change, you must now re-enable your account on pidgin
 
 ## 0.5.0

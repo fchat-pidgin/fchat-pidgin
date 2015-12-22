@@ -71,7 +71,7 @@ typedef struct FListProfiles_ FListProfiles;
 typedef struct FListWebRequestData_ FListWebRequestData;
 typedef struct FListFriends_ FListFriends;
 
-#define FLIST_CLIENT_NAME "F-List Pidgin"
+#define FLIST_CLIENT_NAME       "F-List Pidgin"
 #define FLIST_PLUGIN_VERSION    "0.5.0"
 #define USER_AGENT              "Pidgin F-Chat 0.5.0"
 #define FLIST_PLUGIN_ID         "prpl-flist"
@@ -100,6 +100,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_CHANNEL_REMOVE_OP                 "COR"
 #define FLIST_CHANNEL_CREATE                    "CCR"
 #define FLIST_CHANNEL_TIMEOUT                   "CTU"
+#define FLIST_CHANNEL_SET_MODE                  "RMO"
 #define FLIST_SET_CHANNEL_DESCRIPTION           "CDS"
 #define FLIST_SET_CHANNEL_MODE                  "RMO"
 #define FLIST_SET_CHANNEL_STATUS                "RST"
@@ -152,7 +153,6 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_URL_CHANGELOG_COMMENT FLIST_URL_CHANGELOG FLIST_URL_COMMENT_ANCHOR
 #define FLIST_URL_FEATURE_COMMENT   FLIST_URL_FEATUREREQUEST FLIST_URL_COMMENT_ANCHOR
 
-
 enum FListConnectionStatus_ {
     FLIST_OFFLINE,
     FLIST_CONNECT,
@@ -193,10 +193,10 @@ enum FListGender_ { /* flags make for quick comparisons */
 };
 
 enum FListChannelMode_ {
-    CHANNEL_MODE_BOTH = 0,
-    CHANNEL_MODE_ADS_ONLY = 1,
-    CHANNEL_MODE_CHAT_ONLY = 2,
-    CHANNEL_MODE_UNKNOWN = 16
+    CHANNEL_MODE_BOTH = 0x0,
+    CHANNEL_MODE_ADS_ONLY = 0x01,
+    CHANNEL_MODE_CHAT_ONLY = 0x02,
+    CHANNEL_MODE_UNKNOWN = 0x10
 };
 
 enum FListFriendStatus_ {
@@ -282,7 +282,6 @@ gboolean flist_get_channel_show_ads(FListAccount *, const gchar *);
 gboolean flist_get_channel_show_chat(FListAccount *, const gchar *);
 void flist_set_channel_show_ads(FListAccount *, const gchar *, gboolean);
 void flist_set_channel_show_chat(FListAccount *, const gchar *, gboolean);
-void flist_channel_show_message(FListAccount *, const gchar *);
 
 
 struct FListGenderStruct_ {
@@ -358,12 +357,10 @@ struct FListAccount_ {
     /* connection options */
     gchar *server_address;
     gint server_port;
-    gboolean use_websocket_handshake; /* enable to use handshake instead of WSH */
 
     /* filter subsystem */
     gchar *filter_channel;
     gboolean filter_looking;
-    //gint filter_gender; //TODO: implement
 
     /* kinks subsystem */
     FListKinks *flist_kinks;
@@ -406,6 +403,6 @@ struct FListAccount_ {
 #include "f-list_ignore.h"
 #include "f-list_report.h"
 #include "f-list_util.h"
-#include "f-list_pidgin.h" //TODO: maybe not include this ...
+#include "f-list_pidgin.h"
 
 #endif

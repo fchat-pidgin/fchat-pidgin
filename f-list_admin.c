@@ -185,17 +185,9 @@ void flist_broadcast_action(PurplePluginAction *action) {
 
 PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
-    FListAccount *fla = pc->proto_data;
     const gchar *character;
     const gchar *code = NULL;
     JsonObject *json;
-    FListFlags flags;
-
-    flags = flist_get_flags(fla, NULL, fla->proper_character);
-    if(!(flags & FLIST_FLAG_ADMIN)) {
-        *error = g_strdup(_("You must be an administrator to add or remove global operators."));
-        return PURPLE_CMD_RET_FAILED;
-    }
 
     if(!purple_utf8_strcasecmp(cmd, "op")) code = FLIST_CHANNEL_BAN;
     if(!purple_utf8_strcasecmp(cmd, "deop")) code = FLIST_CHANNEL_UNBAN;
@@ -217,10 +209,8 @@ PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gc
     const gchar *character;
     const gchar *code = NULL;
     JsonObject *json;
-    FListFlags flags;
 
-    flags = flist_get_flags(fla, NULL, fla->proper_character);
-    if(!(flags & (FLIST_FLAG_ADMIN | FLIST_FLAG_GLOBAL_OP))) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
         *error = g_strdup(_("You must be a global operator to globally kick, ban, or unban."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -247,10 +237,8 @@ PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gcha
     const gchar *channel;
     const gchar *code = NULL;
     JsonObject *json;
-    FListFlags flags;
 
-    flags = flist_get_flags(fla, NULL, fla->proper_character);
-    if(!(flags & (FLIST_FLAG_ADMIN | FLIST_FLAG_GLOBAL_OP))) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
         *error = g_strdup(_("You must be a global operator to create or delete public channels."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -274,14 +262,8 @@ PurpleCmdRet flist_broadcast_cmd(PurpleConversation *convo, const gchar *cmd, gc
     FListAccount *fla = pc->proto_data;
     const gchar *message;
     JsonObject *json;
-    FListFlags flags;
 
-    flags = flist_get_flags(fla, NULL, fla->proper_character);
-    if(!(flags & (FLIST_FLAG_ADMIN))) {
-        *error = g_strdup(_("You must be an administrator to send a global broadcast."));
-        return PURPLE_CMD_RET_FAILED;
-    }
-
+    // We can't check if a user is an admin anyway, so just let it up to the server
     message = args[0];
 
     json = json_object_new();
@@ -299,10 +281,8 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     const gchar *character, *time, *reason;
     gulong time_parsed; gchar *endptr;
     JsonObject *json;
-    FListFlags flags;
 
-    flags = flist_get_flags(fla, NULL, fla->proper_character);
-    if(!(flags & (FLIST_FLAG_ADMIN | FLIST_FLAG_GLOBAL_OP))) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
         *error = g_strdup(_("You must be a global operator to timeban."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -342,10 +322,8 @@ PurpleCmdRet flist_reward_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     FListAccount *fla = pc->proto_data;
     const gchar *character;
     JsonObject *json;
-    FListFlags flags;
 
-    flags = flist_get_flags(fla, NULL, fla->proper_character);
-    if(!(flags & (FLIST_FLAG_ADMIN | FLIST_FLAG_GLOBAL_OP))) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
         *error = g_strdup(_("You must be a global operator to reward a user."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -377,14 +355,12 @@ static void flist_sfc_report(PurpleConnection *pc, JsonObject *root) {
     const gchar *callid, *reporter, *report;
     gchar *s, *escaped_reporter, *escaped_report, *message;
     GString *message_str;
-    gdouble timestamp;
     gint logid; gboolean has_logid;
 
     callid = json_object_get_string_member(root, "callid");
     reporter = json_object_get_string_member(root, "character");
     report = json_object_get_string_member(root, "report");
     logid = json_object_get_parse_int_member(root, "logid", &has_logid);
-    timestamp = json_object_get_double_member(root, "timestamp");
 
     g_return_if_fail(callid);
     g_return_if_fail(reporter);
@@ -395,7 +371,7 @@ static void flist_sfc_report(PurpleConnection *pc, JsonObject *root) {
     escaped_reporter = purple_markup_escape_text(reporter, -1);
     escaped_report = purple_markup_escape_text(report, -1);
 
-    g_string_append_printf(message_str, "Moderator Alert. %s writes:\n", escaped_reporter);
+    g_string_append_printf(message_str, "Moderator Alert. <a href=\"" FLIST_URL_CHARACTER "\">%s</a> writes:\n", escaped_reporter, escaped_reporter);
     g_string_append_printf(message_str, "%s\n", escaped_report);
     g_string_append_printf(message_str, "<a href=\"flistsfc://%s/%s\">Confirm Alert</a>", s, purple_url_encode(callid));
     g_string_append(message_str, ", ");
@@ -418,11 +394,9 @@ static void flist_sfc_confirm(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     const gchar *moderator, *reporter;
     gchar *message, *escaped_message, *bbcode_message;
-    gdouble timestamp;
 
     moderator = json_object_get_string_member(root, "moderator");
     reporter = json_object_get_string_member(root, "character");
-    timestamp = json_object_get_double_member(root, "timestamp");
 
     g_return_if_fail(moderator);
     g_return_if_fail(reporter);

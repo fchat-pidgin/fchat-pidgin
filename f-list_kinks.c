@@ -143,12 +143,10 @@ static GSList *flist_get_filter_characters(FListAccount *fla, gboolean has_extra
 
 gboolean flist_process_FKS(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
-    const gchar *kink;
     JsonArray *characters;
     int i, len;
     GSList *character_list = NULL;
 
-    kink = json_object_get_string_member(root, "kinkid");
     characters = json_object_get_array_member(root, "characters");
 
     len = json_array_get_length(characters);
