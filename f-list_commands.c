@@ -881,7 +881,7 @@ void flist_init_commands() {
     purple_cmd_register("cdeop", "s", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_op_deop_cmd, "cdeop &lt;character&gt: Removes an operator from the current channel.", NULL);
     purple_cmd_register("ctimeout", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
-        FLIST_PLUGIN_ID, flist_channel_timeout_cmd, "ctimeout &lt;character&gt;, &lt;time&gt;: Temporarily bans a user from a channel for <time> minutes.", NULL);
+        FLIST_PLUGIN_ID, flist_channel_timeout_cmd, "ctimeout &lt;character&gt;, &lt;time&gt;: Temporarily bans a user from a channel. &lt;time&gt; can either be just minutes or formatted like <i>1w2d10h12m</i>, (1 week, 2 days, 10 hours and 12 minutes)", NULL);
 
     purple_cmd_register("search", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_filter_cmd, "search: Opens the character search form.", NULL);
@@ -909,7 +909,7 @@ void flist_init_commands() {
         FLIST_PLUGIN_ID, flist_global_kick_ban_unban_cmd, "unban &lt;character&gt;: Unbans a user from the server.", NULL);
 
     purple_cmd_register("timeout", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
-        FLIST_PLUGIN_ID, flist_timeout_cmd, "timeout &lt;character&gt;, &lt;time&gt; &lt;reason&gt;: Temporarily bans a user from the server.", NULL);
+        FLIST_PLUGIN_ID, flist_timeout_cmd, "timeout &lt;character&gt;, &lt;time&gt; &lt;reason&gt;: Temporarily bans a user from the server. Time can either be just minutes or formatted like <i>1w2d10h12m</i>, (1 week, 2 days, 10 hours and 12 minutes)", NULL);
 
     purple_cmd_register("reward", "s", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_reward_cmd, "reward &lt;character&gt;: Sets a user's status to &quot;crown&quot;.", NULL);

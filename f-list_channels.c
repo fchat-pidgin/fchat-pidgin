@@ -1106,7 +1106,6 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
     const gchar *channel, *character;
     const gchar *code = NULL;
     JsonObject *json;
-    gboolean must_be_online = FALSE;
 
     channel = purple_conversation_get_name(convo);
 
@@ -1115,24 +1114,30 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
         return PURPLE_CMD_RET_FAILED;
     }
 
+    character = args[0];
+
     if(!purple_utf8_strcasecmp(cmd, "kick"))
     {
         code = FLIST_CHANNEL_KICK;
-        must_be_online = TRUE;
+
+        if(!flist_get_character(fla, character)) {
+            *error = g_strdup("You may only kick or ban users that are online!");
+            return PURPLE_CMD_RET_FAILED;
+        }
     }
     else if(!purple_utf8_strcasecmp(cmd, "ban"))
+    {
         code = FLIST_CHANNEL_BAN;
+
+        gchar *message = g_strdup_printf("You have banned %s from this channel.", character);
+        purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
+        g_free(message);
+    }
     else if(!purple_utf8_strcasecmp(cmd, "unban"))
         code = FLIST_CHANNEL_UNBAN;
-
-    if(!code) return PURPLE_CMD_RET_FAILED;
-
-    character = args[0];
-
-    if(must_be_online && !flist_get_character(fla, character)) {
-        *error = g_strdup("You may only kick or ban users that are online!");
+    else
         return PURPLE_CMD_RET_FAILED;
-    }
+
 
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
@@ -1187,20 +1192,25 @@ PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *c
     }
 
     gchar *character = split[0];
-    gchar *time = g_strchug(split[1]);
+    gchar *timestr = g_strchug(split[1]);
 
-    gchar *endptr;
-    gulong time_parsed = strtoul(time, &endptr, 10);
-    if(time_parsed == 0 || endptr != time + strlen(time)) {
+    guint64 time_parsed = flist_parse_duration_str(timestr);
+    if(time_parsed == 0) {
         g_strfreev(split);
-        *error = g_strdup("You must enter a valid length of time.");
+        *error = g_strdup("You must enter a valid duration (e.g.: 4d3h12m, or just 1440).");
         return PURPLE_CMD_RET_FAILED;
     }
+
+    gchar *time_formatted = flist_format_duration_str(time_parsed);
+    gchar *message = g_strdup_printf("You have timed out %s for %s from this channel.", character, time_formatted);
+    purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    g_free(message);
+    g_free(time_formatted);
 
     JsonObject *json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "character", character);
-    json_object_set_string_member(json, "length", time);
+    json_object_set_int_member(json, "length", time_parsed);
     flist_request(pc, FLIST_CHANNEL_TIMEOUT, json);
     json_object_unref(json);
 

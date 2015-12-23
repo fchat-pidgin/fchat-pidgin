@@ -8,12 +8,14 @@
 - #5: New option to sync status from Pidgin automatically (WARNING: on by default,  be wary of privacy implications when using multiple IM accounts at the same time)
 - #61: Non-friends (or bookmarks) are now added to a temporary group when they IM the user, allowing to see their avatar and status info and to interact with them more easily
 - #48: Add missing /setowner command
+- Time durations for timeouts can now be given as specially formatted strings (e.g. instead of /ctimeout Nelwill, 1440 for a one day timeout, we can write /ctimeout Nelwill, 1d. Works up to weeks, e.g.: 1w3d12h24m)
 
 ### Fixed
 - #53: Incorrect link in bug report comment notifications
 - /showads, /hideads, /showchat, /hidechat now actually work
 - Commands should now check for the correct permissions
 - #61: Avoid getting banned by multiple connection retries after password change. After a password change, you must now re-enable your account on pidgin
+- #57: Show success notifications for /ctimeout and /ban
 
 ## 0.5.0
 ### Added

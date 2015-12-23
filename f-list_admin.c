@@ -278,8 +278,7 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
     gchar **split; guint count;
-    const gchar *character, *time, *reason;
-    gulong time_parsed; gchar *endptr;
+    const gchar *character, *timestr, *reason;
     JsonObject *json;
 
     if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
@@ -297,15 +296,21 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     }
 
     character = split[0];
-    time = g_strchug(split[1]);
+    timestr = g_strchug(split[1]);
     reason = g_strchug(split[2]);
 
-    time_parsed = strtoul(time, &endptr, 10);
-    if(time_parsed == 0 || endptr != time + strlen(time)) {
+    guint64 time_parsed = flist_parse_duration_str(timestr);
+    if(time_parsed == 0) {
         g_strfreev(split);
-        *error = g_strdup(_("You must enter a valid length of time."));
+        *error = g_strdup("You must enter a valid duration (e.g.: 4d3h12m, or just 1440).");
         return PURPLE_CMD_RET_FAILED;
     }
+
+    gchar *time_formatted = flist_format_duration_str(time_parsed);
+    gchar *message = g_strdup_printf("You have timed out %s for %s from the server, giving the reason: %s.", character, time_formatted, reason);
+    purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    g_free(message);
+    g_free(time_formatted);
 
     json = json_object_new();
     json_object_set_string_member(json, "character", character);

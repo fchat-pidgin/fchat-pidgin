@@ -150,3 +150,45 @@ gchar *http_request(const gchar *url, gboolean http11, gboolean post, const gcha
 
     return g_string_free(request_str, FALSE);
 }
+
+guint64 flist_parse_duration_str(const gchar* dur) {
+    gchar *endptr = NULL;
+    const gchar *startptr = dur;
+    guint64 duration = 0;
+
+    while (!endptr || *endptr != '\0') {
+        endptr = NULL;
+        guint64 tmp = g_ascii_strtoull(startptr, &endptr, 10);
+
+        switch(*endptr) {
+            case 'w': duration += tmp * 10080; break;
+            case 'd': duration += tmp * 1440; break;
+            case 'h': duration += tmp * 60; break;
+            case 'm':
+            case '\0': duration += tmp; break;
+            default: return 0;
+        }
+
+        startptr = endptr + 1;
+    }
+
+    return duration;
+}
+
+gchar *flist_format_duration_str(guint64 dur) {
+    GString *tmp = g_string_new(NULL);
+
+    guint64 minutes = dur % 60;
+    guint64 total_hours = dur / 60;
+    guint64 hours = total_hours % 24;
+    guint64 total_days = total_hours / 24;
+    guint64 days = total_days % 7;
+    guint64 total_weeks = total_days / 7;
+
+    if (total_weeks > 0) g_string_append_printf(tmp, "%luw", total_weeks);
+    if (days > 0) g_string_append_printf(tmp, "%lud", days);
+    if (hours > 0) g_string_append_printf(tmp, "%luh", hours);
+    if (minutes > 0) g_string_append_printf(tmp, "%lum", minutes);
+
+    return g_string_free(tmp, FALSE);
+}

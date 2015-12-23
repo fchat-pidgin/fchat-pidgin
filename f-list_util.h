@@ -39,5 +39,7 @@ FListPermissionMask flist_get_permissions(FListAccount *fla, const gchar *charac
 PurpleConvChatBuddyFlags flist_permissions_to_purple(FListPermissionMask permission);
 
 gchar *http_request(const gchar *url, gboolean http11, gboolean post, const gchar *user_agent, GHashTable *req_table, GHashTable *cookie_table);
+guint64 flist_parse_duration_str(const gchar* dur);
+gchar *flist_format_duration_str(guint64 dur);
 
 #endif
