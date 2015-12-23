@@ -276,7 +276,11 @@ void flist_got_channel_mode(FListAccount *fla, const gchar *channel, const gchar
 
     fchannel->mode = fmode;
 
-    flist_show_channel_mode(fla, channel);
+    // We want the channel mode to appear below the description when joining a channel
+    // but the server sends mode before description.
+    // So we use CHANNEL_DISPLAY_MODE to determine when the topic has appeared
+    if(!purple_conversation_get_data(convo, CHAT_SHOW_DISPLAY_STATUS))
+        flist_show_channel_mode(fla, channel);
 }
 
 void flist_got_channel_userlist(FListAccount *fla, const gchar *channel, GList *userlist) {
