@@ -189,8 +189,8 @@ PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd
     const gchar *code = NULL;
     JsonObject *json;
 
-    if(!purple_utf8_strcasecmp(cmd, "op")) code = FLIST_CHANNEL_BAN;
-    if(!purple_utf8_strcasecmp(cmd, "deop")) code = FLIST_CHANNEL_UNBAN;
+    if(!purple_utf8_strcasecmp(cmd, "op")) code = FLIST_ADD_GLOBAL_OPERATOR;
+    if(!purple_utf8_strcasecmp(cmd, "deop")) code = FLIST_REMOVE_GLOBAL_OPERATOR;
     if(!code) return PURPLE_CMD_RET_FAILED;
 
     character = args[0];
