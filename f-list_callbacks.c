@@ -536,6 +536,11 @@ static gboolean flist_process_AOP(PurpleConnection *pc, JsonObject *root) {
     g_free(identity);
 
     purple_prpl_got_account_actions(pa);
+
+    gchar *message = g_strdup_printf("%s is now a global operator.", character);
+    serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
+    g_free(message);
+
     return TRUE;
 }
 
@@ -552,6 +557,11 @@ static gboolean flist_process_DOP(PurpleConnection *pc, JsonObject *root) {
     flist_update_user_chats_rank(pc, character);
 
     purple_prpl_got_account_actions(pa);
+
+    gchar *message = g_strdup_printf("%s is no longer a global operator.", character);
+    serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
+    g_free(message);
+
     return TRUE;
 }
 
