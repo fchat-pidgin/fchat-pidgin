@@ -7,6 +7,7 @@
 - /gban and /gunban now work on offline users
 - #5: New option to sync status from Pidgin automatically (WARNING: on by default,  be wary of privacy implications when using multiple IM accounts at the same time)
 - #61: Non-friends (or bookmarks) are now added to a temporary group when they IM the user, allowing to see their avatar and status info and to interact with them more easily
+- #48: Add missing /setowner command
 
 ### Fixed
 - #53: Incorrect link in bug report comment notifications

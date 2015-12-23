@@ -1053,6 +1053,53 @@ PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *convo, const gchar *
     return PURPLE_CMD_RET_OK;
 }
 
+PurpleCmdRet flist_channel_set_owner_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
+    const gchar *channel;
+    const gchar *character = args[0];
+    JsonObject *json;
+
+    channel = purple_conversation_get_name(convo);
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
+        *error = g_strdup(_("You must be the channel owner or global operator to transfer channel ownership."));
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    json = json_object_new();
+    json_object_set_string_member(json, "channel", channel);
+    json_object_set_string_member(json, "character", character);
+    flist_request(pc, FLIST_SET_CHANNEL_OWNER, json);
+    json_object_unref(json);
+
+    return PURPLE_CMD_RET_OK;
+}
+
+PurpleCmdRet flist_channel_get_owner_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
+    const gchar *channel;
+
+    channel = purple_conversation_get_name(convo);
+    FListChannel *fchannel = flist_channel_find(fla, channel);
+    g_return_val_if_fail(fchannel != NULL, PURPLE_CMD_RET_FAILED);
+
+    gchar *message;
+    if (fchannel->owner && strlen(fchannel->owner) > 0)
+    {
+        gchar *tmp_message = g_strdup_printf("The owner of this channel is: [icon]%s[/icon]", fchannel->owner);
+        message = flist_bbcode_to_html(fla, convo, tmp_message);
+        g_free(tmp_message);
+    }
+    else
+        message = g_strdup_printf("This channel has no owner.");
+
+    purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
+    g_free(message);
+
+    return PURPLE_CMD_RET_OK;
+}
+
 PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;

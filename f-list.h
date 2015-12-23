@@ -103,6 +103,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_CHANNEL_SET_MODE                  "RMO"
 #define FLIST_SET_CHANNEL_DESCRIPTION           "CDS"
 #define FLIST_SET_CHANNEL_MODE                  "RMO"
+#define FLIST_SET_CHANNEL_OWNER                 "CSO"
 #define FLIST_SET_CHANNEL_STATUS                "RST"
 #define FLIST_SET_STATUS                        "STA"
 #define FLIST_CHANNEL_JOIN                      "JCH"

@@ -867,6 +867,10 @@ void flist_init_commands() {
         FLIST_PLUGIN_ID, flist_channel_show_raw_topic_cmd, "getdescripton: Shows the unparsed topic for the current channel.", NULL);
     purple_cmd_register("showdescription", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_show_topic_cmd, "showdescripton: Shows the topic for the current channel.", NULL);
+    purple_cmd_register("setowner", "s", PURPLE_CMD_P_PRPL, channel_flags,
+        FLIST_PLUGIN_ID, flist_channel_set_owner_cmd, "setowner: &lt;character&gt; Transfers ownership for the current channel.", NULL);
+    purple_cmd_register("getowner", "", PURPLE_CMD_P_PRPL, channel_flags,
+        FLIST_PLUGIN_ID, flist_channel_get_owner_cmd, "getowner: Shows the current channel's owner.", NULL);
 
     purple_cmd_register("code", "", PURPLE_CMD_P_PRPL, channel_flags,
         FLIST_PLUGIN_ID, flist_channel_code_cmd, "code: Shows the BBCode to advertise the channel.", NULL);
