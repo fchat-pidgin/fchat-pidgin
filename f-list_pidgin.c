@@ -129,7 +129,7 @@ GtkWidget *get_account_icon(FListAccount *fla)
     if (account_image)
     {
         GdkPixbuf *pixbuf = pidgin_pixbuf_from_imgstore(account_image);
-        GdkPixbuf *scale = gdk_pixbuf_scale_simple(pixbuf, 16, 16, GDK_INTERP_BILINEAR);
+        GdkPixbuf *scale = gdk_pixbuf_scale_simple(pixbuf, 22, 22, GDK_INTERP_BILINEAR);
         icon = gtk_image_new_from_pixbuf(scale);
         gtk_widget_set_sensitive(icon, TRUE);
         g_object_unref(pixbuf);
