@@ -4,6 +4,7 @@
 #include "gtkimhtml.h"
 #include "gtkconv.h"
 #include "gtkutils.h"
+#include "pidginstock.h"
 
 //TODO: fix these up so they're only one function ...
 
@@ -158,9 +159,11 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
     GtkWidget *toolbar = pidgin_conv->toolbar;
 
     // Check, if the button already exists
-    GtkWidget *button = purple_conversation_get_data(conv, FLIST_CONV_ACCOUNT_BUTTON);
-    if (button)
+    GtkWidget *char_button = purple_conversation_get_data(conv, FLIST_CONV_ACCOUNT_BUTTON);
+    //GtkWidget *alert_button = purple_conversation_get_data(conv, FLIST_CONV_ALERT_STAFF_BUTTON);
+    if (char_button)
     {
+        purple_debug_info(FLIST_DEBUG, "BUTTON ALREADY EXISTS ############################\n");
         if (fla->show_own_character)
         {
             /* Snippet taken from pidgin-otr 4.0.1 */
@@ -168,8 +171,8 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
              * when the user changes her prefs for the style of buttons to
              * display. */
             GList *children = gtk_container_get_children(GTK_CONTAINER(toolbar));
-            if (!g_list_find(children, button)) {
-                gtk_box_pack_start(GTK_BOX(toolbar), button, FALSE, FALSE, 0);
+            if (!g_list_find(children, char_button)) {
+                gtk_box_pack_start(GTK_BOX(toolbar), char_button, FALSE, FALSE, 0);
             }
             g_list_free(children);
 
@@ -182,17 +185,17 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
 
                 if (icon)
                 {
-                    GList *children = gtk_container_get_children(GTK_CONTAINER(button));
+                    GList *children = gtk_container_get_children(GTK_CONTAINER(char_button));
                     gtk_box_pack_start(GTK_BOX(g_list_first(children)->data), icon, TRUE, FALSE, 0);
                 }
             }
 
-            gtk_widget_show_all(button);
+            gtk_widget_show_all(char_button);
         }
         else
         {
-            gtk_container_remove(GTK_CONTAINER(toolbar), button);
-            gtk_widget_hide_all(button);
+            gtk_container_remove(GTK_CONTAINER(toolbar), char_button);
+            gtk_widget_hide_all(char_button);
         }
         return;
     }
@@ -201,29 +204,32 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
         return;
 
     // Everything we allocate (and add to the conversation UI) here gets destroyed automatically once the conversation is destroyed
-    button = gtk_button_new();
-    gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
-    gtk_box_pack_end(GTK_BOX(toolbar), button, FALSE, FALSE, 0);
 
-    GtkWidget *bwbox = gtk_hbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(button), bwbox);
-
-    // Add the account's icon in case we already downloaded and cached it
-    // Otherwise it will be added later on
+    // Character button
+    char_button = gtk_button_new_with_label(fla->proper_character);
     GtkWidget *icon = get_account_icon(fla);
     if (icon)
-        gtk_box_pack_start(GTK_BOX(bwbox), icon, TRUE, FALSE, 3);
+        gtk_button_set_image(GTK_BUTTON(char_button), icon);
 
-    GtkWidget *label = gtk_label_new(fla->proper_character);
-    gtk_label_set_use_markup (GTK_LABEL(label), TRUE);
-    gtk_box_pack_start(GTK_BOX(bwbox), label, FALSE, FALSE, 0);
+    gtk_button_set_relief(GTK_BUTTON(char_button), GTK_RELIEF_NONE);
+    gtk_box_pack_end(GTK_BOX(toolbar), char_button, FALSE, FALSE, 0);
 
-    gtk_widget_show_all(button);
+    gtk_widget_show_all(char_button);
+
+    // Alert Staff button
+    GtkWidget *button2 = gtk_button_new_with_label("Alert Staff");
+    GtkWidget *icon2 = gtk_image_new_from_stock(GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_SMALL_TOOLBAR);
+    gtk_button_set_image(GTK_BUTTON(button2), icon2);
+
+    gtk_button_set_relief(GTK_BUTTON(button2), GTK_RELIEF_NONE);
+    gtk_box_pack_end(GTK_BOX(toolbar), button2, FALSE, FALSE, 0);
+
+    gtk_widget_show_all(button2);
 
     // Store everything for later
-    purple_conversation_set_data(conv, FLIST_CONV_ACCOUNT_BUTTON, button);
-    purple_conversation_set_data(conv, FLIST_CONV_ACCOUNT_ICON, icon);
-    purple_conversation_set_data(conv, FLIST_CONV_ACCOUNT_LABEL, label);
+    purple_conversation_set_data(conv, FLIST_CONV_ACCOUNT_BUTTON, char_button);
+    //purple_conversation_set_data(conv, FLIST_CONV_ALERT_STAFF_BUTTON, button);
+
 }
 
 void flist_pidgin_init() {
