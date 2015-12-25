@@ -212,10 +212,10 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
     // Otherwise it will be added later on
     GtkWidget *icon = get_account_icon(fla);
     if (icon)
-        gtk_box_pack_start(GTK_BOX(bwbox), icon, TRUE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(bwbox), icon, TRUE, FALSE, 3);
 
     GtkWidget *label = gtk_label_new(fla->proper_character);
-	gtk_label_set_use_markup (GTK_LABEL(label), TRUE);
+    gtk_label_set_use_markup (GTK_LABEL(label), TRUE);
     gtk_box_pack_start(GTK_BOX(bwbox), label, FALSE, FALSE, 0);
 
     gtk_widget_show_all(button);
