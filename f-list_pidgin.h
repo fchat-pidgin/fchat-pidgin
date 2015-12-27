@@ -4,8 +4,7 @@
 #include "f-list.h"
 
 #define FLIST_CONV_ACCOUNT_BUTTON   "flist-account-button"
-#define FLIST_CONV_ACCOUNT_ICON     "flist-account-icon"
-#define FLIST_CONV_ACCOUNT_LABEL    "flist-account-label"
+#define FLIST_CONV_ALERT_STAFF_BUTTON "flist-alert-staff-button"
 
 void flist_pidgin_init();
 void flist_pidgin_enable_signals(FListAccount *fla);

@@ -38,6 +38,8 @@ struct FListReport_ {
 typedef struct FListReport_ FListReport;
 
 PurpleCmdRet flist_report_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data);
+FListReport *flist_report_new(FListAccount *fla, PurpleConversation *convo, const gchar *reported_character, const gchar* reason);
 void flist_report_free(FListReport *flr);
+void flist_report_display_ui(FListReport *flr);
 
 #endif /* FLIST_REPORT_H */
