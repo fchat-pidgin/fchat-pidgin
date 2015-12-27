@@ -20,6 +20,7 @@
 - #61: Avoid getting banned by multiple connection retries after password change. After a password change, you must now re-enable your account on pidgin
 - #57: Show success notifications for /ctimeout and /ban
 - sub/sup-Tags now actually do something - maybe not perfectly but as perfect as it gets with Pidgin
+- Make the red /warn-laser look more like the original - scarier!
 
 ## 0.5.0
 ### Added

@@ -669,7 +669,7 @@ void flist_channel_print_op_warning(PurpleConversation *convo, const gchar *char
 {
     FListAccount *fla = convo->account->gc->proto_data;
     gchar *full_message = flist_bbcode_to_html(fla, convo, message);
-    gchar *parsed = g_strdup_printf("<font color=\"red\">[WARNING] %s: %s</font>", character, full_message);
+    gchar *parsed = g_strdup_printf("<body bgcolor=\"#ff5555\">[WARNING] %s: %s</body>", character, full_message);
 
     // /warn should only appear in channels, not private messages
     if (convo->type == PURPLE_CONV_TYPE_CHAT)
