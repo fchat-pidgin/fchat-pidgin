@@ -527,7 +527,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     purple_markup_html_to_xhtml(message, NULL, &plain_message);
     local_message = purple_markup_escape_text(plain_message, -1); /* re-escape the html entities */
     if(ad) {
-        gchar *tmp = g_strdup_printf("[b](Roleplay Ad)[/b] %s", local_message);
+        gchar *tmp = g_strdup_printf("<body bgcolor=\"%s\">[b](Roleplay Ad)[/b] %s</body>", purple_account_get_string(fla->pa, "ads_background", FLIST_RPAD_DEFAULT_BACKGROUND), local_message);
         g_free(local_message);
         local_message = tmp;
     }

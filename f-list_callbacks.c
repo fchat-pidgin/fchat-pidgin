@@ -401,7 +401,7 @@ static gboolean flist_process_LRP(PurpleConnection *pc, JsonObject *root) {
     show = flist_get_channel_show_ads(fla, channel);
     flags = (show ? PURPLE_MESSAGE_RECV : PURPLE_MESSAGE_INVISIBLE);
 
-    full_message = g_strdup_printf("[b](Roleplay Ad)[/b] %s", message);
+    full_message = g_strdup_printf("<body bgcolor=\"%s\">[b](Roleplay Ad)[/b] %s</body>", purple_account_get_string(fla->pa, "ads_background", FLIST_RPAD_DEFAULT_BACKGROUND), message);
     parsed = flist_bbcode_to_html(fla, convo, full_message);
     purple_debug_info(FLIST_DEBUG, "Advertisement: %s\n", parsed);
     if(show && !flist_ignore_character_is_ignored(pc, character)) {

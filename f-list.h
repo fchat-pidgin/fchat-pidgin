@@ -81,6 +81,8 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_DEBUG             "flist"
 #define FLIST_PIDGIN_CHANNEL    "ADH-1509b63f1b1a98c79ab9"
 
+#define FLIST_RPAD_DEFAULT_BACKGROUND "#d4ffd0"
+
 #define CONVO_SHOW_CHAT         "CONVO_SHOW_CHAT"
 #define CONVO_SHOW_ADS          "CONVO_SHOW_ADS"
 

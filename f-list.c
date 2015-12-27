@@ -691,6 +691,9 @@ static void plugin_init(PurplePlugin *plugin) {
     option = purple_account_option_bool_new("Debug Mode", "debug_mode", FALSE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
+    option = purple_account_option_string_new("Roleplay Ads Background", "ads_background", FLIST_RPAD_DEFAULT_BACKGROUND);
+    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
     str_to_gender = g_hash_table_new(g_str_hash, g_str_equal);
     gender_to_struct = g_hash_table_new(g_direct_hash, NULL);
     gender_list = NULL;
