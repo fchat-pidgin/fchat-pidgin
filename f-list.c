@@ -432,6 +432,12 @@ static void flist_character_free(FListCharacter *character) {
     if(character->status_message) g_free(character->status_message);
     g_free(character);
 }
+
+void flist_welcome_notify_closed_cb(gpointer user_data) {
+  gchar *text = (gchar *) text;
+  g_free(text);
+}
+
 void flist_login(PurpleAccount *pa) {
     PurpleConnection *pc = purple_account_get_connection(pa);
     FListAccount *fla;
@@ -487,6 +493,26 @@ void flist_login(PurpleAccount *pa) {
 #endif
 
     flist_ticket_timer(fla, 0);
+
+    if (purple_account_get_bool(pa, "display_info", TRUE)) {
+      GString *welcome_txt = g_string_new(NULL);
+      g_string_append(welcome_txt, "<b>Need help with anything or just wanna hang out?</b><br>Join the ");
+      g_string_append_printf(welcome_txt, "<a href=\"flistc://%s/" FLIST_PIDGIN_CHANNEL "\">Pidgin Development Channel</a>!", purple_url_encode(flist_serialize_account(pa)));
+      g_string_append(welcome_txt, "<hr><b>Want to report a bug or suggest a new feature?</b><br>Visit our <a href=\"https://github.com/fcwill/fchat-pidgin/issues\">Bugtracker</a>.<hr>This dialog will only appear when you log in the first time.<br><br><b>Have fun!</b>");
+
+      gchar *welcome_str = g_string_free(welcome_txt, FALSE);
+      purple_notify_formatted(
+          fla->pc, "F-List Pidgin - Welcome!",
+          "F-List Pidgin Plugin",
+          "Read on for more information about the plugin.",
+          welcome_str,
+          flist_welcome_notify_closed_cb,
+          welcome_str);
+
+      // Let's not show up next time the user logs in
+      purple_account_set_bool(pa, "display_info", FALSE);
+    }
+
     purple_connection_update_progress(fla->pc, "Requesting login ticket", 1 ,5);
     g_strfreev(ac_split);
 }
@@ -657,6 +683,9 @@ static void plugin_init(PurplePlugin *plugin) {
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Display own character in conversations", "show_own_character", TRUE);
+    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+    option = purple_account_option_bool_new("Display information about the plugin on login", "display_info", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Debug Mode", "debug_mode", FALSE);

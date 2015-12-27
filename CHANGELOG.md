@@ -11,6 +11,7 @@
 - Time durations for timeouts can now be given as specially formatted strings (e.g. instead of /ctimeout Nelwill, 1440 for a one day timeout, we can write /ctimeout Nelwill, 1d. Works up to weeks, e.g.: 1w3d12h24m)
 - Clicking the character button in a conversation window now opens your own profile
 - Add an "Alert Staff" button to every conversation
+- Display a small information dialog (link to Pidgin channel, link to Bugtracker, ...) on the first login of an account. Can be re-enabled in account settings
 
 ### Fixed
 - #53: Incorrect link in bug report comment notifications
