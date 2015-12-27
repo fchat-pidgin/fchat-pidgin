@@ -469,9 +469,9 @@ static void flist_global_kinks_cb(FListWebRequestData *req_data,
         for(i = 0; i < len; i++) {
             JsonObject *kink_object = json_array_get_object_element(kinks_array, i);
             FListKink *kink = g_new0(FListKink, 1);
-            kink->category = purple_unescape_html(category_name);
-            kink->description = purple_unescape_html(json_object_get_string_member(kink_object, "description"));
-            kink->name = purple_unescape_html(json_object_get_string_member(kink_object, "name"));
+            kink->category = flist_html_unescape_utf8(category_name);
+            kink->description = flist_html_unescape_utf8(json_object_get_string_member(kink_object, "description"));
+            kink->name = flist_html_unescape_utf8(json_object_get_string_member(kink_object, "name"));
             kink->kink_id = g_strdup_printf("%d", (gint) json_object_get_int_member(kink_object, "kink_id"));
             g_hash_table_insert(flk->kinks_table, g_strdup(kink->name), kink);
             if(fla->debug_mode) {
