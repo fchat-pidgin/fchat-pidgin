@@ -82,11 +82,13 @@ static gchar *format_underline(ParserVars *vars, const gchar *ts, const gchar *i
 }
 
 static gchar *format_subscript(ParserVars *vars, const gchar *ts, const gchar *inner) {
-    return g_strdup_printf("<span style=\"vertical-align: sub; font-size: smaller;\">%s</span>", inner);
+    // Since <sub></sub> is not implemented in gtkimhtml, we use <font> to simply decrease font size
+    return g_strdup_printf("<font size=\"-2\">%s</font>", inner);
 }
 
 static gchar *format_superscript(ParserVars *vars, const gchar *ts, const gchar *inner) {
-    return g_strdup_printf("<span style=\"vertical-align: super; font-size: smaller;\">%s</span>", inner);
+    // Since <sup></sup> is not implemented in gtkimhtml, we use <font> to simply increase font size
+    return g_strdup_printf("<font size=\"+2\">%s</font>", inner);
 }
 
 static gchar *format_url(ParserVars *vars, const gchar *ts, const gchar *inner) {
