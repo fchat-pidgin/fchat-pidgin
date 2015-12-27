@@ -393,6 +393,10 @@ void flist_profile_load(PurpleConnection *pc) {
     field->name = g_strdup("Dom/Sub Role"); field->fieldid = g_strdup("15");
     priority = g_slist_prepend(priority, field);
 
+    field = g_new0(FListProfileField, 1);
+    field->name = g_strdup("Position"); field->fieldid = g_strdup("41");
+    priority = g_slist_prepend(priority, field);
+
     priority = g_slist_reverse(priority);
 
     flp->priority_profile_fields = priority;
