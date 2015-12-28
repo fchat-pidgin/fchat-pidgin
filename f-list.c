@@ -89,6 +89,11 @@ const gchar *flist_format_gender_color(FListGender k) {
     return gender->colored_name;
 }
 
+const gchar *flist_gender_color(FListGender k) {
+    const struct FListGenderStruct_* gender = _flist_lookup(gender_to_struct, (gpointer) k, (gpointer) &gender_unknown);
+    return gender->color;
+}
+
 FListChannelMode flist_parse_channel_mode(const gchar *k) {
     return (FListChannelMode) _flist_lookup(str_to_channel_mode, (gpointer) k, (gpointer) CHANNEL_MODE_UNKNOWN);
 }
@@ -338,6 +343,9 @@ static gboolean plugin_load(PurplePlugin *plugin) {
     return TRUE;
 }
 static gboolean plugin_unload(PurplePlugin *plugin) {
+#ifndef FLIST_PURPLE_ONLY
+    flist_pidgin_terminate();
+#endif
     return TRUE;
 }
 static const char *flist_list_icon(PurpleAccount *account, PurpleBuddy *buddy) {
