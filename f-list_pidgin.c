@@ -241,6 +241,23 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
     gtk_signal_connect(GTK_OBJECT(alert_button), "clicked", GTK_SIGNAL_FUNC(alert_staff_button_clicked_cb), conv);
 
     purple_conversation_set_data(conv, FLIST_CONV_ALERT_STAFF_BUTTON, alert_button);
+
+    // Change nick color for our own name
+    PidginConversation *gtkconv = PIDGIN_CONVERSATION(conv);
+    GtkTextBuffer *buffer = GTK_IMHTML(gtkconv->imhtml)->text_buffer;
+
+    GtkTextTag *buddy_tag = gtk_text_tag_table_lookup(
+                                gtk_text_buffer_get_tag_table(buffer), "send-name");
+
+    if (!buddy_tag)
+        return;
+
+    GdkColor color;
+    FListCharacter *character = flist_get_character(fla, fla->proper_character);
+    if (!character || !gdk_color_parse(flist_gender_color(character->gender), &color))
+        return;
+
+    g_object_set(G_OBJECT(buddy_tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
 }
 
 static void flist_pidgin_set_user_gender_color(PurpleConversation *conv, PurpleConvChatBuddy *buddy) {
