@@ -53,7 +53,7 @@ GHashTable *string_to_account;
 
 #define FLIST_GENDER_COUNT 8
 struct FListGenderStruct_ genders[FLIST_GENDER_COUNT] = {
-    { FLIST_GENDER_NONE, "None", "None", "#FFFFBB", "<font color=\"#FFFFBB\">None</font>" },
+    { FLIST_GENDER_NONE, "None", "None", "#B8B800", "<font color=\"#B8B800\">None</font>" },
     { FLIST_GENDER_MALE, "Male", "Male", "#6699FF", "<font color=\"#6699FF\">Male</font>" },
     { FLIST_GENDER_FEMALE, "Female", "Female", "#FF6699", "<font color=\"#FF6699\">Female</font>" },
     { FLIST_GENDER_HERM, "Herm", "Herm", "#9B30FF", "<font color=\"#9B30FF\">Herm</font>" },
