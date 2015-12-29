@@ -12,6 +12,8 @@
 - Clicking the character button in a conversation window now opens your own profile
 - Add an "Alert Staff" button to every conversation
 - Display a small information dialog (link to Pidgin channel, link to Bugtracker, ...) on the first login of an account. Can be re-enabled in account settings
+- Users can now customize the background color of ads for better readability.
+- #29: Character names are now colored according to their gender.
 
 ### Fixed
 - #53: Incorrect link in bug report comment notifications
@@ -21,6 +23,7 @@
 - #57: Show success notifications for /ctimeout and /ban
 - sub/sup-Tags now actually do something - maybe not perfectly but as perfect as it gets with Pidgin
 - Make the red /warn-laser look more like the original - scarier!
+- The "Position" field in character profiles now appears below "Dom/Sub-Role" (thanks Syldra Kitty)
 
 ## 0.5.0
 ### Added
