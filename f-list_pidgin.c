@@ -315,6 +315,12 @@ static void flist_pidgin_chat_add_users(PurpleConversation *conv, GList
  * This means that we have to replace colors again.
  */
 static void flist_pidgin_chat_buddy_flags_cb(PurpleConversation *conv, const char *user, PurpleConvChatBuddyFlags old_flags, PurpleConvChatBuddyFlags flags, FListAccount *fla) {
+    PurpleConnection *pc = purple_conversation_get_gc(conv);
+
+    // Is this a conversation of our account?
+    if (fla->pc != pc)
+        return;
+
     PurpleConvChatBuddy *buddy = purple_conv_chat_cb_find(PURPLE_CONV_CHAT(conv), user);
     g_return_if_fail(buddy);
 
@@ -343,6 +349,12 @@ static void flist_pidgin_chat_buddy_flags_cb(PurpleConversation *conv, const cha
 static void flist_pidgin_wrote_chat_msg_cb(PurpleAccount *pa, const char *user,
         char *message, PurpleConversation *conv, PurpleMessageFlags flags,
         FListAccount *fla) {
+
+    PurpleConnection *pc = purple_conversation_get_gc(conv);
+
+    // Is this a conversation of our account?
+    if (fla->pc != pc)
+        return;
 
     if (flags & PURPLE_MESSAGE_SYSTEM
             || flags & PURPLE_MESSAGE_NICK
