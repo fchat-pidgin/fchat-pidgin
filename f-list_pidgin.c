@@ -160,6 +160,30 @@ static void character_button_clicked_cb(GtkButton* button, gpointer func_data) {
     flist_get_profile(pc, fla->proper_character);
 }
 
+static void flist_text_tag_table_tag_added_cb(GtkTextTagTable *text_tag_table, GtkTextTag *tag, FListAccount *fla) {
+    static gboolean changing = FALSE;
+
+    if (changing)
+        return;
+
+    if (!tag || strncmp(tag->name, "BUDDY ", 6) != 0)
+        return;
+
+    GdkColor color;
+
+    FListCharacter *character = flist_get_character(fla, tag->name + 6);
+    if (!character || !gdk_color_parse(flist_gender_color(character->gender), &color))
+        return;
+
+    changing = TRUE;
+    g_object_set(G_OBJECT(tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
+    changing = FALSE;
+}
+
+static void flist_text_tag_table_tag_changed_cb(GtkTextTagTable *text_tag_table, GtkTextTag *tag, gboolean size_changed, FListAccount *fla) {
+    flist_text_tag_table_tag_added_cb(text_tag_table, tag, fla);
+}
+
 static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount *fla)
 {
     g_return_if_fail(PIDGIN_IS_PIDGIN_CONVERSATION(conv));
@@ -280,6 +304,18 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
 
         g_object_set(G_OBJECT(buddy_tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
     }
+
+    // Hooks for replacing nick colours of chat participants
+    if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_CHAT &&
+        purple_account_get_bool(fla->pa, "use_gender_colors", TRUE))
+    {
+        GtkTextBuffer *buffer = GTK_IMHTML(pidgin_conv->imhtml)->text_buffer;
+
+        GtkTextTagTable *text_tag_table = gtk_text_buffer_get_tag_table(buffer);
+
+        g_signal_connect_after(text_tag_table, "tag-added", (GCallback)flist_text_tag_table_tag_added_cb, fla);
+        g_signal_connect_after(text_tag_table, "tag-changed", (GCallback)flist_text_tag_table_tag_changed_cb, fla);
+    }
 }
 
 static void flist_pidgin_set_user_gender_color(PurpleConversation *conv, PurpleConvChatBuddy *buddy) {
@@ -349,82 +385,6 @@ static void flist_pidgin_chat_add_users(PurpleConversation *conv, GList
     }
 }
 
-/* The following callback is invoked whenever something about a user updates (e.g. its flags).
- * Pidgin handles those updates by removing the user's treestore row and reinserting a new one.
- * This means that we have to replace colors again.
- */
-static void flist_pidgin_chat_buddy_flags_cb(PurpleConversation *conv, const char *user, PurpleConvChatBuddyFlags old_flags, PurpleConvChatBuddyFlags flags, FListAccount *fla) {
-    PurpleConnection *pc = purple_conversation_get_gc(conv);
-
-    // Is this a conversation of our account?
-    if (fla->pc != pc)
-        return;
-
-    PurpleConvChatBuddy *buddy = purple_conv_chat_cb_find(PURPLE_CONV_CHAT(conv), user);
-    g_return_if_fail(buddy);
-
-    flist_pidgin_set_user_gender_color(conv, buddy);
-}
-
-/* The following callback is invoked whenever anyone writes something to a chat.
- * This could be us, a user, a system message ...
- * Colors for nicks in GtkImHtml are done via GtkTextTags. Each chatter has
- * their own GtkTextTag, containing color information, created when we receive
- * their first message. Since Pidgin is also using get_nick_color() here,
- * instead of fetching color from the user list's tree store, we have to
- * intercept and alter the GtkTextTags manually and after they have been
- * created.
- *
- * That means: Run this code on _every_ message. Theoretically, we'd
- * only have to update color information on a GtkTextTag once, but at the
- * moment, there's no way to check if we've already handled a user.
- *
- * There's another problem here: Since this code is run _after_ Pidgin has run
- * its internal message display methods (which create the GtkTextTag for us)
- * and said internal methods copy the original color value of the GtkTextTag
- * (coming from get_nick_color()) and use it to set the color for the
- * timestamp, every user's first message will have a wrong colored timestamp.
- */
-static void flist_pidgin_wrote_chat_msg_cb(PurpleAccount *pa, const char *user,
-        char *message, PurpleConversation *conv, PurpleMessageFlags flags,
-        FListAccount *fla) {
-
-    PurpleConnection *pc = purple_conversation_get_gc(conv);
-
-    // Is this a conversation of our account?
-    if (fla->pc != pc)
-        return;
-
-    if (flags & PURPLE_MESSAGE_SYSTEM
-            || flags & PURPLE_MESSAGE_NICK
-            || flags & PURPLE_MESSAGE_ERROR
-            || flags & PURPLE_MESSAGE_RAW)
-        return;
-
-    PurpleConvChatBuddy *buddy = purple_conv_chat_cb_find(PURPLE_CONV_CHAT(conv), user);
-    if (!buddy)
-        return;
-
-    PidginConversation *gtkconv = PIDGIN_CONVERSATION(conv);
-
-    GtkTextBuffer *buffer = GTK_IMHTML(gtkconv->imhtml)->text_buffer;
-    gchar *tag_name = g_strdup_printf("BUDDY %s", user);
-
-    GtkTextTag *buddy_tag = gtk_text_tag_table_lookup(
-                                gtk_text_buffer_get_tag_table(buffer), tag_name);
-
-    if (!buddy_tag)
-        return;
-
-    GdkColor color;
-    FListCharacter *character = flist_get_character(fla, user);
-    if (!character || !gdk_color_parse(flist_gender_color(character->gender), &color))
-        return;
-
-    g_object_set(G_OBJECT(buddy_tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
-    g_free(tag_name);
-}
-
 void flist_pidgin_init() {
 
     gtk_imhtml_class_register_protocol("flistc", flist_channel_activate, NULL);
@@ -451,14 +411,6 @@ void flist_pidgin_enable_signals(FListAccount *fla)
     void *conv_handle = purple_conversations_get_handle();
     purple_signal_connect(conv_handle, "conversation-created", fla,
             PURPLE_CALLBACK(flist_conversation_created_cb), fla);
-
-    if (purple_account_get_bool(fla->pa, "use_gender_colors", TRUE)) {
-        purple_signal_connect(conv_handle, "wrote-chat-msg", fla,
-                PURPLE_CALLBACK(flist_pidgin_wrote_chat_msg_cb), fla);
-
-        purple_signal_connect(conv_handle, "chat-buddy-flags", fla,
-                PURPLE_CALLBACK(flist_pidgin_chat_buddy_flags_cb), fla);
-    }
 }
 
 void flist_pidgin_disable_signals(FListAccount *fla)
@@ -466,12 +418,4 @@ void flist_pidgin_disable_signals(FListAccount *fla)
     void *conv_handle = purple_conversations_get_handle();
     purple_signal_disconnect(conv_handle, "conversation-created", fla,
             PURPLE_CALLBACK(flist_conversation_created_cb));
-
-    if (purple_account_get_bool(fla->pa, "use_gender_colors", TRUE)) {
-        purple_signal_disconnect(conv_handle, "wrote-chat-msg", fla,
-                PURPLE_CALLBACK(flist_pidgin_wrote_chat_msg_cb));
-
-        purple_signal_disconnect(conv_handle, "chat-buddy-flags", fla,
-                PURPLE_CALLBACK(flist_pidgin_chat_buddy_flags_cb));
-    }
 }
