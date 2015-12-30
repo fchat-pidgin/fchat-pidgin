@@ -702,6 +702,9 @@ static void plugin_init(PurplePlugin *plugin) {
     option = purple_account_option_bool_new("Color user names based on their gender", "use_gender_colors", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
+    option = purple_account_option_bool_new("Color own name based on your gender", "use_gender_colors_self", TRUE);
+    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
     option = purple_account_option_string_new("Roleplay Ads Background", "ads_background", FLIST_RPAD_DEFAULT_BACKGROUND);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
