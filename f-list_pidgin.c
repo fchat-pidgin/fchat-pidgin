@@ -259,6 +259,27 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
 
         g_object_set(G_OBJECT(buddy_tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
     }
+
+    // Change nick color for IM partners
+    if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM &&
+        purple_account_get_bool(fla->pa, "use_gender_colors", TRUE)) {
+        GtkTextBuffer *buffer = GTK_IMHTML(pidgin_conv->imhtml)->text_buffer;
+
+        GtkTextTag *buddy_tag = gtk_text_tag_table_lookup(
+                                    gtk_text_buffer_get_tag_table(buffer), "receive-name");
+
+        const char *buddy_name = purple_conversation_get_name(conv);
+
+        if (!buddy_tag || !buddy_name)
+            return;
+
+        GdkColor color;
+        FListCharacter *character = flist_get_character(fla, buddy_name);
+        if (!character || !gdk_color_parse(flist_gender_color(character->gender), &color))
+            return;
+
+        g_object_set(G_OBJECT(buddy_tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
+    }
 }
 
 static void flist_pidgin_set_user_gender_color(PurpleConversation *conv, PurpleConvChatBuddy *buddy) {
