@@ -320,6 +320,13 @@ void flist_got_channel_user_joined(FListAccount *fla, const gchar *channel, cons
     g_hash_table_replace(fchannel->users, g_strdup(character), NULL);
 
     flags = FLIST_GET_PURPLE_PERMISSIONS(fla, character, channel);
+
+    FListCharacter *flc = flist_get_character(fla, character);
+
+    // Add "voice" flag to characters with status "Looking"
+    if (flc && flc->status == FLIST_STATUS_LOOKING)
+      flags |= PURPLE_CBFLAGS_VOICE;
+
     purple_conv_chat_add_user(PURPLE_CONV_CHAT(convo), character, NULL, flags, TRUE);
 }
 
