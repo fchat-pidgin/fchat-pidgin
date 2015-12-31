@@ -9,6 +9,7 @@
 
 
 static void (*chat_add_users_orig)(PurpleConversation *conv, GList *cbuddies, gboolean new_arrivals) = NULL;
+static void (*chat_update_user_orig)(PurpleConversation *conv, const char *user) = NULL;
 
 //TODO: fix these up so they're only one function ...
 static gboolean flist_channel_activate_real(const gchar *host, const gchar *path) {
@@ -363,9 +364,8 @@ static void flist_pidgin_set_user_gender_color(PurpleConversation *conv, PurpleC
  * is set up and we won't be able to access a users entry in the room's tree
  * store.
  */
-static void flist_pidgin_chat_add_users(PurpleConversation *conv, GList
-        *cbuddies, gboolean new_arrivals) { chat_add_users_orig(conv, cbuddies,
-            new_arrivals);
+static void flist_pidgin_chat_add_users(PurpleConversation *conv, GList*cbuddies, gboolean new_arrivals) {
+    chat_add_users_orig(conv, cbuddies, new_arrivals);
 
     PurpleConnection *pc = purple_conversation_get_gc(conv);
 
@@ -385,6 +385,28 @@ static void flist_pidgin_chat_add_users(PurpleConversation *conv, GList
     }
 }
 
+/* The following callback is invoked whenever something about a user updates (e.g. its flags).
+ * Pidgin handles those updates by removing the user's treestore row and reinserting a new one.
+ * This means that we have to replace colors again.
+ */
+static void flist_pidgin_chat_update_user(PurpleConversation *conv, const char *user) {
+    chat_update_user_orig(conv, user);
+
+    PurpleConnection *pc = purple_conversation_get_gc(conv);
+
+    // Is this a conversation of our plugin's account?
+    if (!purple_strequal(pc->account->protocol_id, FLIST_PLUGIN_ID))
+        return;
+
+    if (!purple_account_get_bool(pc->account, "use_gender_colors", TRUE))
+        return;
+
+    PurpleConvChatBuddy *buddy = purple_conv_chat_cb_find(PURPLE_CONV_CHAT(conv), user);
+    g_return_if_fail(buddy);
+
+    flist_pidgin_set_user_gender_color(conv, buddy);
+}
+
 void flist_pidgin_init() {
 
     gtk_imhtml_class_register_protocol("flistc", flist_channel_activate, NULL);
@@ -395,7 +417,11 @@ void flist_pidgin_init() {
     if (!chat_add_users_orig)
         chat_add_users_orig = ui_ops->chat_add_users;
 
+    if (!chat_update_user_orig)
+        chat_update_user_orig = ui_ops->chat_update_user;
+
     ui_ops->chat_add_users = flist_pidgin_chat_add_users;
+    ui_ops->chat_update_user = flist_pidgin_chat_update_user;
 }
 
 void flist_pidgin_terminate() {
@@ -404,6 +430,7 @@ void flist_pidgin_terminate() {
 
     PurpleConversationUiOps *ui_ops = pidgin_conversations_get_conv_ui_ops();
     ui_ops->chat_add_users = chat_add_users_orig;
+    ui_ops->chat_update_user = chat_update_user_orig;
 }
 
 void flist_pidgin_enable_signals(FListAccount *fla)
