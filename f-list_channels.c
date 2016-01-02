@@ -293,7 +293,14 @@ void flist_got_channel_userlist(FListAccount *fla, const gchar *channel, GList *
     g_return_if_fail(fchannel != NULL);
 
     for(cur = userlist; cur; cur = cur->next) {
-        flags = g_list_prepend(flags, GINT_TO_POINTER(FLIST_GET_PURPLE_PERMISSIONS(fla, cur->data, channel)));
+        PurpleConvChatBuddyFlags char_flags = FLIST_GET_PURPLE_PERMISSIONS(fla, cur->data, channel);
+        FListCharacter *flc = flist_get_character(fla, cur->data);
+
+        // Add "voice" flag to characters with status "Looking"
+        if (flc && flc->status == FLIST_STATUS_LOOKING)
+          char_flags |= PURPLE_CBFLAGS_VOICE;
+
+        flags = g_list_prepend(flags, GINT_TO_POINTER(char_flags));
         g_hash_table_replace(fchannel->users, g_strdup(cur->data), NULL);
     }
     flags = g_list_reverse(flags);
@@ -313,6 +320,13 @@ void flist_got_channel_user_joined(FListAccount *fla, const gchar *channel, cons
     g_hash_table_replace(fchannel->users, g_strdup(character), NULL);
 
     flags = FLIST_GET_PURPLE_PERMISSIONS(fla, character, channel);
+
+    FListCharacter *flc = flist_get_character(fla, character);
+
+    // Add "voice" flag to characters with status "Looking"
+    if (flc && flc->status == FLIST_STATUS_LOOKING)
+      flags |= PURPLE_CBFLAGS_VOICE;
+
     purple_conv_chat_add_user(PURPLE_CONV_CHAT(convo), character, NULL, flags, TRUE);
 }
 
