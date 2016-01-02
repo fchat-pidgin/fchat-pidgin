@@ -161,28 +161,48 @@ static void character_button_clicked_cb(GtkButton* button, gpointer func_data) {
     flist_get_profile(pc, fla->proper_character);
 }
 
-static void flist_text_tag_table_tag_added_cb(GtkTextTagTable *text_tag_table, GtkTextTag *tag, FListAccount *fla) {
+static void flist_update_tag_color(GtkTextTag *tag, FListAccount *fla, const char *charname)
+{
+    GdkColor color;
+
+    FListCharacter *character = flist_get_character(fla, charname);
+    if (!character || !gdk_color_parse(flist_gender_color(character->gender), &color))
+        return;
+
+    g_object_set(G_OBJECT(tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
+}
+
+static void flist_text_tag_table_tag_added_cb(GtkTextTagTable *text_tag_table, GtkTextTag *tag, PurpleConversation *conv) {
     static gboolean changing = FALSE;
 
     if (changing)
         return;
 
-    if (!tag || strncmp(tag->name, "BUDDY ", 6) != 0)
+    if (!tag)
         return;
 
-    GdkColor color;
+    PurpleConnection *pc = purple_conversation_get_gc(conv);
+    FListAccount *fla = pc->proto_data;
+    gboolean is_im = (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM);
 
-    FListCharacter *character = flist_get_character(fla, tag->name + 6);
-    if (!character || !gdk_color_parse(flist_gender_color(character->gender), &color))
+    const char *charname;
+
+    if (strncmp(tag->name, "BUDDY ", 6) == 0)
+        charname = tag->name + 6;
+    else if (strcmp(tag->name, "send-name") == 0)
+        charname = fla->proper_character;
+    else if (is_im && strcmp(tag->name, "receive-name") == 0)
+        charname = purple_conversation_get_name(conv);
+    else
         return;
 
     changing = TRUE;
-    g_object_set(G_OBJECT(tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
+    flist_update_tag_color(tag, fla, charname);
     changing = FALSE;
 }
 
-static void flist_text_tag_table_tag_changed_cb(GtkTextTagTable *text_tag_table, GtkTextTag *tag, gboolean size_changed, FListAccount *fla) {
-    flist_text_tag_table_tag_added_cb(text_tag_table, tag, fla);
+static void flist_text_tag_table_tag_changed_cb(GtkTextTagTable *text_tag_table, GtkTextTag *tag, gboolean size_changed, PurpleConversation *conv) {
+    flist_text_tag_table_tag_added_cb(text_tag_table, tag, conv);
 }
 
 static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount *fla)
@@ -267,8 +287,11 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
 
     purple_conversation_set_data(conv, FLIST_CONV_ALERT_STAFF_BUTTON, alert_button);
 
+    gboolean use_gender_colors = purple_account_get_bool(fla->pa, "use_gender_colors", TRUE);
+    gboolean use_gender_colors_self = purple_account_get_bool(fla->pa, "use_gender_colors_self", TRUE);
+
     // Change nick color for our own name
-    if (purple_account_get_bool(fla->pa, "use_gender_colors_self", TRUE)) {
+    if (use_gender_colors && use_gender_colors_self) {
         GtkTextBuffer *buffer = GTK_IMHTML(pidgin_conv->imhtml)->text_buffer;
 
         GtkTextTag *buddy_tag = gtk_text_tag_table_lookup(
@@ -277,45 +300,29 @@ static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount
         if (!buddy_tag)
             return;
 
-        GdkColor color;
-        FListCharacter *character = flist_get_character(fla, fla->proper_character);
-        if (!character || !gdk_color_parse(flist_gender_color(character->gender), &color))
-            return;
-
-        g_object_set(G_OBJECT(buddy_tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
+        flist_update_tag_color(buddy_tag, fla, fla->proper_character);
     }
 
     // Change nick color for IM partners
-    if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM &&
-        purple_account_get_bool(fla->pa, "use_gender_colors", TRUE)) {
+    if (use_gender_colors) {
         GtkTextBuffer *buffer = GTK_IMHTML(pidgin_conv->imhtml)->text_buffer;
 
-        GtkTextTag *buddy_tag = gtk_text_tag_table_lookup(
-                                    gtk_text_buffer_get_tag_table(buffer), "receive-name");
+        if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM) {
+            GtkTextTag *buddy_tag = gtk_text_tag_table_lookup(
+                                        gtk_text_buffer_get_tag_table(buffer), "receive-name");
 
-        const char *buddy_name = purple_conversation_get_name(conv);
+            const char *buddy_name = purple_conversation_get_name(conv);
 
-        if (!buddy_tag || !buddy_name)
-            return;
+            if (!buddy_tag || !buddy_name)
+                return;
 
-        GdkColor color;
-        FListCharacter *character = flist_get_character(fla, buddy_name);
-        if (!character || !gdk_color_parse(flist_gender_color(character->gender), &color))
-            return;
-
-        g_object_set(G_OBJECT(buddy_tag), "foreground-set", TRUE, "foreground-gdk", &color, NULL);
-    }
-
-    // Hooks for replacing nick colours of chat participants
-    if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_CHAT &&
-        purple_account_get_bool(fla->pa, "use_gender_colors", TRUE))
-    {
-        GtkTextBuffer *buffer = GTK_IMHTML(pidgin_conv->imhtml)->text_buffer;
+            flist_update_tag_color(buddy_tag, fla, buddy_name);
+        }
 
         GtkTextTagTable *text_tag_table = gtk_text_buffer_get_tag_table(buffer);
 
-        g_signal_connect_after(text_tag_table, "tag-added", (GCallback)flist_text_tag_table_tag_added_cb, fla);
-        g_signal_connect_after(text_tag_table, "tag-changed", (GCallback)flist_text_tag_table_tag_changed_cb, fla);
+        g_signal_connect_after(text_tag_table, "tag-added", (GCallback)flist_text_tag_table_tag_added_cb, conv);
+        g_signal_connect_after(text_tag_table, "tag-changed", (GCallback)flist_text_tag_table_tag_changed_cb, conv);
     }
 }
 
