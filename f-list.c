@@ -442,7 +442,7 @@ static void flist_character_free(FListCharacter *character) {
 }
 
 void flist_welcome_notify_closed_cb(gpointer user_data) {
-  gchar *text = (gchar *) text;
+  gchar *text = (gchar *) user_data;
   g_free(text);
 }
 
