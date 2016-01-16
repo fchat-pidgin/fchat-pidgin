@@ -18,7 +18,7 @@ if ! command -v i686-w64-mingw32-gcc >/dev/null 2>/dev/null ; then
     exit 2
 fi
 
-PIDGIN_VERSION=2.10.11
+PIDGIN_VERSION=2.10.12
 
 WIN32_DEV_DIR=win32/
 mkdir -p $WIN32_DEV_DIR
