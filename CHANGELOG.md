@@ -14,6 +14,7 @@
 - Display a small information dialog (link to Pidgin channel, link to Bugtracker, ...) on the first login of an account. Can be re-enabled in account settings
 - Users can now customize the background color of ads for better readability.
 - #29: Character names are now colored according to their gender.
+- /greports command to fetch pending chat reports (operators)
 
 ### Fixed
 - #53: Incorrect link in bug report comment notifications

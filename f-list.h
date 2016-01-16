@@ -137,6 +137,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_GLOBAL_UNBAN                      "UBN"
 #define FLIST_GLOBAL_TIMEOUT                    "TMO"
 #define FLIST_REWARD                            "RWD"
+#define FLIST_REQUEST_PENDING_REPORTS           "PCR"
 
 #define LOGIN_TIMEOUT 5000
 

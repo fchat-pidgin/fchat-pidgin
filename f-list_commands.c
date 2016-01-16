@@ -800,6 +800,12 @@ PurpleCmdRet flist_version_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     return PURPLE_CMD_RET_OK;
 }
 
+PurpleCmdRet flist_greports_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    PurpleConnection *pc = purple_conversation_get_gc(convo);
+    flist_request(pc, FLIST_REQUEST_PENDING_REPORTS, NULL);
+    return PURPLE_CMD_RET_OK;
+}
+
 void flist_init_commands() {
     PurpleCmdFlag channel_flags = PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_CHAT;
     PurpleCmdFlag anywhere_flags = PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_CHAT | PURPLE_CMD_FLAG_IM;
@@ -929,6 +935,9 @@ void flist_init_commands() {
 
     purple_cmd_register("report", "s", PURPLE_CMD_P_PRPL, anywhere_flags | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
         FLIST_PLUGIN_ID, flist_report_cmd, "report &lt;user&gt;: Report misbehavior of user and upload logs of current tab.", NULL);
+
+    purple_cmd_register("greports", "", PURPLE_CMD_P_PRPL, anywhere_flags,
+        FLIST_PLUGIN_ID, flist_greports_cmd, "greports: Pull list of pending chat reports.", NULL);
 
     purple_cmd_register("version", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_version_cmd, "version: Display the plugin's version.", NULL);
