@@ -4,7 +4,7 @@ WIN32_COMPILER = i686-w64-mingw32-gcc
 
 WIN32_DEV_DIR=win32
 WIN32_GTK_DEV_DIR=${WIN32_DEV_DIR}/gtk_2_0-2.16
-WIN32_PIDGIN_DIR=${WIN32_DEV_DIR}/pidgin-2.10.11
+WIN32_PIDGIN_DIR=${WIN32_DEV_DIR}/pidgin-2.10.12
 WIN32_CFLAGS = \
 				-DENABLE_NLS \
 				-DHAVE_ZLIB \
@@ -39,6 +39,10 @@ WIN32_LIBS = \
 				-L. \
 				-ljson-glib-1.0 \
 				-lz
+
+ifdef STATIC_LIBGCC
+WIN32_CFLAGS += -static-libgcc
+endif
 
 LIBPURPLE_CFLAGS = -DPURPLE_PLUGINS -DENABLE_NLS -DHAVE_ZLIB
 GLIB_CFLAGS = `pkg-config glib-2.0 json-glib-1.0 --cflags --libs`
