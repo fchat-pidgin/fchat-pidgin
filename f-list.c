@@ -243,6 +243,20 @@ GSList *flist_g_slist_intersect_and_free(GSList *list1, GSList *list2) {
     return ret;
 }
 
+void flist_enable_signals(FListAccount *fla)
+{
+    void *conv_handle = purple_conversations_get_handle();
+    purple_signal_connect(conv_handle, "conversation-created", fla,
+            PURPLE_CALLBACK(flist_conversation_created_cb), fla);
+}
+
+void flist_disable_signals(FListAccount *fla)
+{
+    void *conv_handle = purple_conversations_get_handle();
+    purple_signal_disconnect(conv_handle, "conversation-created", fla,
+            PURPLE_CALLBACK(flist_conversation_created_cb));
+}
+
 const char *flist_normalize(const PurpleAccount *account, const char *str) {
     return purple_normalize_nocase(account, str);
 }
@@ -423,6 +437,7 @@ void flist_close(PurpleConnection *pc) {
 #ifndef FLIST_PURPLE_ONLY
     flist_pidgin_disable_signals(fla);
 #endif
+    flist_disable_signals(fla);
 
     flist_friends_unload(fla);
     flist_fetch_icon_cancel_all(fla);
@@ -495,8 +510,9 @@ void flist_login(PurpleAccount *pa) {
     flist_profile_load(pc);
     flist_friends_load(fla);
 
-#ifndef FLIST_PURPLE_ONLY
     // Enable signals once we are connected. This guarantees that the conversations submodule has been loaded.
+    flist_enable_signals(fla);
+#ifndef FLIST_PURPLE_ONLY
     flist_pidgin_enable_signals(fla);
 #endif
 

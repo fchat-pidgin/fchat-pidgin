@@ -24,5 +24,6 @@
 #include "f-list.h"
 
 gboolean flist_callback(PurpleConnection *, const gchar *, JsonObject *);
+void flist_conversation_created_cb(PurpleConversation *, FListAccount *);
 void flist_callback_init();
 #endif

@@ -565,6 +565,20 @@ static gboolean flist_process_DOP(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
+void flist_conversation_created_cb(PurpleConversation *conv, FListAccount *fla)
+{
+    PurpleConnection *pc = purple_conversation_get_gc(conv);
+
+    // Is this a conversation of our account?
+    if (fla->pc != pc)
+        return;
+
+    if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM) {
+        const char *buddy_name = purple_conversation_get_name(conv);
+        flist_temp_im_check(fla, buddy_name);
+    }
+}
+
 static gboolean flist_process_ADL(PurpleConnection *pc, JsonObject *root) {
     PurpleAccount *pa = purple_connection_get_account(pc);
     FListAccount *fla = pc->proto_data;
@@ -645,8 +659,6 @@ static gboolean flist_process_PRI(PurpleConnection *pc, JsonObject *root) {
         PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, character, fla->pa);
         gchar *parsed = flist_bbcode_to_html(fla, convo, message);
 
-        /* If we do not have this person in our buddy list, add them to temporary IMs */
-        flist_temp_im_check(fla, character);
         serv_got_im(pc, character, parsed, PURPLE_MESSAGE_RECV, time(NULL));
 
         g_free(parsed);

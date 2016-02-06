@@ -465,7 +465,6 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
     purple_debug_info(FLIST_DEBUG, "Sending message... (From: %s) (To: %s) (Message: %s) (Flags: %x)\n",
         fla->character, who, message, flags);
 
-    flist_temp_im_check(fla, who);
     im = PURPLE_CONV_IM(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, fla->pa));
 
     purple_markup_html_to_xhtml(message, NULL, &plain_message);
