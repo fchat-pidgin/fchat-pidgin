@@ -205,7 +205,7 @@ static void flist_text_tag_table_tag_changed_cb(GtkTextTagTable *text_tag_table,
     flist_text_tag_table_tag_added_cb(text_tag_table, tag, conv);
 }
 
-static void flist_conversation_created_cb(PurpleConversation *conv, FListAccount *fla)
+static void flist_pidgin_conversation_created_cb(PurpleConversation *conv, FListAccount *fla)
 {
     g_return_if_fail(PIDGIN_IS_PIDGIN_CONVERSATION(conv));
     PidginConversation *pidgin_conv;
@@ -444,12 +444,12 @@ void flist_pidgin_enable_signals(FListAccount *fla)
 {
     void *conv_handle = purple_conversations_get_handle();
     purple_signal_connect(conv_handle, "conversation-created", fla,
-            PURPLE_CALLBACK(flist_conversation_created_cb), fla);
+            PURPLE_CALLBACK(flist_pidgin_conversation_created_cb), fla);
 }
 
 void flist_pidgin_disable_signals(FListAccount *fla)
 {
     void *conv_handle = purple_conversations_get_handle();
     purple_signal_disconnect(conv_handle, "conversation-created", fla,
-            PURPLE_CALLBACK(flist_conversation_created_cb));
+            PURPLE_CALLBACK(flist_pidgin_conversation_created_cb));
 }
