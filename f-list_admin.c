@@ -259,7 +259,6 @@ PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gcha
 
 PurpleCmdRet flist_broadcast_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
-    FListAccount *fla = pc->proto_data;
     const gchar *message;
     JsonObject *json;
 

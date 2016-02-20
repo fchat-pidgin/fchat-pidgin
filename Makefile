@@ -118,7 +118,7 @@ install:
 	install -D icons/flist48.png ${DESTDIR}${PIDGIN_DATADIR}/pixmaps/pidgin/protocols/48/flist.png
 
 ${TARGET}:	${FLIST_SOURCES}
-	${LINUX_COMPILER} -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
+	${LINUX_COMPILER} -Werror -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
 
 prepare_cross:
 	./contrib/prepare_cross.sh
@@ -127,4 +127,4 @@ win_installer: ${WIN32_TARGET}
 	makensis -DPRODUCT_VERSION=${PLUGIN_VERSION} flist.nsi > /dev/null
 
 ${WIN32_TARGET}: ${FLIST_SOURCES} 
-	${WIN32_COMPILER} -Wall -I. -g -O2 -std=c99 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS} ${FLIST_ADDITIONAL_CFLAGS}
+	${WIN32_COMPILER} -Werror -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS} ${FLIST_ADDITIONAL_CFLAGS}
