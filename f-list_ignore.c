@@ -140,30 +140,36 @@ gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
 PurpleCmdRet flist_ignore_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     
-    if (args[0] == NULL)
+    if (args[0] == NULL) {
+        *error = g_strdup("Please specify an action : /ignore [add|delete|list] [character]");
         return PURPLE_CMD_RET_FAILED;
+    }
 
     gchar *subcmd = args[0];
     if (g_ascii_strncasecmp(subcmd, "add", 3) == 0)
     {
-        if (args[1] == NULL)
+        if (args[1] == NULL) {
+            *error = g_strdup("You must provide a character name to ignore");
             return PURPLE_CMD_RET_FAILED;
+        }
 
         flist_ignore_list_request_add(pc, args[1]);
     }
     else if (g_ascii_strncasecmp(subcmd, "delete", 6) == 0)
     {
-        if (args[1] == NULL)
+        if (args[1] == NULL) {
+            *error = g_strdup("You must provide a nickname to unignore");
             return PURPLE_CMD_RET_FAILED;
+        }
 
         flist_ignore_list_request_remove(pc, args[1]);
     }
     else if (g_ascii_strncasecmp(subcmd, "list", 4) == 0)
     {
-        if (args[1] != NULL)
-            return PURPLE_CMD_RET_FAILED;
-
         flist_ignore_list_request_list(pc);
+    } else {
+        *error = g_strdup("Unrecognized action, please use : /ignore [add|delete|list] [character]");
+        return PURPLE_CMD_RET_FAILED;
     }
 
     return PURPLE_CMD_RET_OK;
