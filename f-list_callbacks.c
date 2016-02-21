@@ -415,6 +415,11 @@ static gboolean flist_process_BRO(PurpleConnection *pc, JsonObject *root) {
     const gchar *message, *character;
     gchar *parsed;
 
+    /* Ignore notification if the user doesn't want to see it */
+    if (!fla->receive_notifications) {
+        return TRUE;
+    }
+
     message = json_object_get_string_member(root, "message");
     character = json_object_get_string_member(root, "character");
 
@@ -535,9 +540,11 @@ static gboolean flist_process_AOP(PurpleConnection *pc, JsonObject *root) {
 
     purple_prpl_got_account_actions(pa);
 
-    gchar *message = g_strdup_printf("%s is now a global operator.", character);
-    serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
-    g_free(message);
+    if (fla->receive_notifications) {
+        gchar *message = g_strdup_printf("%s is now a global operator.", character);
+        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
+        g_free(message);
+    }
 
     return TRUE;
 }
@@ -557,9 +564,11 @@ static gboolean flist_process_DOP(PurpleConnection *pc, JsonObject *root) {
 
     purple_prpl_got_account_actions(pa);
 
-    gchar *message = g_strdup_printf("%s is no longer a global operator.", character);
-    serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
-    g_free(message);
+    if (fla->receive_notifications) {
+        gchar *message = g_strdup_printf("%s is no longer a global operator.", character);
+        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
+        g_free(message);
+    }
 
     return TRUE;
 }
