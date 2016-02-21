@@ -32,7 +32,7 @@ void flist_ignore_list_action(PurplePluginAction *action) {
     flist_ignore_list_request_list(pc);
 }
 
-static void ignore_list_remove_cb(PurpleConnection *pc, GList *row, void *user_data)
+static void ignore_list_remove_cb(PurpleConnection *pc, GList *row, gpointer user_data)
 {
     flist_ignore_list_request_remove(pc, g_list_nth_data(row, 0));
 }
@@ -62,12 +62,6 @@ void flist_blist_node_ignore_action(PurpleBlistNode *node, gpointer data) {
     {
         flist_ignore_list_request_remove(pc, name);
     }
-}
-
-void *close_ignore_list_cb(gpointer user_data)
-{
-    purple_notify_searchresults_free(user_data);
-    return NULL;
 }
 
 gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
@@ -113,7 +107,7 @@ gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
         for (size_t i = 0; i < json_array_get_length(chars); i++)
         {
             GList *row = NULL;
-            row = g_list_append(row, (gpointer) json_array_get_string_element(chars, i));
+            row = g_list_append(row, (gpointer) g_strdup(json_array_get_string_element(chars, i)));
             purple_notify_searchresults_row_add(results, row);
         }
 
