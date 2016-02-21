@@ -24,7 +24,6 @@ static GHashTable *callbacks = NULL;
 
 //NOT IMPLEMENTED: AWC // ADMIN ALTERNATE WATCH
 
-//WILL NOT IMPLEMENT: IGN // IGNORE CHARACTER
 //WILL NOT IMPLEMENT: OPP // ???????
 //TODO: RAN // ADVERTISE PRIVATE CHANNEL
 
@@ -547,6 +546,7 @@ static gboolean flist_process_DOP(PurpleConnection *pc, JsonObject *root) {
     PurpleAccount *pa = purple_connection_get_account(pc);
     FListAccount *fla = pc->proto_data;
     const gchar *character;
+
 
     character = json_object_get_string_member(root, "character");
     g_return_val_if_fail(character, TRUE);

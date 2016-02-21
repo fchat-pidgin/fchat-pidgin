@@ -385,7 +385,7 @@ struct FListAccount_ {
     GList *ignore_list;
 
     /* other options */
-    gboolean receive_rtb;
+    gboolean receive_notifications;
     gboolean debug_mode;
     gboolean show_own_character;
 };

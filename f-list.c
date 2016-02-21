@@ -499,7 +499,7 @@ void flist_login(PurpleAccount *pa) {
         fla->server_port = purple_account_get_int(pa, "server_port_secure", FLIST_PORT_SECURE);
     }
 
-    fla->receive_rtb = purple_account_get_bool(pa, "receive_rtb", TRUE);
+    fla->receive_notifications = purple_account_get_bool(pa, "receive_notifications", TRUE);
     fla->debug_mode = purple_account_get_bool(pa, "debug_mode", FALSE);
     fla->show_own_character = purple_account_get_bool(pa, "show_own_character", TRUE);
     fla->ignore_list = NULL;
@@ -703,7 +703,7 @@ static void plugin_init(PurplePlugin *plugin) {
     option = purple_account_option_bool_new("Synchronize status", "sync_status", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
-    option = purple_account_option_bool_new("Receive notifications", "receive_rtb", TRUE);
+    option = purple_account_option_bool_new("Receive notifications", "receive_notifications", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Display own character in conversations", "show_own_character", TRUE);

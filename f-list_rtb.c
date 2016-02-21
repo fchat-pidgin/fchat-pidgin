@@ -74,7 +74,7 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
     const gchar *type_str = json_object_get_string_member(root, "type");
 
     /* Ignore notification if the user doesn't want to see it */
-    if (!fla->receive_rtb) {
+    if (!fla->receive_notifications) {
         return TRUE;
     }
 
