@@ -738,14 +738,16 @@ PurpleCmdRet flist_status_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     PurpleConnection *pc = purple_conversation_get_gc(convo);
     FListAccount *fla = pc->proto_data;
     FListStatus status;
-    gchar *status_message;
+    gchar *status_message, *status_str;
 
     if (args[0] == NULL) {
         *error = g_strdup(_("Syntax is /status condition message. Condition can be one of : online, looking, busy, dnd, away. Message is optional, and will be emptied if not provided"));
         return PURPLE_CMD_RET_FAILED;
     }
 
-    status = flist_parse_status(args[0]);
+    status_str = g_ascii_strdown(args[0], -1);
+    status = flist_parse_status(status_str);
+    g_free(status_str);
 
     status_message = args[1];
     if (status_message == NULL) 
