@@ -185,10 +185,10 @@ gchar *flist_format_duration_str(guint64 dur) {
     guint64 days = total_days % 7;
     guint64 total_weeks = total_days / 7;
 
-    if (total_weeks > 0) g_string_append_printf(tmp, "%luw", total_weeks);
-    if (days > 0) g_string_append_printf(tmp, "%lud", days);
-    if (hours > 0) g_string_append_printf(tmp, "%luh", hours);
-    if (minutes > 0) g_string_append_printf(tmp, "%lum", minutes);
+    if (total_weeks > 0) g_string_append_printf(tmp, "%luw", (unsigned long)total_weeks);
+    if (days > 0) g_string_append_printf(tmp, "%lud", (unsigned long)days);
+    if (hours > 0) g_string_append_printf(tmp, "%luh", (unsigned long)hours);
+    if (minutes > 0) g_string_append_printf(tmp, "%lum", (unsigned long)minutes);
 
     return g_string_free(tmp, FALSE);
 }
