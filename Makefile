@@ -38,6 +38,7 @@ WIN32_LIBS = \
 				-lgtk-win32-2.0 \
 				-L. \
 				-ljson-glib-1.0 \
+				-lssl3 \
 				-lz
 
 ifdef STATIC_LIBGCC
@@ -46,6 +47,7 @@ endif
 
 LIBPURPLE_CFLAGS = -DPURPLE_PLUGINS -DENABLE_NLS -DHAVE_ZLIB
 GLIB_CFLAGS = `pkg-config glib-2.0 json-glib-1.0 --cflags --libs`
+NSS_CFLAGS = `pkg-config nss --cflags --libs`
 
 GIT_VERSION := $(shell git describe --dirty --always --tags)
 FLIST_ADDITIONAL_CFLAGS = -DGIT_VERSION=\"$(GIT_VERSION)\"
@@ -72,6 +74,7 @@ FLIST_SOURCES = \
 				f-list_connection.c \
 				f-list_icon.c \
 				f-list_kinks.c \
+				f-list_nssfix.c \
 				f-list_profile.c \
 				f-list_json.c \
 				f-list_friends.c \
@@ -118,7 +121,7 @@ install:
 	install -D icons/flist48.png ${DESTDIR}${PIDGIN_DATADIR}/pixmaps/pidgin/protocols/48/flist.png
 
 ${TARGET}:	${FLIST_SOURCES}
-	${LINUX_COMPILER} -Werror -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
+	${LINUX_COMPILER} -Werror -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${NSS_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
 
 prepare_cross:
 	./contrib/prepare_cross.sh
