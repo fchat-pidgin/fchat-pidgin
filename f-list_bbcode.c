@@ -170,7 +170,7 @@ static gchar *format_channel_real(ParserVars *vars, const gchar *name, const gch
     gchar *unescaped, *ret;
     GString *gs;
     if(!vars->fla) return g_strdup(name);
-    unescaped = purple_unescape_html(name);
+    unescaped = flist_html_unescape_utf8(name);
 
     gs = g_string_new(NULL);
     pa = vars->fla->pa;

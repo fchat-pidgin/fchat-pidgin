@@ -237,7 +237,7 @@ void flist_got_channel_topic(FListAccount *fla, const gchar *channel, const gcha
     g_return_if_fail(convo != NULL);
     g_return_if_fail(fchannel != NULL);
 
-    unescaped_description = purple_unescape_html(topic);
+    unescaped_description = flist_html_unescape_utf8(topic);
 
     if(fchannel->topic) g_free(fchannel->topic);
     fchannel->topic = g_strdup(unescaped_description);
@@ -461,7 +461,7 @@ gboolean flist_process_JCH(PurpleConnection *pc, JsonObject *root) {
     }
 
     if(title) {
-        gchar *unescaped_title = purple_unescape_html(title);
+        gchar *unescaped_title = flist_html_unescape_utf8(title);
         flist_got_channel_title(fla, channel, unescaped_title);
         g_free(unescaped_title);
     }
@@ -596,7 +596,7 @@ gboolean flist_process_ICH(PurpleConnection *pc, JsonObject *root) {
     g_return_val_if_fail(channel != NULL, TRUE);
 
     if(title) {
-        gchar *unescaped_title = purple_unescape_html(title);
+        gchar *unescaped_title = flist_html_unescape_utf8(title);
         flist_got_channel_title(fla, channel, unescaped_title);
         g_free(unescaped_title);
     }

@@ -42,4 +42,7 @@ gchar *http_request(const gchar *url, gboolean http11, gboolean post, const gcha
 guint64 flist_parse_duration_str(const gchar* dur);
 gchar *flist_format_duration_str(guint64 dur);
 
+const char *flist_html_markup_unescape_entity_utf8(const char *text, int *length);
+char *flist_html_unescape_utf8(const char *in);
+
 #endif

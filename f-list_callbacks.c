@@ -154,7 +154,7 @@ static void handle_roomlist(PurpleRoomlist *roomlist, JsonArray *json, gboolean 
         name = json_object_get_string_member(object, "name");
         characters = json_object_get_parse_int_member(object, "characters", NULL);
         c->name = name ? g_strdup(name) : NULL;
-        c->title = title ? purple_unescape_html(title) : NULL;
+        c->title = title ? flist_html_unescape_utf8(title) : NULL;
         c->users = characters;
         c->is_public = public;
         channels = g_slist_prepend(channels, c);

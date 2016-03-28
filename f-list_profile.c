@@ -127,7 +127,8 @@ gboolean flist_process_PRD(PurpleConnection *pc, JsonObject *root) {
     FListAccount *fla = pc->proto_data;
     FListProfiles *flp = _flist_profiles(fla);
     const gchar *type;
-    const gchar *key, *value;
+    const gchar *key;
+    gchar *value, *unescaped;
 
     if(!flp->character) {
         purple_debug_error(FLIST_DEBUG, "Profile information received, but we are not expecting profile information.\n");
@@ -154,10 +155,13 @@ gboolean flist_process_PRD(PurpleConnection *pc, JsonObject *root) {
     }
 
     key = json_object_get_string_member(root, "key");
-    value = json_object_get_string_member(root, "value");
-    g_hash_table_replace(flp->table, g_strdup(key), purple_unescape_text(value));
+    unescaped = flist_html_unescape_utf8(json_object_get_string_member(root, "value"));
+    value = purple_markup_escape_text(unescaped, strlen(unescaped));
+    g_hash_table_replace(flp->table, g_strdup(key), value);
 
     purple_debug_info(FLIST_DEBUG, "Profile information received for %s. Key: %s. Value: %s.\n", flp->character, key, value);
+
+    g_free(unescaped);
 
     return TRUE;
 }
@@ -192,8 +196,10 @@ static gboolean flist_process_profile(FListAccount *fla, JsonObject *root) {
         for(i = 0; i < len; i++) {
             JsonObject *field_object = json_array_get_object_element(field_array, i);
             const gchar *field_name = json_object_get_string_member(field_object, "name");
-            const gchar *field_value = json_object_get_string_member(field_object, "value");
+            gchar *unescaped = flist_html_unescape_utf8(json_object_get_string_member(field_object, "value"));
+            gchar *field_value = purple_markup_escape_text(unescaped, strlen(unescaped));
             g_hash_table_insert(profile, (gpointer) field_name, (gpointer) field_value);
+            g_free(unescaped);
         }
 
         cur = cur->next;
@@ -265,7 +271,7 @@ void flist_get_profile(PurpleConnection *pc, const char *who) {
     if(!character) {
         purple_notify_user_info_add_pair(flp->profile_info, "Status", "Offline");
     } else {
-        gchar *clean_message = purple_unescape_html(character->status_message);
+        gchar *clean_message = flist_html_unescape_utf8(character->status_message);
         gchar *parsed_message = flist_bbcode_to_html(fla, NULL, clean_message);
         purple_notify_user_info_add_pair(flp->profile_info, "Status", flist_format_status(character->status));
         purple_notify_user_info_add_pair(flp->profile_info, "Gender", flist_format_gender(character->gender));

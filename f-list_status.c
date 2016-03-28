@@ -83,7 +83,7 @@ void flist_set_internal_status_from_purple_status(FListAccount *fla, PurpleStatu
         return;
 
     
-    message = purple_unescape_html(purple_status_get_attr_string(status, FLIST_STATUS_MESSAGE_KEY));
+    message = flist_html_unescape_utf8(purple_status_get_attr_string(status, FLIST_STATUS_MESSAGE_KEY));
     // First, get the presence. If it's idle, we default to idle.
     PurplePresence *presence = purple_status_get_presence(status);
     if(purple_presence_is_idle(presence)) {
