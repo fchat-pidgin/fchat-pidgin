@@ -210,6 +210,7 @@ BBCodeTag tag_icon = { "icon", FALSE, FALSE, format_icon };
 BBCodeTag tag_eicon = { "eicon", FALSE, FALSE, format_eicon };
 BBCodeTag tag_channel = { "channel", FALSE, FALSE, format_channel };
 BBCodeTag tag_session = { "session", FALSE, FALSE, format_session };
+BBCodeTag tag_noparse = { "noparse", FALSE, FALSE, NULL };
 
 typedef struct BBCodeStack_ BBCodeStack;
 struct BBCodeStack_ {
@@ -291,18 +292,6 @@ gchar *flist_bbcode_to_html_real(FListAccount *fla, PurpleConversation *convo, c
         g_string_append_len(stack->ret, current, (gsize) (open - current));
         current = close;
 
-        if (strcmp(raw_tag, TAG_NOPARSE_OPEN) == 0)
-        {
-            no_parse = TRUE;
-            continue;
-        }
-
-        if (strcmp(raw_tag, TAG_NOPARSE_CLOSE) == 0)
-        {
-            no_parse = FALSE;
-            continue;
-        }
-
         if(bbcode_parse_tag(raw_tag, raw_tag_len, stack->tag, &tag, &tag_argument, &close_tag)) {
             if(!close_tag) { /* we have a new tag! push it onto the stack */
                 stack_tmp = g_new(BBCodeStack, 1);
@@ -313,14 +302,21 @@ gchar *flist_bbcode_to_html_real(FListAccount *fla, PurpleConversation *convo, c
                 stack->tag = tag;
                 stack->tag_argument = tag_argument;
                 stack->ret = g_string_new(NULL);
+
+                if (g_strcmp0(stack->tag->tag, "noparse") == 0)
+                    no_parse = TRUE;
+
             } else { /* we are closing a tag! pop it off of the stack */
                 gchar *inner = g_string_free(stack->ret, FALSE);
 
+                if (g_strcmp0(stack->tag->tag, "noparse") == 0)
+                    no_parse = FALSE;
+
                 gchar *final = NULL;
-                if (!no_parse)
-                    final = !strip ? stack->tag->format(&vars, stack->tag_argument, inner) : g_strdup(inner);
+                if (no_parse || !stack->tag->format)
+                    final = g_strdup(inner);
                 else
-                    final = g_strndup(stack->raw_tag, close - stack->raw_tag);
+                    final = !strip ? stack->tag->format(&vars, stack->tag_argument, inner) : g_strdup(inner);
 
                 stack_tmp = stack;
                 stack = stack->next;
@@ -390,4 +386,5 @@ void flist_bbcode_init() {
     g_hash_table_insert(tag_table, "eicon", &tag_eicon);
     g_hash_table_insert(tag_table, "channel", &tag_channel);
     g_hash_table_insert(tag_table, "session", &tag_session);
+    g_hash_table_insert(tag_table, "noparse", &tag_noparse);
 }
