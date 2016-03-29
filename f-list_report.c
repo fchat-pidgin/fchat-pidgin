@@ -85,34 +85,40 @@ static void flist_report_upload_log_cb(FListWebRequestData* req_data, gpointer u
     flist_report_free(flr);
 }
 
-void flist_report_send(FListReport *flr) {
-    GList *logs, *current_log;
+void flist_report_fetch_text(FListReport *flr) {
+    GList *logs = NULL, *current_log;
     PurpleLogType log_type = flr->convo->type == PURPLE_CONV_TYPE_CHAT ? PURPLE_LOG_CHAT : PURPLE_LOG_IM;
 
-    // Fetch a chronologically list of logs belonging to the conversation
-    logs = purple_log_get_logs(log_type, flr->channel_handle, flr->fla->pa);
-
-    if (!purple_conversation_is_logging(flr->convo) || g_list_length(logs) == 0)
+    GString *report_text = g_string_new(NULL);
+    for (gint i = flr->start_point; i >= 0; i--)
     {
-        purple_notify_info(purple_conversation_get_gc(flr->convo), "No logs found!", "Could not find logs for this conversation. Make sure you have logging enabled before using /report!", NULL);
-        g_list_free(logs);
-        flist_report_free(flr);
-        return;
+        if (!logs)
+        {
+            logs = purple_log_get_logs(log_type, flr->channel_handle, flr->fla->pa);
+            current_log = g_list_nth(logs, i);
+        }
+
+        PurpleLog *log = (PurpleLog*)current_log->data;
+        g_string_append(report_text, purple_log_read(log, 0));
+
+        current_log = current_log->prev;
     }
 
-    // The newest (current) log is always the first one
-    current_log = g_list_first(logs);
-
+    gchar *raw_text = g_string_free(report_text, FALSE);
     // Read its contents and strip HTML tags
-    gchar *log_text = purple_log_read(current_log->data, 0);
     gchar *stripped_text;
-    purple_markup_html_to_xhtml(log_text, NULL, &stripped_text);
+    purple_markup_html_to_xhtml(raw_text, NULL, &stripped_text);
+
     // And finally, escape HTML entities
     flr->log_text = purple_markup_escape_text(stripped_text, -1);
     g_free(stripped_text);
-    g_free(log_text);
 
+    g_list_free(logs);
+}
+
+void flist_report_send(FListReport *flr) {
     purple_debug_info(FLIST_DEBUG, "User filed a report against '%s': '%s'\n------------- LOG -------------\n%s\n-----------------------------\n", flr->character, flr->reason, flr->log_text);
+    return;
 
     // Fire web request to upload our log
     GHashTable *args = flist_web_request_args(flr->fla);
@@ -124,7 +130,6 @@ void flist_report_send(FListReport *flr) {
     flist_web_request(JSON_UPLOAD_LOG, args, NULL, TRUE, flr->fla->secure, flist_report_upload_log_cb, flr);
 
     g_hash_table_unref(args);
-    g_list_free(logs);
 }
 
 void flist_report_free(FListReport *flr)
@@ -144,6 +149,8 @@ FListReport *flist_report_new(FListAccount *fla, PurpleConversation *convo, cons
     flr->convo = convo;
     flr->character = g_strdup(reported_character);
     flr->reason = g_strdup(reason);
+    flr->start_point = 0;
+    flr->display_preview = FALSE;
 
     // Conversation is a channel
     if (convo->type == PURPLE_CONV_TYPE_CHAT)
@@ -158,7 +165,7 @@ FListReport *flist_report_new(FListAccount *fla, PurpleConversation *convo, cons
         else
             flr->channel_pretty = g_strdup(fchannel->name);
     }
-    // Conversastion is a private message
+    // Conversation is a private message
     else if (convo->type == PURPLE_CONV_TYPE_IM)
     {
         flr->channel_handle = g_strdup(purple_conversation_get_name(convo));
@@ -168,19 +175,53 @@ FListReport *flist_report_new(FListAccount *fla, PurpleConversation *convo, cons
     return flr;
 }
 
+static void flist_report_ui_preview_ok_cb(gpointer user_data, PurpleRequestFields *fields) {
+    FListReport *flr = user_data;
+    flist_report_send(flr);
+}
+
 static void flist_report_ui_ok_cb(gpointer user_data, PurpleRequestFields *fields) {
     FListReport *flr = user_data;
     flr->reason = g_strdup(purple_request_fields_get_string(fields, "reason"));
     flr->character = g_strdup(purple_request_fields_get_string(fields, "character"));
 
-    flist_report_send(flr);
+    if (purple_request_fields_exists(fields, "start_point"))
+        flr->start_point = purple_request_fields_get_choice(fields, "start_point");
+
+    flist_report_fetch_text(flr);
+
+    flr->display_preview = purple_request_fields_get_bool(fields, "preview");
+    if (flr->display_preview)
+    {
+        gchar *description = g_strdup_printf("Reporting User: %s\nReason: %s", flr->character, flr->reason);
+        purple_request_input(flr->fla->pa,                                          /* handle */
+                             "Preview Report",                                      /* title */
+                             "You can preview what will be sent to the server once you file your report.\nChanging the text does NOT change the report.", /* primary message */
+                             description,                                           /* secondary message */
+                             flr->log_text,                                         /* default value */
+                             TRUE,                                                  /* multiline */
+                             FALSE,                                                 /* masked input (e.g. passwords) */
+                             "",                                                    /* hint */
+                             "Send",                                                /* ok text */
+                             PURPLE_CALLBACK(flist_report_ui_preview_ok_cb),        /* ok callback */
+                             "Cancel",                                              /* cancel text */
+                             PURPLE_CALLBACK(flist_report_display_ui),              /* cancel callback */
+                             flr->fla->pa,                                          /* account */
+                             NULL,                                                  /* associated buddy */
+                             flr->convo,                                            /* associated conversation */
+                             flr                                                    /* user data */
+                            );
+
+        g_free(description);
+    }
+    else
+        flist_report_send(flr);
 }
 
 static void flist_report_ui_cancel_cb(gpointer user_data) {
     FListReport *flr = user_data;
     flist_report_free(flr);
 }
-
 
 void flist_report_display_ui(FListReport *flr) {
     // Set up report UI
@@ -197,6 +238,54 @@ void flist_report_display_ui(FListReport *flr) {
     purple_request_field_group_add_field(group, field);
 
     field = purple_request_field_string_new("character", "Reported character", flr->character, FALSE);
+    purple_request_field_set_required(field, TRUE);
+    purple_request_field_group_add_field(group, field);
+
+    if (purple_conversation_is_logging(flr->convo))
+    {
+        field = purple_request_field_choice_new("start_point", "Select from which point in time on you want to send logs", flr->start_point);
+
+        // Add the past 5 logs to the list
+        GList *logs;
+        PurpleLogType log_type = flr->convo->type == PURPLE_CONV_TYPE_CHAT ? PURPLE_LOG_CHAT : PURPLE_LOG_IM;
+        logs = purple_log_get_logs(log_type, flr->channel_handle, flr->fla->pa);
+
+        guint32 log_num = 0;
+        if (g_list_length(logs) > 0)
+        {
+            // Use up to 6 logs, because at 6 entries, the choice widget turns into a dropdown field
+            // Yay, Pidgin
+            while (logs && log_num < 6)
+            {
+                PurpleLog *log = (PurpleLog*)logs->data;
+                const gchar *datetime = purple_utf8_strftime("%d.%m.%Y %H:%M:%S", localtime(&log->time));
+
+                if (log_num == 0)
+                {
+                    gboolean has_current_conversation = g_list_length(purple_conversation_get_message_history(flr->convo)) > 0;
+
+                    gchar *label = g_strdup_printf("%s (%s conversation)", datetime, has_current_conversation ? "Current" : "Last");
+                    purple_request_field_choice_add(field, label);
+                    g_free(label);
+                }
+                else
+                    purple_request_field_choice_add(field, datetime);
+
+                log_num++;
+                logs = logs->next;
+            }
+        }
+        purple_request_field_group_add_field(group, field);
+
+        if (log_num == 0)
+        {
+            purple_request_fields_destroy(fields);
+            purple_notify_warning(flr->fla->pc, "Report Error", "No logs found!", "The current conversation is empty and there are no logs. Are you sure you want to report this chat?");
+            return;
+        }
+    }
+
+    field = purple_request_field_bool_new("preview", "Display preview of report", flr->display_preview);
     purple_request_field_set_required(field, TRUE);
     purple_request_field_group_add_field(group, field);
     

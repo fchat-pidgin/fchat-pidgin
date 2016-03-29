@@ -33,6 +33,8 @@ struct FListReport_ {
     gchar *reason;
     gchar *log_text;
     gchar *log_id;
+    guint start_point;
+    gboolean display_preview;
 };
 
 typedef struct FListReport_ FListReport;
