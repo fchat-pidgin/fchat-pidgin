@@ -407,6 +407,7 @@ struct FListAccount_ {
 #include "f-list_ignore.h"
 #include "f-list_report.h"
 #include "f-list_util.h"
+#include "f-list_nssfix.h"
 #include "f-list_pidgin.h"
 
 #endif
