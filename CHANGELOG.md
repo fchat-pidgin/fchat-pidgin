@@ -15,6 +15,8 @@
 - Users can now customize the background color of ads for better readability.
 - #29: Character names are now colored according to their gender.
 - /greports command to fetch pending chat reports (operators)
+- "Receive Notifications" now also shows/hides broadcast messages and global op change notifications
+- /report now can combine up to 6 past logs and offers a preview functionality. This is helpful when you accidentally close a tab before reporting or get disconnected.
 
 ### Fixed
 - #53: Incorrect link in bug report comment notifications
@@ -25,6 +27,11 @@
 - sub/sup-Tags now actually do something - maybe not perfectly but as perfect as it gets with Pidgin
 - Make the red /warn-laser look more like the original - scarier!
 - The "Position" field in character profiles now appears below "Dom/Sub-Role" (thanks Syldra Kitty)
+- #88: /ignore command has poor feedback
+- #87: Crash when closing ignore list dialog
+- #97: /status should accept arbitrary case parameters
+- #11: German umlauts in profile fields are not unescaped
+- #90: [noparse] BBCode not functioning
 
 ## 0.5.0
 ### Added
