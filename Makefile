@@ -5,10 +5,37 @@ WIN32_COMPILER = i686-w64-mingw32-gcc
 WIN32_DEV_DIR=win32
 WIN32_GTK_DEV_DIR=${WIN32_DEV_DIR}/gtk_2_0-2.16
 WIN32_PIDGIN_DIR=${WIN32_DEV_DIR}/pidgin-2.10.12
+WIN32_NSS_DIR=${WIN32_DEV_DIR}/nss-3.20.1
 WIN32_CFLAGS = \
 				-DENABLE_NLS \
 				-DHAVE_ZLIB \
 				-DPURPLE_PLUGINS \
+				-I${WIN32_NSS_DIR}/nss/lib/certhigh\
+				-I${WIN32_NSS_DIR}/nss/lib/crmf\
+				-I${WIN32_NSS_DIR}/nss/lib/ckfw\
+				-I${WIN32_NSS_DIR}/nss/lib/pkcs7\
+				-I${WIN32_NSS_DIR}/nss/lib/cryptohi\
+				-I${WIN32_NSS_DIR}/nss/lib/dbm\
+				-I${WIN32_NSS_DIR}/nss/lib/freebl\
+				-I${WIN32_NSS_DIR}/nss/lib/base\
+				-I${WIN32_NSS_DIR}/nss/lib/smime\
+				-I${WIN32_NSS_DIR}/nss/lib/pkcs12\
+				-I${WIN32_NSS_DIR}/nss/lib/libpkix\
+				-I${WIN32_NSS_DIR}/nss/lib/util\
+				-I${WIN32_NSS_DIR}/nss/lib/sysinit\
+				-I${WIN32_NSS_DIR}/nss/lib/dev\
+				-I${WIN32_NSS_DIR}/nss/lib/softoken\
+				-I${WIN32_NSS_DIR}/nss/lib/zlib\
+				-I${WIN32_NSS_DIR}/nss/lib/pki\
+				-I${WIN32_NSS_DIR}/nss/lib/ssl\
+				-I${WIN32_NSS_DIR}/nss/lib/pk11wrap\
+				-I${WIN32_NSS_DIR}/nss/lib/nss\
+				-I${WIN32_NSS_DIR}/nss/lib/sqlite\
+				-I${WIN32_NSS_DIR}/nss/lib/certdb\
+				-I${WIN32_NSS_DIR}/nss/lib/jar\
+				-I${WIN32_NSS_DIR}/nspr/pr/include/ \
+				-I${WIN32_NSS_DIR}/nspr/lib/ds/ \
+				-I${WIN32_NSS_DIR}/nspr/lib/libc/include/ \
 				-I${WIN32_GTK_DEV_DIR}/include/glib-2.0 \
 				-I${WIN32_PIDGIN_DIR}/pidgin \
 				-I${WIN32_PIDGIN_DIR}/pidgin/win32 \
