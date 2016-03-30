@@ -441,14 +441,36 @@ void flist_cancel_roomlist(PurpleRoomlist *list) {
     }
 }
 
+
+void flist_process_sending_im(PurpleAccount *account, char *who,
+            char **message, void *userdata) {
+
+    g_return_if_fail(account);
+
+    // Only for flist IMs, we parse the outgoing message into HTML and print it into the conversation window
+    // This signal handler is called for every protocol, so do not remove this check !
+    if (g_strcmp0(purple_account_get_protocol_id(account), FLIST_PLUGIN_ID) == 0) {
+        PurpleConvIm *im;
+        PurpleConnection *pc = purple_account_get_connection(account);
+        FListAccount *fla = pc->proto_data;
+
+        gchar *plain_message, *local_message, *bbcode_message;
+        im = PURPLE_CONV_IM(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, account));
+        purple_markup_html_to_xhtml(*message, NULL, &plain_message);
+        local_message = purple_markup_escape_text(plain_message, -1); /* re-escape the html entities */
+        bbcode_message = flist_bbcode_to_html(fla, purple_conv_im_get_conversation(im), local_message); /* convert the bbcode to html to display locally */
+        purple_conv_im_write(im, NULL, bbcode_message, PURPLE_MESSAGE_SEND, time(NULL));
+    }
+    return;
+}
+
+
 //Hopefully, this will never be used.
 #define PURPLE_MESSAGE_FLIST 0x04000000
 int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *message, PurpleMessageFlags flags) {
     FListAccount *fla = pc->proto_data;
     JsonObject *json;
-    PurpleConvIm *im;
-    gchar *plain_message, *local_message, *bbcode_message;
-    int ret;
+    gchar *plain_message;
 
     if (flist_ignore_character_is_ignored(pc, who))
     {
@@ -461,11 +483,7 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
     purple_debug_info(FLIST_DEBUG, "Sending message... (From: %s) (To: %s) (Message: %s) (Flags: %x)\n",
         fla->character, who, message, flags);
 
-    im = PURPLE_CONV_IM(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, fla->pa));
-
     purple_markup_html_to_xhtml(message, NULL, &plain_message);
-    local_message = purple_markup_escape_text(plain_message, -1); /* re-escape the html entities */
-    bbcode_message = flist_bbcode_to_html(fla, purple_conv_im_get_conversation(im), local_message); /* convert the bbcode to html to display locally */
 
     json = json_object_new();
     json_object_set_string_member(json, "recipient", who);
@@ -473,21 +491,12 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
     flist_request(pc, FLIST_REQUEST_PRIVATE_MESSAGE, json);
     json_object_unref(json);
 
-    if(im) { /* This should always be the case. */
-        purple_conv_im_write(im, NULL, bbcode_message, flags, time(NULL));
-        ret = 0; //we've already displayed it
-    } else {
-        purple_debug_warning(FLIST_DEBUG, "Sent message, but convo not found. (From: %s) (To: %s)\n",
-            fla->character, who);
-        ret = 1; //display it now
-    }
-
     g_free(plain_message);
-    g_free(bbcode_message);
-    g_free(local_message);
 
-    return ret;
-}
+    // Returning 0 here means that Purple UIs will not echo the message. The
+    // message will be echoed in the conversation windows by the
+    // flist_process_sending_im signal handler.
+    return 0; }
 
 /* This function is essentially copied from libpurple. */
 static gchar *flist_fix_newlines(const char *html) {
