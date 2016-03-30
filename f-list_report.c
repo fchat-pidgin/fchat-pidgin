@@ -85,19 +85,18 @@ static void flist_report_upload_log_cb(FListWebRequestData* req_data, gpointer u
     flist_report_free(flr);
 }
 
+// TODO Passing a struct hides the required inputs of this function
+// Change it to return a gchar* and take everything it needs (convo, channel_handle, ...) as parameters
 void flist_report_fetch_text(FListReport *flr) {
-    GList *logs = NULL, *current_log;
+    GList *logs, *current_log;
     PurpleLogType log_type = flr->convo->type == PURPLE_CONV_TYPE_CHAT ? PURPLE_LOG_CHAT : PURPLE_LOG_IM;
+
+    logs = purple_log_get_logs(log_type, flr->channel_handle, flr->fla->pa);
+    current_log = g_list_nth(logs, flr->start_point);
 
     GString *report_text = g_string_new(NULL);
     for (gint i = flr->start_point; i >= 0; i--)
     {
-        if (!logs)
-        {
-            logs = purple_log_get_logs(log_type, flr->channel_handle, flr->fla->pa);
-            current_log = g_list_nth(logs, i);
-        }
-
         PurpleLog *log = (PurpleLog*)current_log->data;
         g_string_append(report_text, purple_log_read(log, 0));
 
