@@ -47,13 +47,17 @@ static void hooked_connectfunc(PurpleSslConnection *gsc) {
         purple_debug_info(FLIST_DEBUG, "nssfix: Running hooked connectfunc\n");
 
     original_connectfunc(gsc);
+
     nssfixPurpleSslNssData *nss_data = gsc->private_data;
+    if (g_str_has_suffix(gsc->host, "f-list.net")) {
+        if (purple_debug_is_verbose()) {
+            purple_debug_info(FLIST_DEBUG, "nssfix: Setting Peer ID: %s\n", gsc->host);
+        }
 
-    if (purple_debug_is_verbose())
-        purple_debug_info(FLIST_DEBUG, "nssfix: Setting Peer ID: %s\n", gsc->host);
-
-    SSL_SetSockPeerID(nss_data->in, gsc->host);
-}
+        // This is the trick that ensures that TLS sessions will only be reused
+        // when contacting the same domain, and not just the same servers
+        // discussed here : https://bugzil.la/1202264
+        SSL_SetSockPeerID(nss_data->in, gsc->host); } }
 
 gboolean flist_nssfix_enable() {
     if(strcmp(NSSSSL_GetVersion(), "3.23") >= 0) {
