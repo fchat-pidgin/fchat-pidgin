@@ -253,6 +253,9 @@ void flist_enable_signals(FListAccount *fla)
     purple_signal_connect_priority(conv_handle, "sending-im-msg", fla,
             PURPLE_CALLBACK(flist_process_sending_im), NULL, 
             PURPLE_SIGNAL_PRIORITY_LOWEST );
+    purple_signal_connect_priority(conv_handle, "receiving-im-msg", fla,
+            PURPLE_CALLBACK(flist_process_receiving_im), NULL,
+            PURPLE_SIGNAL_PRIORITY_HIGHEST );
 }
 
 void flist_disable_signals(FListAccount *fla)
@@ -262,6 +265,8 @@ void flist_disable_signals(FListAccount *fla)
             PURPLE_CALLBACK(flist_conversation_created_cb));
     purple_signal_disconnect(conv_handle, "sending-im-msg", fla,
             PURPLE_CALLBACK(flist_process_sending_im));
+    purple_signal_disconnect(conv_handle, "receiving-im-msg", fla,
+            PURPLE_CALLBACK(flist_process_receiving_im));
 }
 
 const char *flist_normalize(const PurpleAccount *account, const char *str) {

@@ -656,22 +656,44 @@ static gboolean flist_process_PIN(PurpleConnection *pc, JsonObject *root) {
     flist_receive_ping(pc);
     return TRUE;
 }
+
+gboolean flist_process_receiving_im(PurpleAccount *account, char **who,
+        char **message, int *flags, void *m) {
+
+    g_return_if_fail(account);
+
+    // Only for flist IMs, we parse the incoming message into HTML, before
+    // Pidgin can print it, this signal handler is called for every protocol, so
+    // do not remove this check !
+    if (g_strcmp0(purple_account_get_protocol_id(account), FLIST_PLUGIN_ID) == 0) {
+        PurpleConnection *pc = purple_account_get_connection(account);
+        FListAccount *fla = pc->proto_data;
+        gchar *parsed;
+
+        PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, *who, account);
+        if (convo == NULL) {
+            convo = purple_conversation_new(PURPLE_CONV_TYPE_IM, account, *who);
+        }
+
+        // Free original message and replace it with our parsed version
+        parsed = flist_bbcode_to_html(fla, convo, *message);
+        g_free(*message);
+        *message = parsed;
+
+    }
+    return 0;
+}
+
+
 static gboolean flist_process_PRI(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
     const gchar *character = json_object_get_string_member(root, "character");
     const gchar *message = json_object_get_string_member(root, "message");
 
+    // BBcode handling is done in flist_process_receiving_im, which is called
+    // when serv_got_im sends the receiving-im-msg signal
     if (!flist_ignore_character_is_ignored(pc, character)) {
-
-        /* TODO: this will not work if this message opens a new window */
-        PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, character, fla->pa);
-        gchar *parsed = flist_bbcode_to_html(fla, convo, message);
-
-        serv_got_im(pc, character, parsed, PURPLE_MESSAGE_RECV, time(NULL));
-
-        g_free(parsed);
+        serv_got_im(pc, character, message, PURPLE_MESSAGE_RECV, time(NULL));
     }
-
     return TRUE;
 }
 
