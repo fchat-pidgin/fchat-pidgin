@@ -460,6 +460,9 @@ void flist_process_sending_im(PurpleAccount *account, char *who,
         local_message = purple_markup_escape_text(plain_message, -1); /* re-escape the html entities */
         bbcode_message = flist_bbcode_to_html(fla, purple_conv_im_get_conversation(im), local_message); /* convert the bbcode to html to display locally */
         purple_conv_im_write(im, NULL, bbcode_message, PURPLE_MESSAGE_SEND, time(NULL));
+        g_free(plain_message);
+        g_free(local_message);
+        g_free(bbcode_message);
     }
     return;
 }
