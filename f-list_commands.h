@@ -51,4 +51,6 @@ GList *flist_blist_node_menu(PurpleBlistNode *);
 
 void flist_init_commands();
 
+void flist_process_sending_im(PurpleAccount *account, char *who, char **message, void *userdata);
+
 #endif
