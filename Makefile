@@ -5,10 +5,37 @@ WIN32_COMPILER = i686-w64-mingw32-gcc
 WIN32_DEV_DIR=win32
 WIN32_GTK_DEV_DIR=${WIN32_DEV_DIR}/gtk_2_0-2.16
 WIN32_PIDGIN_DIR=${WIN32_DEV_DIR}/pidgin-2.10.12
+WIN32_NSS_DIR=${WIN32_DEV_DIR}/nss-3.20.1
 WIN32_CFLAGS = \
 				-DENABLE_NLS \
 				-DHAVE_ZLIB \
 				-DPURPLE_PLUGINS \
+				-I${WIN32_NSS_DIR}/nss/lib/certhigh\
+				-I${WIN32_NSS_DIR}/nss/lib/crmf\
+				-I${WIN32_NSS_DIR}/nss/lib/ckfw\
+				-I${WIN32_NSS_DIR}/nss/lib/pkcs7\
+				-I${WIN32_NSS_DIR}/nss/lib/cryptohi\
+				-I${WIN32_NSS_DIR}/nss/lib/dbm\
+				-I${WIN32_NSS_DIR}/nss/lib/freebl\
+				-I${WIN32_NSS_DIR}/nss/lib/base\
+				-I${WIN32_NSS_DIR}/nss/lib/smime\
+				-I${WIN32_NSS_DIR}/nss/lib/pkcs12\
+				-I${WIN32_NSS_DIR}/nss/lib/libpkix\
+				-I${WIN32_NSS_DIR}/nss/lib/util\
+				-I${WIN32_NSS_DIR}/nss/lib/sysinit\
+				-I${WIN32_NSS_DIR}/nss/lib/dev\
+				-I${WIN32_NSS_DIR}/nss/lib/softoken\
+				-I${WIN32_NSS_DIR}/nss/lib/zlib\
+				-I${WIN32_NSS_DIR}/nss/lib/pki\
+				-I${WIN32_NSS_DIR}/nss/lib/ssl\
+				-I${WIN32_NSS_DIR}/nss/lib/pk11wrap\
+				-I${WIN32_NSS_DIR}/nss/lib/nss\
+				-I${WIN32_NSS_DIR}/nss/lib/sqlite\
+				-I${WIN32_NSS_DIR}/nss/lib/certdb\
+				-I${WIN32_NSS_DIR}/nss/lib/jar\
+				-I${WIN32_NSS_DIR}/nspr/pr/include/ \
+				-I${WIN32_NSS_DIR}/nspr/lib/ds/ \
+				-I${WIN32_NSS_DIR}/nspr/lib/libc/include/ \
 				-I${WIN32_GTK_DEV_DIR}/include/glib-2.0 \
 				-I${WIN32_PIDGIN_DIR}/pidgin \
 				-I${WIN32_PIDGIN_DIR}/pidgin/win32 \
@@ -38,6 +65,7 @@ WIN32_LIBS = \
 				-lgtk-win32-2.0 \
 				-L. \
 				-ljson-glib-1.0 \
+				-lssl3 \
 				-lz
 
 ifdef STATIC_LIBGCC
@@ -46,6 +74,7 @@ endif
 
 LIBPURPLE_CFLAGS = -DPURPLE_PLUGINS -DENABLE_NLS -DHAVE_ZLIB
 GLIB_CFLAGS = `pkg-config glib-2.0 json-glib-1.0 --cflags --libs`
+NSS_CFLAGS = `pkg-config nss --cflags --libs`
 
 GIT_VERSION := $(shell git describe --dirty --always --tags)
 FLIST_ADDITIONAL_CFLAGS = -DGIT_VERSION=\"$(GIT_VERSION)\"
@@ -72,6 +101,7 @@ FLIST_SOURCES = \
 				f-list_connection.c \
 				f-list_icon.c \
 				f-list_kinks.c \
+				f-list_nssfix.c \
 				f-list_profile.c \
 				f-list_json.c \
 				f-list_friends.c \
@@ -118,7 +148,7 @@ install:
 	install -D icons/flist48.png ${DESTDIR}${PIDGIN_DATADIR}/pixmaps/pidgin/protocols/48/flist.png
 
 ${TARGET}:	${FLIST_SOURCES}
-	${LINUX_COMPILER} -Werror -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
+	${LINUX_COMPILER} -Werror -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared -fPIC ${LIBPURPLE_CFLAGS} ${PIDGIN_CFLAGS} ${GLIB_CFLAGS} ${NSS_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
 
 prepare_cross:
 	./contrib/prepare_cross.sh

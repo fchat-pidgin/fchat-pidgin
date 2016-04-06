@@ -366,12 +366,16 @@ static GList *flist_actions(PurplePlugin *plugin, gpointer context) {
 }
 
 static gboolean plugin_load(PurplePlugin *plugin) {
+    flist_nssfix_enable();
     return TRUE;
 }
 static gboolean plugin_unload(PurplePlugin *plugin) {
 #ifndef FLIST_PURPLE_ONLY
     flist_pidgin_terminate();
 #endif
+
+    flist_nssfix_disable();
+
     return TRUE;
 }
 static const char *flist_list_icon(PurpleAccount *account, PurpleBuddy *buddy) {

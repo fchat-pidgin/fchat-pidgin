@@ -34,9 +34,12 @@ PIDGIN_BIN_DIR=${WIN32_DEV_DIR}/pidgin-${PIDGIN_VERSION}-win32bin
 JSON_SRC_URL=http://ftp.gnome.org/pub/GNOME/sources/json-glib/0.12/json-glib-0.12.6.tar.xz
 JSON_SRC_FILE=${WIN32_DEV_DIR}/json-glib-0.12.6.tar.xz
 JSON_SRC_DIR=${WIN32_DEV_DIR}/json-glib-0.12.6/
+NSS_SRC_FILE=${WIN32_DEV_DIR}/nss-3.20.1-with-nspr-4.10.10.tar.gz
+NSS_SRC_URL=https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_20_1_RTM/src/nss-3.20.1-with-nspr-4.10.10.tar.gz
+NSS_SRC_DIR=${WIN32_DEV_DIR}/nss-3.20.1/
 
 # Fetch files
-for component in GTK_BUNDLE PIDGIN_SRC PIDGIN_BIN JSON_SRC ; do
+for component in GTK_BUNDLE PIDGIN_SRC PIDGIN_BIN JSON_SRC NSS_SRC; do
     FILE=$(eval echo '$'${component}_FILE)
     URL=$(eval echo '$'${component}_URL)
     DIR=$(eval echo '$'${component}_DIR)
@@ -72,6 +75,9 @@ cd "$JSON_SRC_DIR"
 ./configure
 cd -
 fi
+
+# Prepare NSS prcpucfg.h
+cp "$NSS_SRC_DIR"/nspr/pr/include/md/_winnt.cfg "$NSS_SRC_DIR"/nspr/pr/include/prcpucfg.h
 
 # Put Pidgin windows binaries back in the right directory
 mv ${PIDGIN_BIN_DIR}/pidgin-*/* ${PIDGIN_BIN_DIR} 2>/dev/null && true
