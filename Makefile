@@ -26,6 +26,7 @@ WIN32_CFLAGS = \
 				-Wno-format
 
 WIN32_LIBS = \
+				-static-libgcc \
 				-L${WIN32_GTK_DEV_DIR}/lib \
 				-L${WIN32_PIDGIN_DIR}-win32bin \
 				-lglib-2.0 \
@@ -69,10 +70,6 @@ WIN32_NSS_CFLAGS = \
 				-I${WIN32_NSS_DIR}/nspr/lib/ds/ \
 				-I${WIN32_NSS_DIR}/nspr/lib/libc/include/ \
 				-lssl3
-
-ifdef STATIC_LIBGCC
-WIN32_CFLAGS += -static-libgcc
-endif
 
 LIBPURPLE_CFLAGS = -DPURPLE_PLUGINS -DENABLE_NLS -DHAVE_ZLIB
 GLIB_CFLAGS = `pkg-config glib-2.0 json-glib-1.0 --cflags --libs`
