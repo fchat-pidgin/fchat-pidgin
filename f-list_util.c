@@ -549,7 +549,7 @@ static const char *entity_table_lookup(const char *text, int *length, struct Ent
 const char *flist_html_markup_unescape_entity_utf8(const char *text, int *length)
 {
     const char *pln;
-    int pound;
+    guint pound;
     char temp[2];
 
     if (!text || *text != '&')
