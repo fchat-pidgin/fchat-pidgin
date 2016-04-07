@@ -354,7 +354,9 @@ static GList *flist_actions(PurplePlugin *plugin, gpointer context) {
 }
 
 static gboolean plugin_load(PurplePlugin *plugin) {
+#ifndef DISABLE_NSSFIX
     flist_nssfix_enable();
+#endif
     return TRUE;
 }
 static gboolean plugin_unload(PurplePlugin *plugin) {
@@ -362,7 +364,9 @@ static gboolean plugin_unload(PurplePlugin *plugin) {
     flist_pidgin_terminate();
 #endif
 
+#ifndef DISABLE_NSSFIX
     flist_nssfix_disable();
+#endif
 
     return TRUE;
 }
