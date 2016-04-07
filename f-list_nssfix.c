@@ -24,8 +24,6 @@
  * incorrectly reused across domains, and causing HTTPS requests to fail.
  */
 
-#ifndef DISABLE_NSSFIX
-
 #include "f-list.h"
 
 /* NSSSSL */
@@ -141,14 +139,3 @@ gboolean flist_nssfix_disable() {
     return TRUE;
 }
 
-#else // DISABLE_NSSFIX
-
-gboolean flist_nssfix_enable() {
-    return FALSE;
-}
-
-gboolean flist_nssfix_disable() {
-    return FALSE;
-}
-
-#endif // DISABLE_NSSFIX
