@@ -306,6 +306,7 @@ void flist_got_channel_userlist(FListAccount *fla, const gchar *channel, GList *
     flags = g_list_reverse(flags);
 
     purple_conv_chat_add_users(PURPLE_CONV_CHAT(convo), userlist, NULL, flags, FALSE);
+    g_list_free(flags);
 }
 
 void flist_got_channel_user_joined(FListAccount *fla, const gchar *channel, const gchar* character) {
