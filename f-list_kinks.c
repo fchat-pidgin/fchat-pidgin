@@ -65,6 +65,15 @@ static int flist_kinkcmp(FListKink *kink1, FListKink *kink2) {
     return strcmp(kink1->name, kink2->name);
 }
 
+static void flist_kink_free(gpointer data) {
+    FListKink *k = data;
+    g_free(k->kink_id);
+    g_free(k->name);
+    g_free(k->category);
+    g_free(k->description);
+    g_free(k);
+}
+
 static int flist_filter_get_genders(FListKinks *flk) {
     int ret = 0;
     GSList *cur = flk->filter_gender_choices; int index = 0;
@@ -452,7 +461,7 @@ static void flist_global_kinks_cb(FListWebRequestData *req_data,
 
     purple_debug_info(FLIST_DEBUG, "Processing global kink list...\n");
 
-    flk->kinks_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL); //TODO: write freeing function!
+    flk->kinks_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, flist_kink_free);
 
     categories = json_object_get_members(kinks);
     cur = categories;

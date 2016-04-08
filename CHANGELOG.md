@@ -27,6 +27,7 @@ Summary :
 - The "Position" field in character profiles now appears below "Dom/Sub-Role" (thanks Syldra Kitty)
 - Fixed "Invalid JSON" errors when connecting multiple accounts
 - Fixed icon loading
+- Fixed a few memory leaks
 
 Detail :
 - #101: Fix flist_format_duration_str to work on 32-bit platforms
