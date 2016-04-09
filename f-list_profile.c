@@ -65,7 +65,7 @@ static void flist_profile_field_free(gpointer data) {
 static void flist_profile_field_category_free(gpointer data) {
     FListProfileFieldCategory *pfc = data;
     g_free(pfc->name);
-    g_slist_free_full(pfc->fields, flist_profile_field_free);
+    flist_g_slist_free_full(pfc->fields, flist_profile_field_free);
     g_free(pfc);
 }
 
@@ -434,7 +434,7 @@ void flist_profile_unload(PurpleConnection *pc) {
     }
 
     if(flp->priority_profile_fields) {
-        g_slist_free_full(flp->priority_profile_fields, flist_profile_field_free);
+        flist_g_slist_free_full(flp->priority_profile_fields, flist_profile_field_free);
         flp->priority_profile_fields = NULL;
     }
 

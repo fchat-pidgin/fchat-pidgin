@@ -196,6 +196,10 @@ gboolean flist_str_equal(const char *nick1, const char *nick2) {
     return (purple_utf8_strcasecmp(nick1, nick2) == 0);
 }
 
+// Those two functions are here because the version of GLIB2 provided by Pidgin
+// used to be a bit too old. Now it's still around because the GTK bundle we
+// use for the windows build provides an older version of GLIB than the one in
+// Pidgin.
 void flist_g_slist_free_full(GSList *to_free, GDestroyNotify f) {
     GSList *cur = to_free;
     while(cur) {
@@ -212,6 +216,7 @@ void flist_g_list_free_full(GList *to_free, GDestroyNotify f) {
     }
     g_list_free(to_free);
 }
+
 gint flist_pointer_cmp(gconstpointer a, gconstpointer b) {
     if(a > b) return 1;
     if(b > a) return -1;
