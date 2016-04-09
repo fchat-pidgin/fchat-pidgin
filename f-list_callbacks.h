@@ -26,6 +26,6 @@
 gboolean flist_callback(PurpleConnection *, const gchar *, JsonObject *);
 void flist_conversation_created_cb(PurpleConversation *, FListAccount *);
 gboolean flist_process_receiving_im(PurpleAccount *account, char **who,
-                    char **message, int *flags, void *m);
+                    char **message, int *flags, void *m, FListAccount *fla);
 void flist_callback_init();
 #endif

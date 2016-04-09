@@ -249,12 +249,12 @@ void flist_enable_signals(FListAccount *fla)
     purple_signal_connect(conv_handle, "conversation-created", fla,
             PURPLE_CALLBACK(flist_conversation_created_cb), fla);
     // We need to connect this signal at the lowest priority so it gets called
-    // before any other plugin (such as OTR) has a chance to alter it 
+    // before any other plugin (such as OTR) has a chance to alter it
     purple_signal_connect_priority(conv_handle, "sending-im-msg", fla,
-            PURPLE_CALLBACK(flist_process_sending_im), NULL, 
+            PURPLE_CALLBACK(flist_process_sending_im), fla,
             PURPLE_SIGNAL_PRIORITY_LOWEST );
     purple_signal_connect_priority(conv_handle, "receiving-im-msg", fla,
-            PURPLE_CALLBACK(flist_process_receiving_im), NULL,
+            PURPLE_CALLBACK(flist_process_receiving_im), fla,
             PURPLE_SIGNAL_PRIORITY_HIGHEST );
 }
 

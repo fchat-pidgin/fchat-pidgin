@@ -658,20 +658,19 @@ static gboolean flist_process_PIN(PurpleConnection *pc, JsonObject *root) {
 }
 
 gboolean flist_process_receiving_im(PurpleAccount *account, char **who,
-        char **message, int *flags, void *m) {
+        char **message, int *flags, void *m, FListAccount *fla) {
 
     g_return_val_if_fail(account, 0);
     g_return_val_if_fail(who, 0);
     g_return_val_if_fail(*who, 0);
     g_return_val_if_fail(message, 0);
     g_return_val_if_fail(*message, 0);
+    g_return_val_if_fail(fla, 0);
 
     // Only for flist IMs, we parse the incoming message into HTML, before
     // Pidgin can print it, this signal handler is called for every protocol, so
     // do not remove this check !
-    if (g_strcmp0(purple_account_get_protocol_id(account), FLIST_PLUGIN_ID) == 0) {
-        PurpleConnection *pc = purple_account_get_connection(account);
-        FListAccount *fla = pc->proto_data;
+    if (account == fla->pa) {
         gchar *parsed;
 
         PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, *who, account);

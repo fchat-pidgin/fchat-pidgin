@@ -443,19 +443,18 @@ void flist_cancel_roomlist(PurpleRoomlist *list) {
 
 
 void flist_process_sending_im(PurpleAccount *account, char *who,
-            char **message, void *userdata) {
+            char **message, FListAccount *fla) {
 
     g_return_if_fail(account);
     g_return_if_fail(who);
     g_return_if_fail(message);
     g_return_if_fail(*message);
+    g_return_if_fail(fla);
 
     // Only for flist IMs, we parse the outgoing message into HTML and print it into the conversation window
     // This signal handler is called for every protocol, so do not remove this check !
-    if (g_strcmp0(purple_account_get_protocol_id(account), FLIST_PLUGIN_ID) == 0) {
+    if (account == fla->pa) {
         PurpleConvIm *im;
-        PurpleConnection *pc = purple_account_get_connection(account);
-        FListAccount *fla = pc->proto_data;
 
         gchar *plain_message, *local_message, *bbcode_message;
         im = PURPLE_CONV_IM(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, account));
