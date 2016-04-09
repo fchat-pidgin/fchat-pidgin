@@ -446,6 +446,9 @@ void flist_process_sending_im(PurpleAccount *account, char *who,
             char **message, void *userdata) {
 
     g_return_if_fail(account);
+    g_return_if_fail(who);
+    g_return_if_fail(message);
+    g_return_if_fail(*message);
 
     // Only for flist IMs, we parse the outgoing message into HTML and print it into the conversation window
     // This signal handler is called for every protocol, so do not remove this check !
