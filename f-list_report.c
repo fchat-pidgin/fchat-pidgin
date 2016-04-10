@@ -117,7 +117,6 @@ void flist_report_fetch_text(FListReport *flr) {
 
 void flist_report_send(FListReport *flr) {
     purple_debug_info(FLIST_DEBUG, "User filed a report against '%s': '%s'\n------------- LOG -------------\n%s\n-----------------------------\n", flr->character, flr->reason, flr->log_text);
-    return;
 
     // Fire web request to upload our log
     GHashTable *args = flist_web_request_args(flr->fla);
