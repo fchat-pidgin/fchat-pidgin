@@ -380,6 +380,7 @@ static void flist_friends_add_buddies(FListAccount *fla) {
         cur = cur->next;
     }
 
+    g_list_free(friends);
 }
 
 static void flist_friends_reset_status(GHashTable *friends, FListFriendStatus status) {
