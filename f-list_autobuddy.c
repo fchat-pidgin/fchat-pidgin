@@ -73,7 +73,13 @@ void flist_clear_temp_groups(FListAccount *fla) {
     while(cur) {
         PurpleBuddy *b = cur->data; cur = g_slist_next(cur);
         if(purple_buddy_get_group(b) == filter_group || purple_buddy_get_group(b) == im_group) {
-            purple_blist_remove_buddy(b);
+            // When reconnecting, do not remove buddies who still have a conversation open
+            if (!purple_find_conversation_with_account(
+                        PURPLE_CONV_TYPE_IM,
+                        purple_buddy_get_name(b),
+                        fla->pa)) {
+                purple_blist_remove_buddy(b);
+            }
         }
     }
     g_slist_free(buddies);
