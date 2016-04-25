@@ -345,6 +345,10 @@ static void flist_pidgin_set_user_gender_color(PurpleConversation *conv, PurpleC
 
     GdkColor color;
     FListCharacter *character = flist_get_character(fla, buddy->name);
+
+    if (!character)
+        return;
+
     if (!gdk_color_parse(flist_gender_color(character->gender), &color))
         return;
 
