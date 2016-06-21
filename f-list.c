@@ -292,7 +292,9 @@ gint flist_parse_int(const gchar *to_parse, gboolean *success) {
 gint json_node_get_parse_int_member(JsonNode *node, gboolean *success) {
     switch(json_node_get_value_type(node)) {
     case G_TYPE_INT64:
-        if(success) *success = TRUE; return json_node_get_int(node);
+        if(success)
+          *success = TRUE;
+        return json_node_get_int(node);
     case G_TYPE_STRING:
         return flist_parse_int(json_node_get_string(node), success);
     }
