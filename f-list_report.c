@@ -125,7 +125,7 @@ void flist_report_send(FListReport *flr) {
     g_hash_table_insert(args, "reportText", g_strdup(flr->reason));
     g_hash_table_insert(args, "reportUser", g_strdup(flr->character));
     g_hash_table_insert(args, "channel", g_strdup(flr->channel_pretty));
-    flist_web_request(JSON_UPLOAD_LOG, args, NULL, TRUE, flr->fla->secure, flist_report_upload_log_cb, flr);
+    flist_web_request(JSON_UPLOAD_LOG, args, NULL, TRUE, flist_report_upload_log_cb, flr);
 
     g_hash_table_unref(args);
 }

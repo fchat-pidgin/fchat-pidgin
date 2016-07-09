@@ -48,11 +48,11 @@ static void flist_fetch_icon_cb(PurpleUtilFetchUrlData *url_data, gpointer data,
                 purple_conv_custom_smiley_close(convo, fli->smiley);
             }
         }
-        purple_debug_warning(FLIST_DEBUG, "Failed to fetch an icon. (URL: %s) (Convo: %s) (Secure: %s) (Error Message: %s)\n",
-            fli->url, fli->convo ? fli->convo : "none", fla->secure ? "yes" : "no", err);
+        purple_debug_warning(FLIST_DEBUG, "Failed to fetch an icon. (URL: %s) (Convo: %s) (Error Message: %s)\n",
+            fli->url, fli->convo ? fli->convo : "none", err);
     } else {
-        purple_debug_info(FLIST_DEBUG, "Received icon. (URL: %s) (Convo: %s) (Secure: %s)\n",
-                fli->url, fli->convo ? fli->convo : "none", fla->secure ? "yes" : "no");
+        purple_debug_info(FLIST_DEBUG, "Received icon. (URL: %s) (Convo: %s)\n",
+                fli->url, fli->convo ? fli->convo : "none");
         if(fli->convo) {
             PurpleConversation *convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_ANY, fli->convo, fla->pa);
             if(convo) {
@@ -100,8 +100,8 @@ static void flist_fetch_icon_cb(PurpleUtilFetchUrlData *url_data, gpointer data,
 }
 
 static void flist_fetch_icon_real(FListAccount *fla, FListFetchIcon *fli) {
-    purple_debug_info(FLIST_DEBUG, "Fetching icon... (URL: %s) (Convo: %s) (Secure: %s)\n",
-        fli->url, fli->convo ? fli->convo : "none", fla->secure ? "yes" : "no");
+    purple_debug_info(FLIST_DEBUG, "Fetching icon... (URL: %s) (Convo: %s)\n",
+        fli->url, fli->convo ? fli->convo : "none");
 
     fli->url_data = purple_util_fetch_url_request(fli->url, TRUE, USER_AGENT, TRUE, NULL, FALSE, flist_fetch_icon_cb, fli);
     fla->icon_requests = g_slist_prepend(fla->icon_requests, fli);
@@ -118,7 +118,7 @@ void flist_fetch_icon(FListAccount *fla, const gchar *character) {
 
     gchar *character_lower = g_utf8_strdown(character, -1);
     fli->character = g_strdup(character);
-    fli->url = g_strdup_printf(ICON_AVATAR_URL, fla->secure ? "https://" : "http://", purple_url_encode(character_lower));
+    fli->url = g_strdup_printf(ICON_AVATAR_URL, purple_url_encode(character_lower));
     fli->fla = fla;
 
     len = g_slist_length(fla->icon_requests);
@@ -141,7 +141,7 @@ void flist_fetch_avatar(FListAccount *fla, const gchar *smiley, const gchar *cha
 
     fli = g_new0(FListFetchIcon, 1);
     fli->character = g_strdup(character);
-    fli->url = g_strdup_printf(ICON_AVATAR_URL, fla->secure ? "https://" : "http://", purple_url_encode(character_lower));
+    fli->url = g_strdup_printf(ICON_AVATAR_URL, purple_url_encode(character_lower));
     fli->fla = fla;
     fli->convo = g_strdup(purple_conversation_get_name(convo));
     fli->smiley = g_strdup(smiley);
@@ -166,7 +166,7 @@ void flist_fetch_eicon(FListAccount *fla, const gchar *smiley, const gchar *name
 
     fli = g_new0(FListFetchIcon, 1);
     fli->character = NULL;
-    fli->url = g_strdup_printf(ICON_EICON_URL, fla->secure ? "https://" : "http://", purple_url_encode(name_lower));
+    fli->url = g_strdup_printf(ICON_EICON_URL, purple_url_encode(name_lower));
     fli->fla = fla;
     fli->convo = g_strdup(purple_conversation_get_name(convo));
     fli->smiley = g_strdup(smiley);

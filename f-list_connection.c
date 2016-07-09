@@ -52,11 +52,7 @@ void flist_receive_ping(PurpleConnection *pc) {
 }
 
 static gsize flist_write_raw(FListAccount *fla, gchar *buf, gsize len) {
-    if(fla->secure) {
-        return purple_ssl_write(fla->ssl_con, buf, len);
-    } else {
-        return write(fla->fd, buf, len);
-    }
+    return purple_ssl_write(fla->ssl_con, buf, len);
 }
 
 static void flist_write_hybi(FListAccount *fla, guint8 opcode, gchar *content, gsize len) {
@@ -146,11 +142,8 @@ static gboolean flist_recv(FListAccount *fla) {
     gchar buf[4096];
     gssize len;
 
-    if(fla->secure) {
-        len = purple_ssl_read(fla->ssl_con, buf, sizeof(buf) - 1);
-    } else {
-        len = recv(fla->fd, buf, sizeof(buf) - 1, 0);
-    }
+    len = purple_ssl_read(fla->ssl_con, buf, sizeof(buf) - 1);
+
     if(len <= 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) return FALSE; //try again later
         //TODO: better error reporting
@@ -381,13 +374,7 @@ static void flist_process_real(FListAccount *fla) {
     flist_process_hybi(fla);
 }
 
-static void flist_process(gpointer data, gint source, PurpleInputCondition cond) {
-    PurpleConnection *pc = data;
-    FListAccount *fla = pc->proto_data;
-    flist_process_real(fla);
-}
-
-static void flist_process_secure(gpointer data, PurpleSslConnection *ssl_con, PurpleInputCondition cond) {
+static void flist_process(gpointer data, PurpleSslConnection *ssl_con, PurpleInputCondition cond) {
     PurpleConnection *pc = data;
     FListAccount *fla = pc->proto_data;
     flist_process_real(fla);
@@ -428,7 +415,7 @@ static void flist_handshake(FListAccount *fla) {
 static void flist_ssl_cb(gpointer user_data, PurpleSslConnection *ssl_con, PurpleInputCondition ic) {
     FListAccount *fla = user_data;
     purple_debug_info(FLIST_DEBUG, "SSL handshake successful.\n");
-    purple_ssl_input_add(ssl_con, flist_process_secure, fla->pc);
+    purple_ssl_input_add(ssl_con, flist_process, fla->pc);
     flist_handshake(fla);
 }
 
@@ -448,20 +435,13 @@ static void flist_connected(gpointer user_data, int fd, const gchar *err) {
         return;
     }
 
-    if(fla->secure) { // If this is a secure connection, we have to perform the SSL handshake.
-        purple_debug_info(FLIST_DEBUG, "Sending SSL handshake...\n");
-        fla->ssl_con = purple_ssl_connect_with_host_fd(fla->pa, fd, flist_ssl_cb, flist_ssl_error_cb, fla->server_address, fla);
-        return;
-    }
-
-    fla->fd = fd;
-    fla->input_handle = purple_input_add(fla->fd, PURPLE_INPUT_READ, flist_process, fla->pc);
-    flist_handshake(fla);
+    purple_debug_info(FLIST_DEBUG, "Sending SSL handshake...\n");
+    fla->ssl_con = purple_ssl_connect_with_host_fd(fla->pa, fd, flist_ssl_cb, flist_ssl_error_cb, fla->server_address, fla);
 }
 
 static void flist_connect(FListAccount *fla) {
-    purple_debug_info(FLIST_DEBUG, "Connecting... (Server: %s) (Port: %d) (Secure: %s)\n",
-            fla->server_address, fla->server_port, fla->secure ? "yes" : "no");
+    purple_debug_info(FLIST_DEBUG, "Connecting... (Server: %s) (Port: %d)\n", fla->server_address, fla->server_port);
+
     if(!purple_proxy_connect(fla->pc, fla->pa, fla->server_address, fla->server_port, flist_connected, fla)) {
         purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, _("Unable to open a connection."));
     } else {
@@ -517,7 +497,7 @@ static gboolean flist_ticket_timer_cb(gpointer data) {
     g_hash_table_insert(args, "password", g_strdup(fla->password));
 
     purple_debug_info(FLIST_DEBUG, "Requesting ticket... (Account: %s) (Character: %s)\n", fla->username, fla->character);
-    fla->ticket_request = flist_web_request(JSON_GET_TICKET, args, NULL, TRUE, fla->secure, flist_receive_ticket, fla);
+    fla->ticket_request = flist_web_request(JSON_GET_TICKET, args, NULL, TRUE, flist_receive_ticket, fla);
     fla->ticket_timer = 0;
 
     g_hash_table_destroy(args);

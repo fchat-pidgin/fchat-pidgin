@@ -519,12 +519,7 @@ void flist_login(PurpleAccount *pa) {
     fla->sync_friends = purple_account_get_bool(pa, "sync_friends", TRUE);
     fla->sync_status = purple_account_get_bool(pa, "sync_status", TRUE);
 
-    fla->secure = purple_account_get_bool(pa, "use_https", TRUE);
-    if(!fla->secure) {
-        fla->server_port = purple_account_get_int(pa, "server_port", FLIST_PORT);
-    } else {
-        fla->server_port = purple_account_get_int(pa, "server_port_secure", FLIST_PORT_SECURE);
-    }
+    fla->server_port = purple_account_get_int(pa, "server_port_secure", FLIST_PORT_SECURE);
 
     fla->receive_notifications = purple_account_get_bool(pa, "receive_notifications", TRUE);
     fla->debug_mode = purple_account_get_bool(pa, "debug_mode", FALSE);
@@ -712,13 +707,7 @@ static void plugin_init(PurplePlugin *plugin) {
     option = purple_account_option_string_new("Server Address", "server_address", "chat.f-list.net");
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
-    option = purple_account_option_int_new("Server Port (Unsecure)", "server_port", FLIST_PORT);
-    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-
-    option = purple_account_option_int_new("Server Port (Secure)", "server_port_secure", FLIST_PORT_SECURE);
-    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-
-    option = purple_account_option_bool_new("Use Secure Connections", "use_https", TRUE);
+    option = purple_account_option_int_new("Server Port", "server_port_secure", FLIST_PORT_SECURE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Download Friends List", "sync_friends", TRUE);

@@ -320,7 +320,6 @@ struct FListAccount_ {
     gint characters_remaining;
     gboolean online; //whether or not we've set pidgin to say we're online
     guint32 character_count; //total number of characters online, should be count(all_characters)
-    gboolean secure; //whether or not we use ssl/tls for the socket, and https for web requests
     gchar *username;
     gchar *character;
     gchar *password;
