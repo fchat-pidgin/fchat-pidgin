@@ -488,6 +488,88 @@ void flist_welcome_notify_closed_cb(gpointer user_data) {
   g_free(text);
 }
 
+void flist_update_notify_closed_cb(gpointer user_data) {
+  gchar *text = (gchar *) user_data;
+  g_free(text);
+}
+
+void flist_check_update_version(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message) 
+{
+  // In case we failed the request, fail gracefully - we don't want to disturb users
+  if (url_text == NULL)
+  {
+    purple_debug_error(FLIST_DEBUG, "Error fetching current version information: %s", error_message);
+    return;
+  }
+
+  purple_debug_info(FLIST_DEBUG, "Update Check JSON Received: %s\n", url_text);
+
+  JsonParser *parser = json_parser_new();
+  GError *err = NULL;
+  json_parser_load_from_data(parser, url_text, len, &err);
+
+  if(err) { /* not valid json */
+    purple_debug_warning(FLIST_DEBUG, "Expected JSON Object, but did not parse with error message: %s\n", err->message);
+    g_error_free(err);
+    g_object_unref(parser);
+    return;
+  }
+
+  JsonNode *root = json_parser_get_root(parser);
+  if(json_node_get_node_type(root) != JSON_NODE_OBJECT) {
+    purple_debug_warning(FLIST_DEBUG, "Expected JSON Object, but received a different node.\n");
+    g_object_unref(parser);
+    return;
+  }
+
+  JsonObject *object = json_node_get_object(root);
+  if (object == NULL) {
+    purple_debug_warning(FLIST_DEBUG, "Malformed update JSON, no member 'version' found!\n");
+    g_object_unref(parser);
+    return;
+  }
+
+  JsonObject *version = json_object_get_object_member(object, "version");
+
+  guint major = 0, minor = 0, bugfix = 0;
+  sscanf(FLIST_PLUGIN_VERSION, "%u.%u.%u", &major, &minor, &bugfix);
+
+  guint latest_major = json_object_get_int_member(version, "major");
+  guint latest_minor = json_object_get_int_member(version, "minor");
+  guint latest_bugfix = json_object_get_int_member(version, "bugfix");
+
+  gboolean newer_version = (latest_major > major) || (latest_minor > minor) || (latest_bugfix > bugfix);
+
+  if (newer_version) {
+    FListAccount *fla = user_data;
+
+    const gchar *timestamp = json_object_get_string_member(object, "timestamp");
+    time_t tmp = purple_str_to_time(timestamp, TRUE, NULL, NULL, NULL);
+    struct tm *tm = localtime(&tmp);
+
+    GString *update_txt = g_string_new(NULL);
+    g_string_append_printf(update_txt,
+        "<b>Version %s (%s)</b><br><b><a href=\"https://github.com/fchat-pidgin/fchat-pidgin/releases/latest\">Download here</a></b>!<br><hr>",
+        json_object_get_string_member(version, "full"),
+        purple_date_format_long(tm));
+
+    g_string_append_printf(update_txt,
+        "<b>Problems? Questions? Suggestions?</b><br>Visit us @ <a href=\"flistc://%s/" FLIST_PIDGIN_CHANNEL "\">Pidgin Development Channel</a>!",
+        purple_url_encode(flist_serialize_account(fla->pa)));
+
+    gchar *update_str = g_string_free(update_txt, FALSE);
+    purple_notify_formatted(
+        fla->pc, "F-List Pidgin Update Check",
+        "F-List Pidgin Plugin",
+        "There's a new update available!",
+        update_str,
+        flist_update_notify_closed_cb,
+        update_str);
+  }
+
+  g_object_unref(parser);
+}
+
 void flist_login(PurpleAccount *pa) {
     PurpleConnection *pc = purple_account_get_connection(pa);
     FListAccount *fla;
@@ -544,7 +626,7 @@ void flist_login(PurpleAccount *pa) {
       GString *welcome_txt = g_string_new(NULL);
       g_string_append(welcome_txt, "<b>Need help with anything or just wanna hang out?</b><br>Join the ");
       g_string_append_printf(welcome_txt, "<a href=\"flistc://%s/" FLIST_PIDGIN_CHANNEL "\">Pidgin Development Channel</a>!", purple_url_encode(flist_serialize_account(pa)));
-      g_string_append(welcome_txt, "<hr><b>Want to report a bug or suggest a new feature?</b><br>Visit our <a href=\"https://github.com/fcwill/fchat-pidgin/issues\">Bugtracker</a>.<hr>This dialog will only appear when you log in the first time.<br><br><b>Have fun!</b>");
+      g_string_append(welcome_txt, "<hr><b>Want to report a bug or suggest a new feature?</b><br>Visit our <a href=\"https://github.com/fchat-pidgin/fchat-pidgin/issues\">Bugtracker</a>.<hr>This dialog will only appear when you log in the first time.<br><br><b>Have fun!</b>");
 
       gchar *welcome_str = g_string_free(welcome_txt, FALSE);
       purple_notify_formatted(
@@ -557,6 +639,11 @@ void flist_login(PurpleAccount *pa) {
 
       // Let's not show up next time the user logs in
       purple_account_set_bool(pa, "display_info", FALSE);
+    }
+
+    if (purple_account_get_bool(pa, "check_for_updates", TRUE))
+    {
+      purple_util_fetch_url(FLIST_PIDGIN_UPDATE_URL, TRUE, USER_AGENT, TRUE, flist_check_update_version, fla);
     }
 
     purple_connection_update_progress(fla->pc, "Requesting login ticket", 1 ,5);
@@ -708,6 +795,9 @@ static void plugin_init(PurplePlugin *plugin) {
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_int_new("Server Port", "server_port_secure", FLIST_PORT_SECURE);
+    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+    option = purple_account_option_bool_new("Check for updates", "check_for_updates", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Download Friends List", "sync_friends", TRUE);
