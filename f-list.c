@@ -538,7 +538,7 @@ void flist_check_update_version(PurpleUtilFetchUrlData *url_data, gpointer user_
   guint latest_minor = json_object_get_int_member(version, "minor");
   guint latest_bugfix = json_object_get_int_member(version, "bugfix");
 
-  gboolean newer_version = (latest_major > major) || (latest_minor > minor) || (latest_bugfix > bugfix);
+  gboolean newer_version = (latest_major * 10000 + latest_minor * 100 + latest_bugfix) > (major * 10000 + minor * 100 + bugfix);
 
   if (newer_version) {
     FListAccount *fla = user_data;
@@ -549,12 +549,31 @@ void flist_check_update_version(PurpleUtilFetchUrlData *url_data, gpointer user_
 
     GString *update_txt = g_string_new(NULL);
     g_string_append_printf(update_txt,
-        "<b>Version %s (%s)</b><br><b><a href=\"https://github.com/fchat-pidgin/fchat-pidgin/releases/latest\">Download here</a></b>!<br><hr>",
+        "<b>Version %s (%s)</b><br>" "<b><a href=\"%s\">Download here</a></b>!<br>",
         json_object_get_string_member(version, "full"),
-        purple_date_format_long(tm));
+        purple_date_format_long(tm),
+        FLIST_PIDGIN_RELEASE_URL);
+
+    const gchar *summary_raw = json_object_get_string_member(object, "summary");
+    if (summary_raw != NULL && strlen(summary_raw) > 0)
+    {
+      gchar *summary = purple_markup_escape_text(summary_raw, -1);
+      g_string_append(update_txt, "<hr><b>Changes</b><br>");
+
+      gchar **summary_lines = g_strsplit(summary, "\n", 0);
+      gchar **iter = summary_lines;
+
+      while (*iter)
+      {
+        g_string_append_printf(update_txt, "%s<br>", *iter);
+        iter++;
+      }
+
+      g_strfreev(summary_lines);
+    }
 
     g_string_append_printf(update_txt,
-        "<b>Problems? Questions? Suggestions?</b><br>Visit us @ <a href=\"flistc://%s/" FLIST_PIDGIN_CHANNEL "\">Pidgin Development Channel</a>!",
+        "<hr><b>Problems? Questions? Suggestions?</b><br>Visit us @ <a href=\"flistc://%s/" FLIST_PIDGIN_CHANNEL "\">Pidgin Development Channel</a>!",
         purple_url_encode(flist_serialize_account(fla->pa)));
 
     gchar *update_str = g_string_free(update_txt, FALSE);
