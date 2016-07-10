@@ -67,7 +67,6 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_PLUGIN_VERSION    "0.5.0"
 #define USER_AGENT              "Pidgin F-Chat 0.5.0"
 #define FLIST_PLUGIN_ID         "prpl-flist"
-#define FLIST_PORT              9722
 #define FLIST_PORT_SECURE       9799
 #define GLOBAL_NAME             "#FList"
 #define FLIST_DEBUG             "flist"
