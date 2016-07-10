@@ -660,9 +660,12 @@ void flist_login(PurpleAccount *pa) {
       purple_account_set_bool(pa, "display_info", FALSE);
     }
 
-    if (purple_account_get_bool(pa, "check_for_updates", TRUE))
+    // Only run this check once for all connections
+    static gboolean checked_for_updates = FALSE;
+    if (!checked_for_updates && purple_account_get_bool(pa, "check_for_updates", TRUE))
     {
       purple_util_fetch_url(FLIST_PIDGIN_UPDATE_URL, TRUE, USER_AGENT, TRUE, flist_check_update_version, fla);
+      checked_for_updates = TRUE;
     }
 
     purple_connection_update_progress(fla->pc, "Requesting login ticket", 1 ,5);
@@ -816,7 +819,7 @@ static void plugin_init(PurplePlugin *plugin) {
     option = purple_account_option_int_new("Server Port", "server_port_secure", FLIST_PORT_SECURE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
-    option = purple_account_option_bool_new("Check for updates", "check_for_updates", TRUE);
+    option = purple_account_option_bool_new("Automatically check for updates", "check_for_updates", TRUE);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Download Friends List", "sync_friends", TRUE);
