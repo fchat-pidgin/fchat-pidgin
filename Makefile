@@ -121,7 +121,7 @@ FLIST_SOURCES = \
 
 TARGET = flist.so
 WIN32_TARGET = libflist.dll
-PLUGIN_VERSION = $(shell grep FLIST_PLUGIN_VERSION f-list.h | cut -d'"' -f 2)
+PLUGIN_VERSION = $(shell grep FLIST_PLUGIN_VERSION f-list.h | cut -d'"' -f 2 | head -1)
 
 TEST_PURPLE_DIR = purple
 TEST_PURPLE_PLUGINS_DIR = ${TEST_PURPLE_DIR}/plugins
