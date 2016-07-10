@@ -1,12 +1,13 @@
 Hello, and thank you for installing the Pidgin F-Chat plugin!
 
-This plugin has originally been created by TestPanther, and is now updated and maintained by Nelwill, Sabhak and TomTheDragon.
+This plugin has originally been created by TestPanther, and is now updated and maintained by Nelwill, Sabhak, Syldra Kitty and TomTheDragon.
 
 You can find the latest builds for both Windows and Linux here:
-http://beam.to/fchat-pidgin
+Stable Releases: https://github.com/fchat-pidgin/fchat-pidgin/releases
+Nightly Builds: http://beam.to/fchat-pidgin
 
 More information about the plugin can be found here:
-https://github.com/fcwill/fchat-pidgin
+https://github.com/fchat-pidgin/fchat-pidgin
 
 Note that this is a plugin to Pidgin. To use the plugin, you first need to download and install Pidgin itself. Pidgin is free, and can be found here:
 https://pidgin.im/

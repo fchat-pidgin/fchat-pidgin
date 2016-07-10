@@ -6,8 +6,8 @@ SetCompress off
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "fchat-pidgin"
 #!define PRODUCT_VERSION "0.4.0"
-!define PRODUCT_PUBLISHER "Nelwill, Sabhak"
-!define PRODUCT_WEB_SITE "http://github.com/fcwill/fchat-pidgin"
+!define PRODUCT_PUBLISHER "Nelwill, Sabhak, Syldra Kitty"
+!define PRODUCT_WEB_SITE "http://github.com/fchat-pidgin/fchat-pidgin"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 
