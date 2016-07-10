@@ -2,6 +2,10 @@
 
 ## ?.?.?
 ### Added
+### Fixed
+
+## 0.6.0
+### Added
 - #40: Character names in RTB notifications (reports, new notes, ...) are links to their profile
 - #49: Add missing /setmode command
 - /gban and /gunban now work on offline users
@@ -17,9 +21,12 @@
 - /greports command to fetch pending chat reports (operators)
 - "Receive Notifications" now also shows/hides broadcast messages and global op change notifications
 - /report now can combine up to 6 past logs and offers a preview functionality. This is helpful when you accidentally close a tab before reporting or get disconnected.
+- #122: The plugin now automatically checks for updates. This can be disabled in account options.
 
 ### Fixed
-Summary : 
+Summary :
+- Fix SSL problems with the new Cloudflare setup of the site
+- Removed the "Use Secure Connections" account option as this is now the only way to connect
 - /showads, /hideads, /showchat, /hidechat now actually work
 - Commands should now check for the correct permissions
 - sub/sup-Tags now actually do something - maybe not perfectly but as perfect as it gets with Pidgin
@@ -61,6 +68,10 @@ Detail :
 - #98: Cloudflare is messing with reports
 - #61: Avoid getting banned by multiple connection retries after password change. After a password change, you must now re-enable your account on pidgin
 - #57: Show success notifications for /ctimeout and /ban
+- #107: Having multiple accounts logged in causes text to be echoed twice
+- #108: Build failing on GCC 4.9.1
+- #109: Don't delete temporary IMs if a conversation window is still open
+- #118: make fails on Arch
 
 ## 0.5.0
 ### Added
