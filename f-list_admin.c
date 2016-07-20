@@ -212,7 +212,7 @@ PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gc
     const gchar *code = NULL;
     JsonObject *json;
 
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
         *error = g_strdup(_("You must be a global operator to globally kick, ban, or unban."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -240,7 +240,7 @@ PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gcha
     const gchar *code = NULL;
     JsonObject *json;
 
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
         *error = g_strdup(_("You must be a global operator to create or delete public channels."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -283,7 +283,7 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     const gchar *character, *timestr, *reason;
     JsonObject *json;
 
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
         *error = g_strdup(_("You must be a global operator to timeban."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -330,7 +330,7 @@ PurpleCmdRet flist_reward_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     const gchar *character;
     JsonObject *json;
 
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, NULL), FLIST_PERMISSION_GLOBAL_OP)) {
         *error = g_strdup(_("You must be a global operator to reward a user."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -350,7 +350,7 @@ void flist_send_sfc_confirm(FListAccount *fla, const gchar *callid) {
 
     json = json_object_new();
     json_object_set_string_member(json, "action", "confirm");
-    json_object_set_string_member(json, "moderator", fla->proper_character);
+    json_object_set_string_member(json, "moderator", fla->character);
     json_object_set_string_member(json, "callid", callid);
     flist_request(fla, "SFC", json);
     json_object_unref(json);

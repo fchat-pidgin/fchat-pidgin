@@ -126,7 +126,7 @@ static gboolean flist_process_NLN(FListAccount *fla, JsonObject *root) {
 
     flist_update_friend(fla, character->name, TRUE, FALSE);
 
-    if(!fla->online && flist_str_equal(fla->proper_character, character->name)) {
+    if(!fla->online && flist_str_equal(fla->character, character->name)) {
         flist_got_online(fla);
     }
 
@@ -285,7 +285,7 @@ static gboolean flist_process_RLL(FListAccount *fla, JsonObject *root) {
         if (!flist_get_channel_show_chat(fla, target))
             return TRUE;
 
-        if (purple_utf8_strcasecmp(character, fla->proper_character)){
+        if (purple_utf8_strcasecmp(character, fla->character)){
             flags = PURPLE_MESSAGE_RECV;
         }
 
@@ -301,7 +301,7 @@ static gboolean flist_process_RLL(FListAccount *fla, JsonObject *root) {
 
         // If we were the one who sent the roll we'll swap target and character variables
         // so we can use the same code below for both cases
-        if (!purple_utf8_strcasecmp(target, fla->proper_character)) {
+        if (!purple_utf8_strcasecmp(target, fla->character)) {
             target = character;
             flags = PURPLE_MESSAGE_RECV;
         }
@@ -626,7 +626,17 @@ static gboolean flist_process_IDN(FListAccount *fla, JsonObject *root) {
     const gchar *character;
     fla->connection_status = FLIST_ONLINE;
     character = json_object_get_string_member(root, "character");
-    fla->proper_character = g_strdup(character);
+    if (character) {
+        if (!flist_str_equal(fla->character, character)) {
+            purple_debug_warning(FLIST_DEBUG, "Server sent different character name (%s) from the one configured", character);
+        }
+        // Even if the character name matches, save the one the server sent us
+        // because it will always have the correct case
+        g_free(fla->character);
+        fla->character = g_strdup(character);
+    } else {
+        purple_debug_warning(FLIST_DEBUG, "Server did not sent a character name");
+    }
 
     flist_fetch_account_icon(fla);
 

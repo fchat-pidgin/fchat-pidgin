@@ -120,7 +120,7 @@ void flist_report_send(FListReport *flr) {
 
     // Fire web request to upload our log
     GHashTable *args = flist_web_request_args(flr->fla);
-    g_hash_table_insert(args, "character", g_strdup(flr->fla->proper_character));
+    g_hash_table_insert(args, "character", g_strdup(flr->fla->character));
     g_hash_table_insert(args, "log", g_strdup(flr->log_text));
     g_hash_table_insert(args, "reportText", g_strdup(flr->reason));
     g_hash_table_insert(args, "reportUser", g_strdup(flr->character));

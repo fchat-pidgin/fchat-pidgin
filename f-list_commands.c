@@ -545,7 +545,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     json_object_set_string_member(json, "channel", channel);
     flist_request(fla, !ad ? FLIST_REQUEST_CHANNEL_MESSAGE : FLIST_CHANNEL_ADVERSTISEMENT, json);
 
-    serv_got_chat_in(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), fla->proper_character, PURPLE_MESSAGE_SEND, bbcode_message, time(NULL));
+    serv_got_chat_in(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), fla->character, PURPLE_MESSAGE_SEND, bbcode_message, time(NULL));
 
     g_free(plain_message);
     g_free(bbcode_message);
@@ -794,7 +794,7 @@ PurpleCmdRet flist_whoami_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     FListStatus status = flist_get_status(fla);
     const gchar *status_message = flist_get_status_message(fla);
 
-    message1 = g_strdup_printf("You are %s.", fla->proper_character);
+    message1 = g_strdup_printf("You are %s.", fla->character);
     purple_conversation_write(convo, NULL, message1, PURPLE_MESSAGE_SYSTEM, time(NULL));
     flist_convo_print_status(convo, status, status_message);
 

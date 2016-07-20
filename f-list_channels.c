@@ -351,13 +351,13 @@ void flist_got_channel_joined(FListAccount *fla, const gchar *name) {
     fchannel->users = g_hash_table_new_full((GHashFunc) flist_str_hash, (GEqualFunc) flist_str_equal, g_free, NULL);
     fchannel->mode = CHANNEL_MODE_BOTH;
     g_hash_table_replace(fla->chat_table, g_strdup(name), fchannel);
-    purple_debug_info(FLIST_DEBUG, "We (%s) have joined channel %s.\n", fla->proper_character, name);
+    purple_debug_info(FLIST_DEBUG, "We (%s) have joined channel %s.\n", fla->character, name);
 }
 
 void flist_got_channel_left(FListAccount *fla, const gchar *name) {
     flist_remove_chat(fla, name);
     g_hash_table_remove(fla->chat_table, name);
-    purple_debug_info(FLIST_DEBUG, "We (%s) have left channel %s.\n", fla->proper_character, name);
+    purple_debug_info(FLIST_DEBUG, "We (%s) have left channel %s.\n", fla->character, name);
 }
 
 void flist_got_channel_oplist(FListAccount *fla, const gchar *channel, GList *ops) {
@@ -449,10 +449,10 @@ gboolean flist_process_JCH(FListAccount *fla, JsonObject *root) {
     identity = json_object_get_string_member(character, "identity");
     title = json_object_get_string_member(root, "title");
 
-    if(!purple_utf8_strcasecmp(identity, fla->proper_character)) { //we just joined a channel
+    if(!purple_utf8_strcasecmp(identity, fla->character)) { //we just joined a channel
         convo = serv_got_joined_chat(fla->pc, id++, channel);
         flist_got_channel_joined(fla, channel);
-        purple_conv_chat_set_nick(PURPLE_CONV_CHAT(convo), fla->proper_character);
+        purple_conv_chat_set_nick(PURPLE_CONV_CHAT(convo), fla->character);
         purple_conversation_set_data(convo, CHAT_SHOW_DISPLAY_STATUS, GINT_TO_POINTER(TRUE));
     } else {
         flist_got_channel_user_joined(fla, channel, identity);
@@ -485,7 +485,7 @@ gboolean flist_process_kickban(FListAccount *fla, JsonObject *root, gboolean ban
         return TRUE;
     }
 
-    if(!purple_utf8_strcasecmp(character, fla->proper_character)) { //we just got kicked
+    if(!purple_utf8_strcasecmp(character, fla->character)) { //we just got kicked
         gchar *message = operator
                 ? g_strdup_printf("You have been %s from the channel!", ban ? "kicked and banned" : "kicked")
                 : g_strdup_printf("%s has %s you from the channel!", operator, ban ? "kicked and banned" : "kicked");
@@ -532,7 +532,7 @@ gboolean flist_process_CTU(FListAccount *fla, JsonObject *root) {
         return TRUE;
     }
 
-    if(!purple_utf8_strcasecmp(character, fla->proper_character)) { //we just got timed out
+    if(!purple_utf8_strcasecmp(character, fla->character)) { //we just got timed out
         // TODO check if we can get rid of these operator checks ... it should be set every time anyway?
         gchar *message = operator
                 ? g_strdup_printf("You have been timed out from the channel for %d minute(s)!", length)
@@ -653,7 +653,7 @@ gboolean flist_process_LCH(FListAccount *fla, JsonObject *root) {
         return TRUE;
     }
 
-    if(!purple_utf8_strcasecmp(character, fla->proper_character)) { //we just left a channel
+    if(!purple_utf8_strcasecmp(character, fla->character)) { //we just left a channel
         //TODO: add message that says we left?
         flist_got_channel_left(fla, channel);
         serv_got_chat_left(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)));
@@ -801,7 +801,7 @@ PurpleCmdRet flist_channel_op_deop_cmd(PurpleConversation *convo, const gchar *c
     channel = purple_conversation_get_name(convo);
     character = args[0];
 
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
         *error = g_strdup("You must be the channel owner or higher to add or remove channel operators.");
         return PURPLE_CMD_RET_FAILED;
     }
@@ -883,7 +883,7 @@ PurpleCmdRet flist_channel_open_cmd(PurpleConversation *convo, const gchar *cmd,
     const gchar *channel = purple_conversation_get_name(convo);
     JsonObject *json;
 
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
         *error = g_strdup("You must be the channel owner or higher to open a private channel.");
         return PURPLE_CMD_RET_FAILED;
     }
@@ -904,7 +904,7 @@ PurpleCmdRet flist_channel_close_cmd(PurpleConversation *convo, const gchar *cmd
     const gchar *channel = purple_conversation_get_name(convo);
     JsonObject *json = json_object_new();
 
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
         *error = g_strdup("You must be the channel owner or higher to close a private channel.");
         return PURPLE_CMD_RET_FAILED;
     }
@@ -973,7 +973,7 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
 
     channel = purple_conversation_get_name(convo);
 
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
         *error = g_strdup("You must be a channel operator or higher to set the channel topic.");
         return PURPLE_CMD_RET_FAILED;
     }
@@ -1035,7 +1035,7 @@ PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *convo, const gchar *
     JsonObject *json;
 
     channel = purple_conversation_get_name(convo);
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
         *error = g_strdup(_("You must be the channel owner or global operator to set the channel mode."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -1064,7 +1064,7 @@ PurpleCmdRet flist_channel_set_owner_cmd(PurpleConversation *convo, const gchar 
     JsonObject *json;
 
     channel = purple_conversation_get_name(convo);
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, channel), FLIST_PERMISSION_CHANNEL_OWNER)) {
         *error = g_strdup(_("You must be the channel owner or global operator to transfer channel ownership."));
         return PURPLE_CMD_RET_FAILED;
     }
@@ -1112,7 +1112,7 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
 
     channel = purple_conversation_get_name(convo);
 
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
         *error = g_strdup("You must be a channel operator or higher to kick, ban, or unban.");
         return PURPLE_CMD_RET_FAILED;
     }
@@ -1180,7 +1180,7 @@ PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *c
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
 
     const gchar *channel = purple_conversation_get_name(convo);
-    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->proper_character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
+    if(!FLIST_HAS_MIN_PERMISSION(flist_get_permissions(fla, fla->character, channel), FLIST_PERMISSION_CHANNEL_OP)) {
         *error = g_strdup("You must be a channel operator or higher to timeout a user in a channel.");
         return PURPLE_CMD_RET_FAILED;
     }

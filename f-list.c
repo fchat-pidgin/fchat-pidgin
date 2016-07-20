@@ -348,8 +348,8 @@ static GList *flist_actions(PurplePlugin *plugin, gpointer context) {
     act = purple_plugin_action_new(_("Ignore List"), flist_ignore_list_action);
     list = g_list_append(list, act);
 
-    if(fla && fla->proper_character) {
-        if(fla->global_ops && g_hash_table_lookup(fla->global_ops, fla->proper_character)) {
+    if(fla && fla->character) {
+        if(fla->global_ops && g_hash_table_lookup(fla->global_ops, fla->character)) {
             list = g_list_append(list, NULL); /* this adds a divider */
 
             act = purple_plugin_action_new(_("Broadcast"), flist_broadcast_action);
@@ -440,7 +440,6 @@ void flist_close(PurpleConnection *pc) {
     if(fla->username) g_free(fla->username);
     if(fla->character) g_free(fla->character);
     if(fla->password) g_free(fla->password);
-    if(fla->proper_character) g_free(fla->proper_character);
 
     if(fla->ticket_request) flist_web_request_cancel(fla->ticket_request);
     if(fla->ticket_timer) purple_timeout_remove(fla->ticket_timer);

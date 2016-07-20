@@ -64,7 +64,7 @@ static void flist_fetch_icon_cb(PurpleUtilFetchUrlData *url_data, gpointer data,
             if (fli->character)
             {
                 // check if the icon is for my account ...
-                if (!purple_utf8_strcasecmp(fli->character, fla->proper_character))
+                if (!purple_utf8_strcasecmp(fli->character, fla->character))
                 {
                     purple_buddy_icons_set_account_icon(fla->pa, g_memdup(b, len), len);
                 }
@@ -109,7 +109,7 @@ static void flist_fetch_icon_real(FListAccount *fla, FListFetchIcon *fli) {
 
 void flist_fetch_account_icon(FListAccount *fla)
 {
-    flist_fetch_icon(fla, fla->proper_character);
+    flist_fetch_icon(fla, fla->character);
 }
 
 void flist_fetch_icon(FListAccount *fla, const gchar *character) {

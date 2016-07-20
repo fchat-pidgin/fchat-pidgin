@@ -329,7 +329,6 @@ struct FListAccount_ {
     gchar *username;
     gchar *character;
     gchar *password;
-    gchar *proper_character;
 
     PurpleUtilFetchUrlData *url_request;
     gchar *fls_cookie;

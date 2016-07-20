@@ -160,7 +160,7 @@ static void alert_staff_button_clicked_cb(GtkButton* button, gpointer func_data)
 static void character_button_clicked_cb(GtkButton* button, gpointer func_data) {
     PurpleConnection *pc = (PurpleConnection*) func_data;
     FListAccount *fla = pc->proto_data;
-    flist_get_profile(pc, fla->proper_character);
+    flist_get_profile(pc, fla->character);
 }
 
 static void flist_update_tag_color(GtkTextTag *tag, FListAccount *fla, const char *charname)
@@ -192,7 +192,7 @@ static void flist_text_tag_table_tag_added_cb(GtkTextTagTable *text_tag_table, G
     if (strncmp(tag->name, "BUDDY ", 6) == 0)
         charname = tag->name + 6;
     else if (strcmp(tag->name, "send-name") == 0)
-        charname = fla->proper_character;
+        charname = fla->character;
     else if (is_im && strcmp(tag->name, "receive-name") == 0)
         charname = purple_conversation_get_name(conv);
     else
@@ -264,7 +264,7 @@ static void flist_pidgin_conversation_created_cb(PurpleConversation *conv, FList
         // Everything we allocate (and add to the conversation UI) here gets destroyed automatically once the conversation is destroyed
 
         // Character button
-        char_button = gtk_button_new_with_label(fla->proper_character);
+        char_button = gtk_button_new_with_label(fla->character);
         GtkWidget *icon = get_account_icon(fla);
         if (icon)
             gtk_button_set_image(GTK_BUTTON(char_button), icon);
@@ -302,7 +302,7 @@ static void flist_pidgin_conversation_created_cb(PurpleConversation *conv, FList
         if (!buddy_tag)
             return;
 
-        flist_update_tag_color(buddy_tag, fla, fla->proper_character);
+        flist_update_tag_color(buddy_tag, fla, fla->character);
     }
 
     // Change nick color for IM partners
