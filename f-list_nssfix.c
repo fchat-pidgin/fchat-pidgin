@@ -47,7 +47,7 @@ static void hooked_connectfunc(PurpleSslConnection *gsc) {
     original_connectfunc(gsc);
 
     nssfixPurpleSslNssData *nss_data = gsc->private_data;
-    if (g_str_has_suffix(gsc->host, "f-list.net")) {
+    if (g_str_has_suffix(gsc->host, FLIST_SUFFIX_DOMAIN)) {
         if (purple_debug_is_verbose()) {
             purple_debug_info(FLIST_DEBUG, "nssfix: Setting Peer ID: %s\n", gsc->host);
         }

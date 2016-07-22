@@ -396,7 +396,7 @@ static void flist_handshake(FListAccount *fla) {
     g_string_append(headers_str, "Upgrade: WebSocket\r\n");
     g_string_append(headers_str, "Connection: Upgrade\r\n");
     g_string_append_printf(headers_str, "Host: %s:%d\r\n", fla->server_address, fla->server_port);
-    g_string_append(headers_str, "Origin: http://www.f-list.net\r\n");
+    g_string_append(headers_str, "Origin: " FLIST_SCHEME FLIST_DOMAIN "\r\n");
     g_string_append_printf(headers_str, "Sec-WebSocket-Key: %s\r\n", b64_data); //TODO: insert proper randomness here!
     g_string_append(headers_str, "Sec-WebSocket-Version: 13\r\n");
     g_string_append(headers_str, "\r\n");

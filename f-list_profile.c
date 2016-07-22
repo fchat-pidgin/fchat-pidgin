@@ -280,7 +280,7 @@ void flist_get_profile(PurpleConnection *pc, const char *who) {
     flp->profile_info = purple_notify_user_info_new();
 
     link_str = g_string_new(NULL);
-    g_string_append_printf(link_str, "http://www.f-list.net/c/%s", purple_url_encode(who));
+    g_string_append_printf(link_str, FLIST_URL_CHARACTER, purple_url_encode(who));
     link = g_string_free(link_str, FALSE);
 
     character = flist_get_character(fla, who);

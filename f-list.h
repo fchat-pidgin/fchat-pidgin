@@ -134,7 +134,11 @@ typedef struct FListFriends_ FListFriends;
 
 #define LOGIN_TIMEOUT 5000
 
-#define FLIST_URL "https://www.f-list.net/"
+#define FLIST_SCHEME "https://"
+#define FLIST_DOMAIN "www.f-list.net"
+#define FLIST_CHAT_SERVER "chat.f-list.net"
+#define FLIST_SUFFIX_DOMAIN "f-list.net"
+#define FLIST_URL FLIST_SCHEME FLIST_DOMAIN "/"
 
 #define FLIST_URL_CHARACTER         FLIST_URL "c/%s"
 
@@ -144,6 +148,7 @@ typedef struct FListFriends_ FListFriends;
 #define FLIST_URL_BUGREPORT         FLIST_URL "view_bugreport.php?id=%d"
 #define FLIST_URL_HELPDESKTICKET    FLIST_URL "view_ticket.php?id=%d"
 #define FLIST_URL_FEATUREREQUEST    FLIST_URL "vote.php?fid=%d"
+#define FLIST_URL_GETLOG            FLIST_URL "fchat/getLog.php?log=%d"
 
 #define FLIST_URL_COMMENT_ANCHOR    "#Comment%d"
 #define FLIST_URL_NEWSPOST_COMMENT  FLIST_URL_NEWSPOST FLIST_URL_COMMENT_ANCHOR

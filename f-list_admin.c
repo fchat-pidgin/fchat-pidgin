@@ -380,7 +380,7 @@ static void flist_sfc_report(PurpleConnection *pc, JsonObject *root) {
     g_string_append_printf(message_str, "<a href=\"flistsfc://%s/%s\">Confirm Alert</a>", s, purple_url_encode(callid));
     g_string_append(message_str, ", ");
     if(has_logid) {
-        g_string_append_printf(message_str, "<a href=\"http://www.f-list.net/fchat/getLog.php?log=%d\">View Log</a>", logid);
+        g_string_append_printf(message_str, "<a href=\"" FLIST_URL_GETLOG "\">View Log</a>", logid);
     } else {
         g_string_append_printf(message_str, "(No Log)");
     }

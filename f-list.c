@@ -614,7 +614,7 @@ void flist_login(PurpleAccount *pa) {
     }
 
     /* login options */
-    fla->server_address = g_strdup(purple_account_get_string(pa, "server_address", "chat.f-list.net"));
+    fla->server_address = g_strdup(purple_account_get_string(pa, "server_address", FLIST_CHAT_SERVER));
 
     fla->sync_bookmarks = purple_account_get_bool(pa, "sync_bookmarks", FALSE);
     fla->sync_friends = purple_account_get_bool(pa, "sync_friends", TRUE);
@@ -791,7 +791,7 @@ static PurplePluginInfo info = {
     "F-List Protocol Plugin",       /* summary */
     "F-List Protocol Plugin",       /* description */
     "TestPanther, Nelwill, Sabhak", /* author */
-    "https://f-list.net/",          /* homepage */
+    FLIST_URL,                      /* homepage */
     plugin_load,                    /* load */
     plugin_unload,                  /* unload */
     NULL,                           /* destroy */
@@ -813,7 +813,7 @@ static void plugin_init(PurplePlugin *plugin) {
     split = purple_account_user_split_new("Character", "", ':');
     prpl_info.user_splits = g_list_append(prpl_info.user_splits, split);
 
-    option = purple_account_option_string_new("Server Address", "server_address", "chat.f-list.net");
+    option = purple_account_option_string_new("Server Address", "server_address", FLIST_CHAT_SERVER);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_int_new("Server Port", "server_port_secure", FLIST_PORT_SECURE);

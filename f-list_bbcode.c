@@ -130,7 +130,7 @@ static gchar *format_color(ParserVars *vars, const gchar *ts, const gchar *inner
 }
 
 static gchar *format_user(ParserVars *vars, const gchar *ts, const gchar *inner) {
-    const gchar *url_pattern = "<a href=\"http://www.f-list.net/c/%s\">%s</a>";
+    const gchar *url_pattern = "<a href=\"" FLIST_URL_CHARACTER "\">%s</a>";
     gchar *lower = g_utf8_strdown(inner, -1);
     gchar *ret = g_strdup_printf(url_pattern, purple_url_encode(lower), inner);
     g_free(lower);
@@ -142,11 +142,11 @@ static gchar *format_icon(ParserVars *vars, const gchar *ts, const gchar *inner)
     gchar *ret;
     if(vars->fla && vars->convo) {
         gchar *smiley = g_strdup_printf("[icon]%s[/icon]", purple_url_encode(lower));
-        ret = g_strdup_printf("%s<a href=\"http://www.f-list.net/c/%s\">(%s)</a>", smiley, purple_url_encode(lower), inner);
+        ret = g_strdup_printf("%s<a href=\"" FLIST_URL_CHARACTER "\">(%s)</a>", smiley, purple_url_encode(lower), inner);
         flist_fetch_avatar(vars->fla, smiley, lower, vars->convo);
         g_free(smiley);
     } else {
-        ret = g_strdup_printf("<a href=\"http://www.f-list.net/c/%s\">%s</a>", purple_url_encode(lower), inner);
+        ret = g_strdup_printf("<a href=\"" FLIST_URL_CHARACTER "\">%s</a>", purple_url_encode(lower), inner);
     }
     g_free(lower);
     return ret;
