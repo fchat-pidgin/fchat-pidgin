@@ -64,8 +64,7 @@ RTB_TYPE flist_rtb_get_type(const gchar *type_str)
     return type;
 }
 
-gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_RTB(FListAccount *fla, JsonObject *root) {
     const gchar *subject = NULL, *name = NULL, *title = NULL;
     gchar *url = NULL;
     gchar *msg = NULL;
@@ -186,7 +185,7 @@ gboolean flist_process_RTB(PurpleConnection *pc, JsonObject *root) {
             return TRUE;
     }
 
-    serv_got_im(pc, GLOBAL_NAME, msg, PURPLE_MESSAGE_RECV, time(NULL));
+    serv_got_im(fla->pc, GLOBAL_NAME, msg, PURPLE_MESSAGE_RECV, time(NULL));
     g_free(msg);
 
     return TRUE;

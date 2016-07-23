@@ -374,7 +374,7 @@ static void flist_friends_add_buddies(FListAccount *fla) {
         if(!buddy && (bookmarked || friended)) {
             buddy = purple_buddy_new(fla->pa, friend->name, NULL);
             purple_blist_add_buddy(buddy, NULL, group, NULL);
-            flist_update_friend(fla->pc, friend->name, TRUE, TRUE);
+            flist_update_friend(fla, friend->name, TRUE, TRUE);
         }
 
         cur = cur->next;

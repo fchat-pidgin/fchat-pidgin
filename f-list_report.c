@@ -35,7 +35,7 @@ void flist_report_alert_staff(FListReport *flr) {
     if (flr->log_id)
         json_object_set_string_member(json, "logid", flr->log_id);
 
-    flist_request(flr->fla->pc, FLIST_ALERT_STAFF, json);
+    flist_request(flr->fla, FLIST_ALERT_STAFF, json);
     json_object_unref(json);
     g_free(report_message);
 

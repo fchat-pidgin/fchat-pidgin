@@ -36,7 +36,7 @@ PurpleCmdRet flist_broadcast_cmd(PurpleConversation *, const gchar *, gchar **, 
 PurpleCmdRet flist_timeout_cmd(PurpleConversation *, const gchar *, gchar **, gchar **, void *);
 PurpleCmdRet flist_reward_cmd(PurpleConversation *, const gchar *, gchar **, gchar **, void *);
 
-void flist_send_sfc_confirm(PurpleConnection *, const gchar *callid);
-gboolean flist_process_SFC(PurpleConnection *, JsonObject *);
+void flist_send_sfc_confirm(FListAccount *, const gchar *callid);
+gboolean flist_process_SFC(FListAccount *, JsonObject *);
 
 #endif	/* F_LIST_ADMIN_H */

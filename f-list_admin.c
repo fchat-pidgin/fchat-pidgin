@@ -38,7 +38,7 @@ static void flist_create_public_channel_cb(gpointer user_data, const gchar *name
 
     json = json_object_new();
     json_object_set_string_member(json, "channel", name);
-    flist_request(pc, FLIST_PUBLIC_CHANNEL_CREATE, json);
+    flist_request(fla, FLIST_PUBLIC_CHANNEL_CREATE, json);
     json_object_unref(json);
 
     fla->input_request = FALSE;
@@ -68,7 +68,7 @@ static void flist_delete_public_channel_cb(gpointer user_data, const gchar *name
     g_return_if_fail(fla);
     json = json_object_new();
     json_object_set_string_member(json, "channel", name);
-    flist_request(pc, FLIST_PUBLIC_CHANNEL_DELETE, json);
+    flist_request(fla, FLIST_PUBLIC_CHANNEL_DELETE, json);
     json_object_unref(json);
 
     fla->input_request = FALSE;
@@ -99,7 +99,7 @@ static void flist_add_global_operator_cb(gpointer user_data, const gchar *name) 
 
     json = json_object_new();
     json_object_set_string_member(json, "character", name);
-    flist_request(pc, FLIST_ADD_GLOBAL_OPERATOR, json);
+    flist_request(fla, FLIST_ADD_GLOBAL_OPERATOR, json);
     json_object_unref(json);
 
     fla->input_request = FALSE;
@@ -130,7 +130,7 @@ static void flist_remove_global_operator_cb(gpointer user_data, const gchar *nam
 
     json = json_object_new();
     json_object_set_string_member(json, "character", name);
-    flist_request(pc, FLIST_REMOVE_GLOBAL_OPERATOR, json);
+    flist_request(fla, FLIST_REMOVE_GLOBAL_OPERATOR, json);
     json_object_unref(json);
 
     fla->input_request = FALSE;
@@ -161,7 +161,7 @@ static void flist_broadcast_action_cb(gpointer user_data, const gchar *message) 
 
     json = json_object_new();
     json_object_set_string_member(json, "message", message);
-    flist_request(pc, FLIST_BROADCAST, json);
+    flist_request(fla, FLIST_BROADCAST, json);
     json_object_unref(json);
 
     fla->input_request = FALSE;
@@ -185,6 +185,7 @@ void flist_broadcast_action(PurplePluginAction *action) {
 
 PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
     const gchar *character;
     const gchar *code = NULL;
     JsonObject *json;
@@ -197,7 +198,7 @@ PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd
 
     json = json_object_new();
     json_object_set_string_member(json, "character", character);
-    flist_request(pc, code, json);
+    flist_request(fla, code, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -225,7 +226,7 @@ PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gc
 
     json = json_object_new();
     json_object_set_string_member(json, "character", character);
-    flist_request(pc, code, json);
+    flist_request(fla, code, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -251,7 +252,7 @@ PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gcha
 
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
-    flist_request(pc, code, json);
+    flist_request(fla, code, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -259,6 +260,7 @@ PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gcha
 
 PurpleCmdRet flist_broadcast_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
     const gchar *message;
     JsonObject *json;
 
@@ -267,7 +269,7 @@ PurpleCmdRet flist_broadcast_cmd(PurpleConversation *convo, const gchar *cmd, gc
 
     json = json_object_new();
     json_object_set_string_member(json, "message", message);
-    flist_request(pc, FLIST_BROADCAST, json);
+    flist_request(fla, FLIST_BROADCAST, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -315,7 +317,7 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     json_object_set_string_member(json, "character", character);
     json_object_set_string_member(json, "reason", reason);
     json_object_set_int_member(json, "time", time_parsed);
-    flist_request(pc, FLIST_GLOBAL_TIMEOUT, json);
+    flist_request(fla, FLIST_GLOBAL_TIMEOUT, json);
     json_object_unref(json);
     g_strfreev(split);
     return PURPLE_CMD_RET_OK;
@@ -336,26 +338,25 @@ PurpleCmdRet flist_reward_cmd(PurpleConversation *convo, const gchar *cmd, gchar
 
     json = json_object_new();
     json_object_set_string_member(json, "character", character);
-    flist_request(pc, FLIST_REWARD, json);
+    flist_request(fla, FLIST_REWARD, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
 }
 
-void flist_send_sfc_confirm(PurpleConnection *pc, const gchar *callid) {
-    FListAccount *fla = pc->proto_data;
+void flist_send_sfc_confirm(FListAccount *fla, const gchar *callid) {
     JsonObject *json;
 
     json = json_object_new();
     json_object_set_string_member(json, "action", "confirm");
     json_object_set_string_member(json, "moderator", fla->proper_character);
     json_object_set_string_member(json, "callid", callid);
-    flist_request(pc, "SFC", json);
+    flist_request(fla, "SFC", json);
     json_object_unref(json);
 }
 
-static void flist_sfc_report(PurpleConnection *pc, JsonObject *root) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
+static void flist_sfc_report(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     const gchar *callid, *reporter, *report;
     gchar *s, *escaped_reporter, *escaped_report, *message;
     GString *message_str;
@@ -386,7 +387,7 @@ static void flist_sfc_report(PurpleConnection *pc, JsonObject *root) {
     }
 
     message = g_string_free(message_str, FALSE);
-    serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
+    serv_got_im(fla->pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
 
     g_free(escaped_report);
     g_free(escaped_reporter);
@@ -394,8 +395,7 @@ static void flist_sfc_report(PurpleConnection *pc, JsonObject *root) {
     g_free(s);
 }
 
-static void flist_sfc_confirm(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+static void flist_sfc_confirm(FListAccount *fla, JsonObject *root) {
     const gchar *moderator, *reporter;
     gchar *message, *escaped_message, *bbcode_message;
 
@@ -408,24 +408,24 @@ static void flist_sfc_confirm(PurpleConnection *pc, JsonObject *root) {
     message = g_strdup_printf("Alert Confirmed. [b]%s[/b] is handling [b]%s[/b]'s report.", moderator, reporter);
     escaped_message = purple_markup_escape_text(message, -1);
     bbcode_message = flist_bbcode_to_html(fla, NULL, escaped_message);
-    serv_got_im(pc, GLOBAL_NAME, bbcode_message, PURPLE_MESSAGE_RECV, time(NULL));
+    serv_got_im(fla->pc, GLOBAL_NAME, bbcode_message, PURPLE_MESSAGE_RECV, time(NULL));
     g_free(bbcode_message);
     g_free(escaped_message);
     g_free(message);
 }
 
-gboolean flist_process_SFC(PurpleConnection *pc, JsonObject *root) {
+gboolean flist_process_SFC(FListAccount *fla, JsonObject *root) {
     const gchar *action;
 
     action = json_object_get_string_member(root, "action");
     g_return_val_if_fail(action, TRUE);
 
     if(flist_str_equal(action, "report")) {
-        flist_sfc_report(pc, root);
+        flist_sfc_report(fla, root);
     }
 
     if(flist_str_equal(action, "confirm")) {
-        flist_sfc_confirm(pc, root);
+        flist_sfc_confirm(fla, root);
     }
 
     return TRUE;

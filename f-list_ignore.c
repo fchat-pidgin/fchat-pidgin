@@ -1,45 +1,46 @@
 #include "f-list_ignore.h"
 
-void flist_ignore_list_request_add(PurpleConnection *pc, const gchar *character)
+void flist_ignore_list_request_add(FListAccount *fla, const gchar *character)
 {
     JsonObject *json = json_object_new();
     json_object_set_string_member(json, "action", "add");
     json_object_set_string_member(json, "character", character);
-    flist_request(pc, FLIST_IGNORE, json);
+    flist_request(fla, FLIST_IGNORE, json);
     json_object_unref(json);
 }
 
-void flist_ignore_list_request_remove(PurpleConnection *pc, const gchar *character)
+void flist_ignore_list_request_remove(FListAccount *fla, const gchar *character)
 {
     JsonObject *json = json_object_new();
     json_object_set_string_member(json, "action", "delete");
     json_object_set_string_member(json, "character", character);
-    flist_request(pc, FLIST_IGNORE, json);
+    flist_request(fla, FLIST_IGNORE, json);
     json_object_unref(json);
 }
 
-void flist_ignore_list_request_list(PurpleConnection *pc)
+void flist_ignore_list_request_list(FListAccount *fla)
 {
     JsonObject *json = json_object_new();
     json_object_set_string_member(json, "action", "list");
-    flist_request(pc, FLIST_IGNORE, json);
+    flist_request(fla, FLIST_IGNORE, json);
     json_object_unref(json);
 }
 
 void flist_ignore_list_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
     g_return_if_fail(pc);
-    flist_ignore_list_request_list(pc);
+    FListAccount *fla = pc->proto_data;
+    flist_ignore_list_request_list(fla);
 }
 
 static void ignore_list_remove_cb(PurpleConnection *pc, GList *row, gpointer user_data)
 {
-    flist_ignore_list_request_remove(pc, g_list_nth_data(row, 0));
+    FListAccount *fla = pc->proto_data;
+    flist_ignore_list_request_remove(fla, g_list_nth_data(row, 0));
 }
 
-gboolean flist_ignore_character_is_ignored(PurpleConnection *pc, const gchar *character)
+gboolean flist_ignore_character_is_ignored(FListAccount *fla, const gchar *character)
 {
-    FListAccount *fla = pc->proto_data;
     return g_list_find_custom(fla->ignore_list, character, (GCompareFunc)g_ascii_strcasecmp) != NULL;
 }
 
@@ -56,16 +57,15 @@ void flist_blist_node_ignore_action(PurpleBlistNode *node, gpointer data) {
 
     if (type == FLIST_NODE_IGNORE)
     {
-        flist_ignore_list_request_add(pc, name);
+        flist_ignore_list_request_add(fla, name);
     }
     else if (type == FLIST_NODE_UNIGNORE)
     {
-        flist_ignore_list_request_remove(pc, name);
+        flist_ignore_list_request_remove(fla, name);
     }
 }
 
-gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_IGN(FListAccount *fla, JsonObject *root) {
     const gchar *action;
     const gchar *character;
 
@@ -77,7 +77,7 @@ gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
         character = json_object_get_string_member(root, "character");
         fla->ignore_list = g_list_append(fla->ignore_list, g_strdup(character));
         g_snprintf( msg, sizeof( msg ), _( "'%s' has been added to your ignore list." ), character );
-        purple_notify_info(pc, "User ignored!", msg, NULL);
+        purple_notify_info(fla->pc, "User ignored!", msg, NULL);
     }
     else if (g_ascii_strncasecmp(action, "delete", 6) == 0)
     {
@@ -92,7 +92,7 @@ gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
         }
 
         g_snprintf( msg, sizeof( msg ), _( "'%s' has been removed from your ignore list." ), character );
-        purple_notify_info(pc, "User removed!", msg, NULL);
+        purple_notify_info(fla->pc, "User removed!", msg, NULL);
     }
     else if (g_ascii_strncasecmp(action, "list", 4) == 0)
     {
@@ -113,7 +113,7 @@ gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
 
         // XXX This button is ignored, might be a bug in libpurple/pidgin
 	    purple_notify_searchresults_button_add_labeled(results, "Remove", ignore_list_remove_cb);
-        purple_notify_searchresults(pc, NULL, NULL, _("Ignore List"), results, NULL, NULL);
+        purple_notify_searchresults(fla->pc, NULL, NULL, _("Ignore List"), results, NULL, NULL);
     }
     else if (g_ascii_strncasecmp(action, "init", 4) == 0)
     {
@@ -133,6 +133,7 @@ gboolean flist_process_IGN(PurpleConnection *pc, JsonObject *root) {
 
 PurpleCmdRet flist_ignore_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
     
     if (args[0] == NULL) {
         *error = g_strdup("Please specify an action : /ignore [add|delete|list] [character]");
@@ -147,7 +148,7 @@ PurpleCmdRet flist_ignore_cmd(PurpleConversation *convo, const gchar *cmd, gchar
             return PURPLE_CMD_RET_FAILED;
         }
 
-        flist_ignore_list_request_add(pc, args[1]);
+        flist_ignore_list_request_add(fla, args[1]);
     }
     else if (g_ascii_strncasecmp(subcmd, "delete", 6) == 0)
     {
@@ -156,11 +157,11 @@ PurpleCmdRet flist_ignore_cmd(PurpleConversation *convo, const gchar *cmd, gchar
             return PURPLE_CMD_RET_FAILED;
         }
 
-        flist_ignore_list_request_remove(pc, args[1]);
+        flist_ignore_list_request_remove(fla, args[1]);
     }
     else if (g_ascii_strncasecmp(subcmd, "list", 4) == 0)
     {
-        flist_ignore_list_request_list(pc);
+        flist_ignore_list_request_list(fla);
     } else {
         *error = g_strdup("Unrecognized action, please use : /ignore [add|delete|list] [character]");
         return PURPLE_CMD_RET_FAILED;

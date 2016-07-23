@@ -37,9 +37,9 @@
 #define HTTP_LOGIN "www.f-list.net/action/script_login.php"
 
 const gchar *flist_get_ticket(FListAccount *);
-void flist_request(PurpleConnection *, const gchar *, JsonObject *);
+void flist_request(FListAccount *, const gchar *, JsonObject *);
 
-void flist_receive_ping(PurpleConnection *);
+void flist_receive_ping(FListAccount *);
 void flist_ticket_timer(FListAccount *, guint);
 
 void flist_ticket_init();

@@ -70,9 +70,8 @@ static void flist_profile_field_category_free(gpointer data) {
 }
 
 
-static void flist_show_profile(PurpleConnection *pc, const gchar *character, GHashTable *profile,
+static void flist_show_profile(FListAccount *fla, const gchar *character, GHashTable *profile,
         gboolean by_id, PurpleNotifyUserInfo *info) {
-    FListAccount *fla = pc->proto_data;
     FListProfiles *flp = _flist_profiles(fla);
     GSList *priority = flp->priority_profile_fields;
     GSList *category_list = flp->category_list;
@@ -136,11 +135,10 @@ static void flist_show_profile(PurpleConnection *pc, const gchar *character, GHa
         g_list_free(remaining);
     }
 
-    purple_notify_userinfo(pc, character, info, NULL, NULL);
+    purple_notify_userinfo(fla->pc, character, info, NULL, NULL);
 }
 
-gboolean flist_process_PRD(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_PRD(FListAccount *fla, JsonObject *root) {
     FListProfiles *flp = _flist_profiles(fla);
     const gchar *type;
     const gchar *key;
@@ -158,7 +156,7 @@ gboolean flist_process_PRD(PurpleConnection *pc, JsonObject *root) {
         return TRUE;
     }
     if(!g_strcmp0(type, "end")) {
-        flist_show_profile(pc, flp->character, flp->table, FALSE, flp->profile_info);
+        flist_show_profile(fla, flp->character, flp->table, FALSE, flp->profile_info);
         g_free(flp->character); flp->character = NULL;
         if(flp->table) {
             g_hash_table_destroy(flp->table); flp->table = NULL;
@@ -222,7 +220,7 @@ static gboolean flist_process_profile(FListAccount *fla, JsonObject *root) {
     }
     g_list_free(categories);
 
-    flist_show_profile(fla->pc, flp->character, profile, FALSE, flp->profile_info);
+    flist_show_profile(fla, flp->character, profile, FALSE, flp->profile_info);
 
     g_hash_table_destroy(profile);
 
@@ -250,19 +248,18 @@ static void flist_get_profile_cb(FListWebRequestData *req_data, gpointer user_da
     } else {
         JsonObject *json = json_object_new();
         json_object_set_string_member(json, "character", flp->character);
-        flist_request(fla->pc, "PRO", json);
+        flist_request(fla, "PRO", json);
         json_object_unref(json);
     }
 }
 
 void flist_get_profile(PurpleConnection *pc, const char *who) {
-    FListAccount *fla;
+    FListAccount *fla = pc->proto_data;
     FListProfiles *flp;
     GString *link_str;
     gchar *link;
     FListCharacter *character;
 
-    g_return_if_fail((fla = pc->proto_data));
     flp = _flist_profiles(fla);
 
     if(flp->character) g_free(flp->character);
@@ -296,7 +293,7 @@ void flist_get_profile(PurpleConnection *pc, const char *who) {
         g_free(clean_message);
     }
     purple_notify_user_info_add_pair(flp->profile_info, "Link", link);
-    purple_notify_userinfo(pc, flp->character, flp->profile_info, NULL, NULL);
+    purple_notify_userinfo(fla->pc, flp->character, flp->profile_info, NULL, NULL);
 
     if(!character) {
         //The character is offline. There's nothing more we should do.
@@ -310,7 +307,7 @@ void flist_get_profile(PurpleConnection *pc, const char *who) {
     } else { /* Try to get the profile through F-Chat. */
         JsonObject *json = json_object_new();
         json_object_set_string_member(json, "character", flp->character);
-        flist_request(pc, "PRO", json);
+        flist_request(fla, "PRO", json);
         json_object_unref(json);
     }
     g_free(link);
@@ -390,8 +387,7 @@ static void flist_global_profile_cb(FListWebRequestData *req_data,
     purple_debug_info(FLIST_DEBUG, "Global profile fields processed. (Categories: %d)\n", g_hash_table_size(flp->category_table));
 }
 
-void flist_profile_load(PurpleConnection *pc) {
-    FListAccount *fla = pc->proto_data;
+void flist_profile_load(FListAccount *fla) {
     FListProfiles *flp;
     GSList *priority = NULL;
 
@@ -424,8 +420,7 @@ void flist_profile_load(PurpleConnection *pc) {
     flp->priority_profile_fields = priority;
 }
 
-void flist_profile_unload(PurpleConnection *pc) {
-    FListAccount *fla = pc->proto_data;
+void flist_profile_unload(FListAccount *fla) {
     FListProfiles *flp = _flist_profiles(fla);
 
     if(flp->global_profile_request) {

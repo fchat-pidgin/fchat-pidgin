@@ -77,6 +77,7 @@ static gboolean flist_channel_activate(GtkIMHtml *imhtml, GtkIMHtmlLink *link) {
 gboolean flist_staff_activate_real(const gchar *host, const gchar *path) {
     PurpleAccount *pa;
     PurpleConnection *pc;
+    FListAccount *fla;
 
     purple_debug_info(FLIST_DEBUG, "We are attempting to send a staff confirmation. Account: %s Callid: %s\n", host, path);
     pa = flist_deserialize_account(host);
@@ -95,7 +96,8 @@ gboolean flist_staff_activate_real(const gchar *host, const gchar *path) {
         return FALSE;
     }
 
-    flist_send_sfc_confirm(pc, path);
+    fla = pc->proto_data;
+    flist_send_sfc_confirm(fla, path);
 
     return TRUE;
 }

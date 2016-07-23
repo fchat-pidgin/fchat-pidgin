@@ -23,12 +23,12 @@
 
 #include "f-list.h"
 
-gboolean flist_process_PRD(PurpleConnection *, JsonObject *);
+gboolean flist_process_PRD(FListAccount *, JsonObject *);
 
 void flist_profile_process_flood(FListAccount *, const gchar*);
 
-void flist_profile_load(PurpleConnection *);
-void flist_profile_unload(PurpleConnection *);
+void flist_profile_load(FListAccount *);
+void flist_profile_unload(FListAccount *);
 
 #endif	/* F_LIST_PROFILE_H */
 

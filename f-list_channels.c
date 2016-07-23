@@ -39,8 +39,7 @@ FListFlags flist_get_flags(FListAccount *fla, const gchar *channel, const gchar 
     return ret;
 }
 
-void flist_update_user_chats_offline(PurpleConnection *pc, const gchar *character) {
-    FListAccount *fla = pc->proto_data;
+void flist_update_user_chats_offline(FListAccount *fla, const gchar *character) {
     PurpleAccount *pa = fla->pa;
     FListChannel *fchannel;
     GHashTableIter iter;
@@ -56,8 +55,7 @@ void flist_update_user_chats_offline(PurpleConnection *pc, const gchar *characte
     }
 }
 
-void flist_update_user_chats_rank(PurpleConnection *pc, const gchar *character) {
-    FListAccount *fla = pc->proto_data;
+void flist_update_user_chats_rank(FListAccount *fla, const gchar *character) {
     PurpleAccount *pa = fla->pa;
     FListChannel *channel;
     GHashTableIter iter;
@@ -79,10 +77,10 @@ void flist_update_user_chats_rank(PurpleConnection *pc, const gchar *character) 
     }
 }
 
-void flist_update_users_chats_rank(PurpleConnection *pc, GList *users) {
+void flist_update_users_chats_rank(FListAccount *fla, GList *users) {
     GList *cur = users;
     while(cur) {
-        flist_update_user_chats_rank(pc, cur->data);
+        flist_update_user_chats_rank(fla, cur->data);
         cur = g_list_next(cur);
     }
 }
@@ -384,8 +382,8 @@ void flist_got_channel_oplist(FListAccount *fla, const gchar *channel, GList *op
     fchannel->operators = new_ops;
     fchannel->owner = new_ops ? g_strdup(new_ops->data) : NULL;
 
-    flist_update_users_chats_rank(fla->pc, old_ops);
-    flist_update_users_chats_rank(fla->pc, fchannel->operators);
+    flist_update_users_chats_rank(fla, old_ops);
+    flist_update_users_chats_rank(fla, fchannel->operators);
 
     if(old_owner) g_free(old_owner);
     if(old_ops) flist_g_list_free_full(old_ops, g_free);
@@ -419,7 +417,7 @@ static void flist_got_channel_demote(PurpleConnection *pc, PurpleConversation *c
 }
 */
 
-gboolean flist_process_CIU(PurpleConnection *pc, JsonObject *root) {
+gboolean flist_process_CIU(FListAccount *fla, JsonObject *root) {
     const gchar *sender, *name, *title;
     GHashTable *data;
 
@@ -434,12 +432,11 @@ gboolean flist_process_CIU(PurpleConnection *pc, JsonObject *root) {
     data = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
     g_hash_table_insert(data, CHANNEL_COMPONENTS_NAME, g_strdup(name));
 
-    serv_got_chat_invite(pc, title, sender, NULL, data);
+    serv_got_chat_invite(fla->pc, title, sender, NULL, data);
     return TRUE;
 }
 
-gboolean flist_process_JCH(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_JCH(FListAccount *fla, JsonObject *root) {
     PurpleConversation *convo;
     JsonObject *character;
     const gchar *identity;
@@ -453,7 +450,7 @@ gboolean flist_process_JCH(PurpleConnection *pc, JsonObject *root) {
     title = json_object_get_string_member(root, "title");
 
     if(!purple_utf8_strcasecmp(identity, fla->proper_character)) { //we just joined a channel
-        convo = serv_got_joined_chat(pc, id++, channel);
+        convo = serv_got_joined_chat(fla->pc, id++, channel);
         flist_got_channel_joined(fla, channel);
         purple_conv_chat_set_nick(PURPLE_CONV_CHAT(convo), fla->proper_character);
         purple_conversation_set_data(convo, CHAT_SHOW_DISPLAY_STATUS, GINT_TO_POINTER(TRUE));
@@ -470,9 +467,8 @@ gboolean flist_process_JCH(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_kickban(PurpleConnection *pc, JsonObject *root, gboolean ban) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_kickban(FListAccount *fla, JsonObject *root, gboolean ban) {
+    PurpleAccount *pa = fla->pa;
     PurpleConversation *convo;
     const gchar *operator, *character, *channel;
 
@@ -496,7 +492,7 @@ gboolean flist_process_kickban(PurpleConnection *pc, JsonObject *root, gboolean 
         purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "System", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
         g_free(message);
         flist_got_channel_left(fla, channel);
-        serv_got_chat_left(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)));
+        serv_got_chat_left(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)));
         return TRUE;
     }
 
@@ -509,16 +505,15 @@ gboolean flist_process_kickban(PurpleConnection *pc, JsonObject *root, gboolean 
     return TRUE;
 }
 
-gboolean flist_process_CKU(PurpleConnection *pc, JsonObject *root) {
-    return flist_process_kickban(pc, root, FALSE);
+gboolean flist_process_CKU(FListAccount *fla, JsonObject *root) {
+    return flist_process_kickban(fla, root, FALSE);
 }
-gboolean flist_process_CBU(PurpleConnection *pc, JsonObject *root) {
-    return flist_process_kickban(pc, root, TRUE);
+gboolean flist_process_CBU(FListAccount *fla, JsonObject *root) {
+    return flist_process_kickban(fla, root, TRUE);
 }
 
-gboolean flist_process_CTU(PurpleConnection *pc, JsonObject *root) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_CTU(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     PurpleConversation *convo;
     const gchar *operator, *character, *channel;
     int length;
@@ -545,7 +540,7 @@ gboolean flist_process_CTU(PurpleConnection *pc, JsonObject *root) {
         purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "System", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
         g_free(message);
         flist_got_channel_left(fla, channel);
-        serv_got_chat_left(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)));
+        serv_got_chat_left(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)));
         return TRUE;
     }
 
@@ -558,8 +553,7 @@ gboolean flist_process_CTU(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_COL(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_COL(FListAccount *fla, JsonObject *root) {
     JsonArray *users;
     const gchar *channel;
     GList *ops = NULL;
@@ -582,8 +576,7 @@ gboolean flist_process_COL(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_ICH(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_ICH(FListAccount *fla, JsonObject *root) {
     JsonArray *array;
     const gchar *channel, *title, *mode;
     int i, len;
@@ -621,8 +614,7 @@ gboolean flist_process_ICH(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_CDS(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_CDS(FListAccount *fla, JsonObject *root) {
     const gchar *channel;
     const gchar *description;
 
@@ -632,8 +624,7 @@ gboolean flist_process_CDS(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_RMO(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_RMO(FListAccount *fla, JsonObject *root) {
     const gchar *channel, *modestr;
 
     channel = json_object_get_string_member(root, "channel");
@@ -647,9 +638,8 @@ gboolean flist_process_RMO(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_LCH(PurpleConnection *pc, JsonObject *root) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_LCH(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     PurpleConversation *convo;
     const gchar *character;
     const gchar *channel;
@@ -666,7 +656,7 @@ gboolean flist_process_LCH(PurpleConnection *pc, JsonObject *root) {
     if(!purple_utf8_strcasecmp(character, fla->proper_character)) { //we just left a channel
         //TODO: add message that says we left?
         flist_got_channel_left(fla, channel);
-        serv_got_chat_left(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)));
+        serv_got_chat_left(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)));
         return TRUE;
     }
 
@@ -674,7 +664,7 @@ gboolean flist_process_LCH(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-gboolean flist_process_CBL(PurpleConnection *pc, JsonObject *root) {
+gboolean flist_process_CBL(FListAccount *fla, JsonObject *root) {
 //    CBL {"banlist": [{"chanop": "TestTiger", "character": "TestPanther", "time": "2011-03-20T11:21:33.154111"}],
 //    "channel": "ADH-4268aebc94bd8c5362e1"}
     return TRUE;
@@ -823,7 +813,7 @@ PurpleCmdRet flist_channel_op_deop_cmd(PurpleConversation *convo, const gchar *c
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "character", character);
-    flist_request(pc, code, json);
+    flist_request(fla, code, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -858,12 +848,13 @@ PurpleCmdRet flist_channel_join_cmd(PurpleConversation *convo, const gchar *cmd,
 
 PurpleCmdRet flist_channel_make_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
     const gchar *channel = args[0];
     JsonObject *json;
 
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
-    flist_request(pc, FLIST_CHANNEL_CREATE, json);
+    flist_request(fla, FLIST_CHANNEL_CREATE, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -871,6 +862,7 @@ PurpleCmdRet flist_channel_make_cmd(PurpleConversation *convo, const gchar *cmd,
 
 PurpleCmdRet flist_channel_banlist_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
     JsonObject *json;
 
@@ -878,7 +870,7 @@ PurpleCmdRet flist_channel_banlist_cmd(PurpleConversation *convo, const gchar *c
 
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
-    flist_request(pc, FLIST_CHANNEL_GET_BANLIST, json);
+    flist_request(fla, FLIST_CHANNEL_GET_BANLIST, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -898,7 +890,7 @@ PurpleCmdRet flist_channel_open_cmd(PurpleConversation *convo, const gchar *cmd,
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "status", "public");
-    flist_request(pc, FLIST_SET_CHANNEL_STATUS, json);
+    flist_request(fla, FLIST_SET_CHANNEL_STATUS, json);
     json_object_unref(json);
 
     //TODO: don't allow this on public channels?
@@ -918,7 +910,7 @@ PurpleCmdRet flist_channel_close_cmd(PurpleConversation *convo, const gchar *cmd
 
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "status", "private");
-    flist_request(pc, FLIST_SET_CHANNEL_STATUS, json);
+    flist_request(fla, FLIST_SET_CHANNEL_STATUS, json);
 
     //TODO: don't allow this on public channels
 
@@ -965,12 +957,13 @@ PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *convo, const g
 void flist_channel_topic_ui_ok_cb(gpointer user_data, const gchar *topic) {
     PurpleConversation *convo = (PurpleConversation*) user_data;
     PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
     const gchar *channel = purple_conversation_get_name(convo);
 
     JsonObject *json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "description", topic);
-    flist_request(pc, FLIST_SET_CHANNEL_DESCRIPTION, json);
+    flist_request(fla, FLIST_SET_CHANNEL_DESCRIPTION, json);
     json_object_unref(json);
 }
 
@@ -995,7 +988,7 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
         json = json_object_new();
         json_object_set_string_member(json, "channel", channel);
         json_object_set_string_member(json, "description", topic);
-        flist_request(pc, FLIST_SET_CHANNEL_DESCRIPTION, json);
+        flist_request(fla, FLIST_SET_CHANNEL_DESCRIPTION, json);
         json_object_unref(json);
     }
     else
@@ -1062,7 +1055,7 @@ PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *convo, const gchar *
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "mode", modestr);
-    flist_request(pc, FLIST_SET_CHANNEL_MODE, json);
+    flist_request(fla, FLIST_SET_CHANNEL_MODE, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -1084,7 +1077,7 @@ PurpleCmdRet flist_channel_set_owner_cmd(PurpleConversation *convo, const gchar 
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "character", character);
-    flist_request(pc, FLIST_SET_CHANNEL_OWNER, json);
+    flist_request(fla, FLIST_SET_CHANNEL_OWNER, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -1157,7 +1150,7 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "character", character);
-    flist_request(pc, code, json);
+    flist_request(fla, code, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -1181,7 +1174,7 @@ PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *convo, const gchar *cm
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "character", character);
-    flist_request(pc, FLIST_CHANNEL_INVITE, json);
+    flist_request(fla, FLIST_CHANNEL_INVITE, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;
@@ -1226,7 +1219,7 @@ PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *c
     json_object_set_string_member(json, "channel", channel);
     json_object_set_string_member(json, "character", character);
     json_object_set_int_member(json, "length", time_parsed);
-    flist_request(pc, FLIST_CHANNEL_TIMEOUT, json);
+    flist_request(fla, FLIST_CHANNEL_TIMEOUT, json);
     json_object_unref(json);
 
     return PURPLE_CMD_RET_OK;

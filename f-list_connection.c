@@ -42,13 +42,11 @@ static gboolean flist_disconnect_cb(gpointer user_data) {
     return FALSE;
 }
 
-void flist_receive_ping(PurpleConnection *pc) {
-    FListAccount *fla = pc->proto_data;
-
+void flist_receive_ping(FListAccount *fla) {
     if(fla->ping_timeout_handle) {
         purple_timeout_remove(fla->ping_timeout_handle);
     }
-    fla->ping_timeout_handle = purple_timeout_add_seconds(FLIST_TIMEOUT, flist_disconnect_cb, pc);
+    fla->ping_timeout_handle = purple_timeout_add_seconds(FLIST_TIMEOUT, flist_disconnect_cb, fla->pc);
 }
 
 static gsize flist_write_raw(FListAccount *fla, gchar *buf, gsize len) {
@@ -106,8 +104,7 @@ static void flist_write_hybi(FListAccount *fla, guint8 opcode, gchar *content, g
     g_free(frame);
 }
 
-void flist_request(PurpleConnection *pc, const gchar* type, JsonObject *object) {
-    FListAccount *fla = pc->proto_data;
+void flist_request(FListAccount *fla, const gchar* type, JsonObject *object) {
     gsize json_len;
     gchar *json_text = NULL;
     GString *to_write_str;
@@ -194,7 +191,7 @@ static gboolean flist_dispatch(FListAccount *fla, gchar *message, gsize len) {
 
     success = TRUE;
     purple_debug_info(FLIST_DEBUG, "Processing message... (Code: %s)\n", code);
-    flist_callback(fla->pc, code, object);
+    flist_callback(fla, code, object);
 
     cleanup:
     if(code) g_free(code);
@@ -341,13 +338,12 @@ static void flist_identify(FListAccount *fla) {
     json_object_set_string_member(object, "character", fla->character);
 
     purple_debug_info(FLIST_DEBUG, "Identifying... (Ticket: %s) (Account: %s) (Character: %s)\n", ticket, fla->username, fla->character);
-    flist_request(fla->pc, "IDN", object);
+    flist_request(fla, "IDN", object);
 
     json_object_unref(object);
 }
 
-static gboolean flist_handle_handshake(PurpleConnection *pc) {
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_handle_handshake(FListAccount *fla) {
     gchar *last = fla->rx_buf;
     gchar *read = strstr(last, "\r\n");
 
@@ -364,13 +360,13 @@ static gboolean flist_handle_handshake(PurpleConnection *pc) {
 
     flist_identify(fla);
     fla->connection_status = FLIST_IDENTIFY;
-    purple_connection_update_progress(pc, "Identifying", 4, 5);
+    purple_connection_update_progress(fla->pc, "Identifying", 4, 5);
     return TRUE;
 }
 
 static void flist_process_real(FListAccount *fla) {
     if(!flist_recv(fla)) return;
-    if(fla->connection_status == FLIST_HANDSHAKE && !flist_handle_handshake(fla->pc)) return;
+    if(fla->connection_status == FLIST_HANDSHAKE && !flist_handle_handshake(fla)) return;
     flist_process_hybi(fla);
 }
 

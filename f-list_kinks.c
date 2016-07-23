@@ -150,8 +150,7 @@ static GSList *flist_get_filter_characters(FListAccount *fla, gboolean has_extra
     return names;
 }
 
-gboolean flist_process_FKS(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+gboolean flist_process_FKS(FListAccount *fla, JsonObject *root) {
     JsonArray *characters;
     int i, len;
     GSList *character_list = NULL;
@@ -239,7 +238,7 @@ static void flist_filter_done(FListAccount *fla) {
         json_object_set_array_member(json, "genders", genders);
         json_object_set_array_member(json, "roles", roles);
 
-        flist_request(fla->pc, FLIST_KINK_SEARCH, json);
+        flist_request(fla, FLIST_KINK_SEARCH, json);
 
         /* unreference the json */
         json_array_unref(kinks);
@@ -415,25 +414,22 @@ static void flist_filter1(FListAccount *fla, const gchar *default_channel) {
     flist_filter_dialog(fla, fields, G_CALLBACK(flist_filter1_cb));
 }
 
-static void flist_filter_real(PurpleConnection *pc, const gchar *channel) {
-    FListAccount *fla;
-
-    g_return_if_fail(pc);
-    g_return_if_fail((fla = pc->proto_data));
-
+static void flist_filter_real(FListAccount *fla, const gchar *channel) {
     if(fla->input_request) return;
-
     flist_filter1(fla, channel);
 }
 
 void flist_filter_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
-    flist_filter_real(pc, NULL);
+    g_return_if_fail(pc);
+    FListAccount *fla = pc->proto_data;
+    flist_filter_real(fla, NULL);
 }
 
 PurpleCmdRet flist_filter_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
-    flist_filter_real(pc, NULL); //TODO: put the proper channel title here
+    FListAccount *fla = pc->proto_data;
+    flist_filter_real(fla, NULL); //TODO: put the proper channel title here
 
     return PURPLE_CMD_RET_OK;
 }
@@ -507,8 +503,7 @@ static void flist_global_kinks_cb(FListWebRequestData *req_data,
     flk->filter_kink_choices = g_slist_reverse(flk->filter_kink_choices);
 }
 
-void flist_global_kinks_load(PurpleConnection *pc) {
-    FListAccount *fla = pc->proto_data;
+void flist_global_kinks_load(FListAccount *fla) {
     FListKinks *flk;
     GSList *genders;
     const gchar **p;
@@ -540,8 +535,7 @@ void flist_global_kinks_load(PurpleConnection *pc) {
     flk->looking = purple_account_get_bool(fla->pa, LAST_LOOKING, TRUE);
 }
 
-void flist_global_kinks_unload(PurpleConnection *pc) {
-    FListAccount *fla = pc->proto_data;
+void flist_global_kinks_unload(FListAccount *fla) {
     FListKinks *flk = _flist_kinks(fla);
 
     if(flk->global_kinks_request) {

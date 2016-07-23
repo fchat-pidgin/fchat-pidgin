@@ -468,8 +468,8 @@ void flist_close(PurpleConnection *pc) {
 
     flist_friends_unload(fla);
     flist_fetch_icon_cancel_all(fla);
-    flist_global_kinks_unload(pc);
-    flist_profile_unload(pc);
+    flist_global_kinks_unload(fla);
+    flist_profile_unload(fla);
     flist_channel_subsystem_unload(fla);
 
     g_free(fla);
@@ -629,8 +629,8 @@ void flist_login(PurpleAccount *pa) {
 
     flist_channel_subsystem_load(fla);
     flist_clear_temp_groups(fla);
-    flist_global_kinks_load(pc);
-    flist_profile_load(pc);
+    flist_global_kinks_load(fla);
+    flist_profile_load(fla);
     flist_friends_load(fla);
 
     // Enable signals once we are connected. This guarantees that the conversations submodule has been loaded.

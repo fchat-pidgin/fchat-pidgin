@@ -23,9 +23,8 @@
 static gboolean is_empty_status(FListStatus status) {
     return status == FLIST_STATUS_AVAILABLE || status == FLIST_STATUS_OFFLINE;
 }
-void flist_update_friend(PurpleConnection *pc, const gchar *name, gboolean update_icon, gboolean new_buddy) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+void flist_update_friend(FListAccount *fla, const gchar *name, gboolean update_icon, gboolean new_buddy) {
+    PurpleAccount *pa = fla->pa;
     FListCharacter *character = flist_get_character(fla, name);
     if(!new_buddy && !purple_find_buddy(pa, name)) return;
 
@@ -86,7 +85,7 @@ GList *flist_buddy_menu(PurpleBuddy *b) {
     default: break;
     }
 
-    if (flist_ignore_character_is_ignored(pc, name))
+    if (flist_ignore_character_is_ignored(fla, name))
     {
         act = purple_menu_action_new("Unignore", PURPLE_CALLBACK(flist_blist_node_ignore_action), GINT_TO_POINTER(FLIST_NODE_UNIGNORE), NULL);
         ret = g_list_prepend(ret, act);
@@ -133,7 +132,7 @@ void flist_get_tooltip(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboo
     purple_notify_user_info_add_pair(user_info, "Friend", flist_format_friend_status(friend_status));
     purple_notify_user_info_add_pair(user_info, "Bookmarked", bookmarked ? "Yes" : "No");
 
-    if (flist_ignore_character_is_ignored(pc, identity))
+    if (flist_ignore_character_is_ignored(fla, identity))
         purple_notify_user_info_add_pair(user_info, "Ignored", "Yes");
 }
 
@@ -188,7 +187,7 @@ void flist_pidgin_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGrou
     }
     g_slist_free(buddies);
 
-    flist_update_friend(pc, identity, TRUE, TRUE);
+    flist_update_friend(fla, identity, TRUE, TRUE);
 }
 
 void flist_pidgin_remove_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group) {
@@ -199,8 +198,8 @@ void flist_pidgin_remove_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleG
 }
 
 PurpleRoomlist *flist_get_roomlist(PurpleConnection *pc) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
     FListAccount *fla = pc->proto_data;
+    PurpleAccount *pa = fla->pa;
     PurpleRoomlistField *f;
     GList *fields = NULL;
 
@@ -221,7 +220,7 @@ PurpleRoomlist *flist_get_roomlist(PurpleConnection *pc) {
 
     purple_roomlist_set_fields(fla->roomlist, fields);
 
-    flist_request(pc, FLIST_REQUEST_CHANNEL_LIST, NULL);
+    flist_request(fla, FLIST_REQUEST_CHANNEL_LIST, NULL);
 
     return fla->roomlist;
 }
@@ -231,7 +230,7 @@ guint flist_send_typing(PurpleConnection *pc, const char *name, PurpleTypingStat
     const gchar *state_string = flist_typing_state_string(state);
     JsonObject *json;
 
-    if (flist_ignore_character_is_ignored(pc, name))
+    if (flist_ignore_character_is_ignored(fla, name))
         return 0;
 
     g_return_val_if_fail(fla, 0);
@@ -239,7 +238,7 @@ guint flist_send_typing(PurpleConnection *pc, const char *name, PurpleTypingStat
     json = json_object_new();
     json_object_set_string_member(json, "character", name);
     json_object_set_string_member(json, "status", state_string);
-    flist_request(pc, FLIST_NOTIFY_TYPING, json);
+    flist_request(fla, FLIST_NOTIFY_TYPING, json);
     json_object_unref(json);
 
     return 0; //we don't need to send again
@@ -264,7 +263,7 @@ void flist_create_private_channel_action_cb(gpointer user_data, const gchar *nam
     json = json_object_new();
 
     json_object_set_string_member(json, "channel", name);
-    flist_request(pc, "CCR", json);
+    flist_request(fla, "CCR", json);
     json_object_unref(json);
 
     fla->input_request = FALSE;
@@ -401,7 +400,7 @@ void flist_join_channel(PurpleConnection *pc, GHashTable *components) {
 
     json = json_object_new();
     json_object_set_string_member(json, "channel", channel);
-    flist_request(pc, FLIST_CHANNEL_JOIN, json);
+    flist_request(fla, FLIST_CHANNEL_JOIN, json);
     json_object_unref(json);
 }
 
@@ -419,7 +418,7 @@ void flist_leave_channel(PurpleConnection *pc, int id) {
     json = json_object_new();
     channel = purple_conversation_get_name(convo);
     json_object_set_string_member(json, "channel", channel);
-    flist_request(pc, FLIST_CHANNEL_LEAVE, json);
+    flist_request(fla, FLIST_CHANNEL_LEAVE, json);
     json_object_unref(json);
 
     flist_got_channel_left(fla, channel);
@@ -477,7 +476,7 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
     JsonObject *json;
     gchar *plain_message;
 
-    if (flist_ignore_character_is_ignored(pc, who))
+    if (flist_ignore_character_is_ignored(fla, who))
     {
         purple_notify_error(pc, "Error!", "You have ignored this user.", NULL);
         return 0;
@@ -493,7 +492,7 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
     json = json_object_new();
     json_object_set_string_member(json, "recipient", who);
     json_object_set_string_member(json, "message", plain_message);
-    flist_request(pc, FLIST_REQUEST_PRIVATE_MESSAGE, json);
+    flist_request(fla, FLIST_REQUEST_PRIVATE_MESSAGE, json);
     json_object_unref(json);
 
     g_free(plain_message);
@@ -544,7 +543,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
 
     json_object_set_string_member(json, "message", plain_message);
     json_object_set_string_member(json, "channel", channel);
-    flist_request(fla->pc, !ad ? FLIST_REQUEST_CHANNEL_MESSAGE : FLIST_CHANNEL_ADVERSTISEMENT, json);
+    flist_request(fla, !ad ? FLIST_REQUEST_CHANNEL_MESSAGE : FLIST_CHANNEL_ADVERSTISEMENT, json);
 
     serv_got_chat_in(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), fla->proper_character, PURPLE_MESSAGE_SEND, bbcode_message, time(NULL));
 
@@ -571,6 +570,7 @@ int flist_send_channel_message(PurpleConnection *pc, int id, const char *message
 
 PurpleCmdRet flist_roll_bottle(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
     JsonObject *json = json_object_new();
     const gchar *target = purple_conversation_get_name(convo);
 
@@ -580,13 +580,14 @@ PurpleCmdRet flist_roll_bottle(PurpleConversation *convo, const gchar *cmd, gcha
         json_object_set_string_member(json, "channel", target);
 
     json_object_set_string_member(json, "dice", "bottle");
-    flist_request(pc, FLIST_ROLL_DICE, json);
+    flist_request(fla, FLIST_ROLL_DICE, json);
     json_object_unref(json);
     return PURPLE_CMD_RET_OK;
 }
 
 PurpleCmdRet flist_roll_dice(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
+    FListAccount *fla = pc->proto_data;
     JsonObject *json = json_object_new();
     const gchar *target = purple_conversation_get_name(convo);
 
@@ -596,7 +597,7 @@ PurpleCmdRet flist_roll_dice(PurpleConversation *convo, const gchar *cmd, gchar 
         json_object_set_string_member(json, "channel", target);
 
     json_object_set_string_member(json, "dice", args[0]);
-    flist_request(pc, FLIST_ROLL_DICE, json);
+    flist_request(fla, FLIST_ROLL_DICE, json);
     json_object_unref(json);
     return PURPLE_CMD_RET_OK;
 }
@@ -708,7 +709,7 @@ PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, 
     purple_markup_html_to_xhtml(extended_message, NULL, &plain_message);
     json_object_set_string_member(json, "message", plain_message);
     json_object_set_string_member(json, "channel", channel);
-    flist_request(fla->pc, FLIST_REQUEST_CHANNEL_MESSAGE, json);
+    flist_request(fla, FLIST_REQUEST_CHANNEL_MESSAGE, json);
 
     flist_channel_print_op_warning(convo, fla->character, fixed_message);
 
@@ -813,7 +814,8 @@ PurpleCmdRet flist_version_cmd(PurpleConversation *convo, const gchar *cmd, gcha
 
 PurpleCmdRet flist_greports_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     PurpleConnection *pc = purple_conversation_get_gc(convo);
-    flist_request(pc, FLIST_REQUEST_PENDING_REPORTS, NULL);
+    FListAccount *fla = pc->proto_data;
+    flist_request(fla, FLIST_REQUEST_PENDING_REPORTS, NULL);
     return PURPLE_CMD_RET_OK;
 }
 

@@ -23,7 +23,7 @@
 
 #include "f-list.h"
 
-void flist_update_friend(PurpleConnection *, const gchar *who, gboolean icon, gboolean adding);
+void flist_update_friend(FListAccount *, const gchar *who, gboolean icon, gboolean adding);
 
 void flist_create_private_channel_action(PurplePluginAction *action);
 void flist_set_status_action(PurplePluginAction *action);

@@ -38,7 +38,7 @@ void flist_update_server_status(FListAccount *fla) {
 
     json_object_set_string_member(json, "status", status);
     json_object_set_string_member(json, "statusmsg", status_message);
-    flist_request(fla->pc, FLIST_SET_STATUS, json);
+    flist_request(fla, FLIST_SET_STATUS, json);
 
     json_object_unref(json);
 }

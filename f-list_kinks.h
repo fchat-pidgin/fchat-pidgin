@@ -26,12 +26,12 @@
 #define FLIST_SEARCH_MAX_RESULTS 350
 #define FLIST_MESSAGE_TOO_MANY_RESULTS "There are too many search results, please narrow your search."
 
-gboolean flist_process_FKS(PurpleConnection *, JsonObject *);
+gboolean flist_process_FKS(FListAccount *, JsonObject *);
 
 void flist_filter_action(PurplePluginAction *action);
 
-void flist_global_kinks_load(PurpleConnection *);
-void flist_global_kinks_unload(PurpleConnection *);
+void flist_global_kinks_load(FListAccount *);
+void flist_global_kinks_unload(FListAccount *);
 
 PurpleCmdRet flist_filter_cmd(PurpleConversation *, const gchar *, gchar **, gchar **, void *);
 

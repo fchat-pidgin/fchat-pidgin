@@ -40,9 +40,9 @@ FListFlags flist_get_flags(FListAccount *, const gchar *channel, const gchar *id
 void flist_channel_print_error(PurpleConversation *convo, const gchar *message);
 void flist_channel_print_op_warning(PurpleConversation *convo, const gchar *character, const gchar *message);
 
-void flist_update_user_chats_offline(PurpleConnection *, const gchar *);
-void flist_update_user_chats_rank(PurpleConnection *, const gchar *);
-void flist_update_users_chats_rank(PurpleConnection *, GList *);
+void flist_update_user_chats_offline(FListAccount *, const gchar *);
+void flist_update_user_chats_rank(FListAccount *, const gchar *);
+void flist_update_users_chats_rank(FListAccount *, GList *);
 
 void flist_got_channel_topic(FListAccount *, const gchar *channel, const gchar *topic);
 void flist_got_channel_mode(FListAccount *, const gchar *channel, const gchar *mode);
@@ -85,16 +85,16 @@ PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *, const gchar *, gchar
 PurpleCmdRet flist_channel_make_cmd(PurpleConversation *, const gchar *, gchar **args, gchar **error, void *);
 PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data);
 
-gboolean flist_process_COL(PurpleConnection *, JsonObject *);
-gboolean flist_process_JCH(PurpleConnection *, JsonObject *);
-gboolean flist_process_LCH(PurpleConnection *, JsonObject *);
-gboolean flist_process_ICH(PurpleConnection *, JsonObject *);
-gboolean flist_process_CKU(PurpleConnection *, JsonObject *);
-gboolean flist_process_CBU(PurpleConnection *, JsonObject *);
-gboolean flist_process_CTU(PurpleConnection *, JsonObject *);
-gboolean flist_process_CDS(PurpleConnection *, JsonObject *);
-gboolean flist_process_RMO(PurpleConnection *, JsonObject *);
-gboolean flist_process_CIU(PurpleConnection *, JsonObject *);
+gboolean flist_process_COL(FListAccount *, JsonObject *);
+gboolean flist_process_JCH(FListAccount *, JsonObject *);
+gboolean flist_process_LCH(FListAccount *, JsonObject *);
+gboolean flist_process_ICH(FListAccount *, JsonObject *);
+gboolean flist_process_CKU(FListAccount *, JsonObject *);
+gboolean flist_process_CBU(FListAccount *, JsonObject *);
+gboolean flist_process_CTU(FListAccount *, JsonObject *);
+gboolean flist_process_CDS(FListAccount *, JsonObject *);
+gboolean flist_process_RMO(FListAccount *, JsonObject *);
+gboolean flist_process_CIU(FListAccount *, JsonObject *);
 
 #endif	/* F_LIST_CHANNELS_H */
 

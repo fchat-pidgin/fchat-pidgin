@@ -53,9 +53,8 @@ static void flist_purple_find_chats_in_node(PurpleAccount *pa, PurpleBlistNode *
     }
 }*/
 
-static void flist_got_online(PurpleConnection *pc) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+static void flist_got_online(FListAccount *fla) {
+    PurpleAccount *pa = fla->pa;
     PurpleGroup *chat_group;
     GSList *chats = NULL;
     GSList *cur;
@@ -72,7 +71,7 @@ static void flist_got_online(PurpleConnection *pc) {
         g_slist_free(chats);
     }
 
-    purple_connection_set_state(pc, PURPLE_CONNECTED);
+    purple_connection_set_state(fla->pc, PURPLE_CONNECTED);
     fla->online = TRUE;
 
     /* If we're syncing status, set protocol internal status from purple one */
@@ -87,15 +86,14 @@ static void flist_got_online(PurpleConnection *pc) {
     flist_friends_login(fla);
 }
 
-static gboolean flist_process_ERR(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_ERR(FListAccount *fla, JsonObject *root) {
     const gchar *message;
     long number;
 
     message = json_object_get_string_member(root, "message");
 
     if(fla->connection_status == FLIST_IDENTIFY) {
-        purple_connection_error_reason(pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, message);
+        purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, message);
         return FALSE;
     }
 
@@ -106,15 +104,14 @@ static gboolean flist_process_ERR(PurpleConnection *pc, JsonObject *root) {
         return TRUE;
     }
 
-    purple_notify_warning(pc, "F-List Error", "An error has occurred on F-List.", message);
+    purple_notify_warning(fla->pc, "F-List Error", "An error has occurred on F-List.", message);
 
     return TRUE;
     //TODO: error messages have context!
 }
 
-static gboolean flist_process_NLN(PurpleConnection *pc, JsonObject *root) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_NLN(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
 
     g_return_val_if_fail(root, TRUE);
 
@@ -127,10 +124,10 @@ static gboolean flist_process_NLN(PurpleConnection *pc, JsonObject *root) {
     g_hash_table_replace(fla->all_characters, g_strdup(flist_normalize(pa, character->name)), character);
     fla->character_count += 1;
 
-    flist_update_friend(pc, character->name, TRUE, FALSE);
+    flist_update_friend(fla, character->name, TRUE, FALSE);
 
     if(!fla->online && flist_str_equal(fla->proper_character, character->name)) {
-        flist_got_online(pc);
+        flist_got_online(fla);
     }
 
     return TRUE;
@@ -181,8 +178,7 @@ static void handle_roomlist(PurpleRoomlist *roomlist, JsonArray *json, gboolean 
     g_slist_free(channels);
 }
 
-static gboolean flist_process_CHA(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_CHA(FListAccount *fla, JsonObject *root) {
     JsonArray *channels;
 
     if(fla->roomlist == NULL) return TRUE;
@@ -194,13 +190,12 @@ static gboolean flist_process_CHA(PurpleConnection *pc, JsonObject *root) {
     handle_roomlist(fla->roomlist, channels, TRUE);
 
     purple_roomlist_set_in_progress(fla->roomlist, TRUE);
-    flist_request(pc, FLIST_REQUEST_PRIVATE_CHANNEL_LIST, NULL);
+    flist_request(fla, FLIST_REQUEST_PRIVATE_CHANNEL_LIST, NULL);
 
     return TRUE;
 }
 
-static gboolean flist_process_ORS(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_ORS(FListAccount *fla, JsonObject *root) {
     JsonArray *channels;
 
     if(fla->roomlist == NULL) return TRUE;
@@ -215,8 +210,7 @@ static gboolean flist_process_ORS(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-static gboolean flist_process_STA(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_STA(FListAccount *fla, JsonObject *root) {
     FListCharacter *character;
     const gchar *name, *status, *status_message;
 
@@ -233,7 +227,7 @@ static gboolean flist_process_STA(PurpleConnection *pc, JsonObject *root) {
 
             // Update user ranks, in case status changed to Looking
             // and we need to update the icon in a channel
-            flist_update_user_chats_rank(pc, name);
+            flist_update_user_chats_rank(fla, name);
         }
         if(status_message) {
             if (character->status_message)
@@ -242,14 +236,13 @@ static gboolean flist_process_STA(PurpleConnection *pc, JsonObject *root) {
             // The server already escapes HTML entities for us, no need to escape them again
             character->status_message = g_strdup(status_message);
         }
-        flist_update_friend(pc, name, FALSE, FALSE);
+        flist_update_friend(fla, name, FALSE, FALSE);
     }
 
     return TRUE;
 }
 
-static gboolean flist_process_FLN(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_FLN(FListAccount *fla, JsonObject *root) {
     const gchar *character;
 
     g_return_val_if_fail(root, TRUE);
@@ -258,15 +251,14 @@ static gboolean flist_process_FLN(PurpleConnection *pc, JsonObject *root) {
     g_hash_table_remove(fla->all_characters, character);
     fla->character_count -= 1;
 
-    flist_update_friend(pc, character, FALSE, FALSE);
-    flist_update_user_chats_offline(pc, character);
+    flist_update_friend(fla, character, FALSE, FALSE);
+    flist_update_user_chats_offline(fla, character);
 
     return TRUE;
 }
 
-static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
-    PurpleAccount *pa = purple_connection_get_account(pc);
+static gboolean flist_process_RLL(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     PurpleMessageFlags flags = PURPLE_MESSAGE_SEND;
     PurpleConversation *convo;
     const gchar *character;
@@ -277,7 +269,7 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
     character = json_object_get_string_member(root, "character");
     message = json_object_get_string_member(root, "message");
 
-    if (flist_ignore_character_is_ignored(pc, character))
+    if (flist_ignore_character_is_ignored(fla, character))
         return TRUE;
 
     // Roll happened in a channel
@@ -298,7 +290,7 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
         }
 
         parsed = flist_bbcode_to_html(fla, convo, message);
-        serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
+        serv_got_chat_in(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
 
     }
 
@@ -329,9 +321,8 @@ static gboolean flist_process_RLL(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
-    PurpleAccount *pa = purple_connection_get_account(pc);
+static gboolean flist_process_MSG(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     PurpleConversation *convo;
     const gchar *character;
     const gchar *message;
@@ -367,17 +358,16 @@ static gboolean flist_process_MSG(PurpleConnection *pc, JsonObject *root) {
     parsed = flist_bbcode_to_html(fla, convo, message);
 
     purple_debug_info(FLIST_DEBUG, "Message: %s\n", parsed);
-    if(show && !flist_ignore_character_is_ignored(pc, character)) {
-        serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
+    if(show && !flist_ignore_character_is_ignored(fla, character)) {
+        serv_got_chat_in(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
     }
     g_free(parsed);
     return TRUE;
 }
 
 //TODO: Record advertisements for later use.
-static gboolean flist_process_LRP(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
-    PurpleAccount *pa = purple_connection_get_account(pc);
+static gboolean flist_process_LRP(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     PurpleConversation *convo;
     const gchar *character;
     const gchar *message;
@@ -402,16 +392,15 @@ static gboolean flist_process_LRP(PurpleConnection *pc, JsonObject *root) {
     full_message = g_strdup_printf("<body bgcolor=\"%s\">[b](Roleplay Ad)[/b] %s</body>", purple_account_get_string(fla->pa, "ads_background", FLIST_RPAD_DEFAULT_BACKGROUND), message);
     parsed = flist_bbcode_to_html(fla, convo, full_message);
     purple_debug_info(FLIST_DEBUG, "Advertisement: %s\n", parsed);
-    if(show && !flist_ignore_character_is_ignored(pc, character)) {
-        serv_got_chat_in(pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
+    if(show && !flist_ignore_character_is_ignored(fla, character)) {
+        serv_got_chat_in(fla->pc, purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)), character, flags, parsed, time(NULL));
     }
     g_free(parsed);
     g_free(full_message);
     return TRUE;
 }
 
-static gboolean flist_process_BRO(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_BRO(FListAccount *fla, JsonObject *root) {
     const gchar *message, *character;
     gchar *parsed;
 
@@ -427,15 +416,14 @@ static gboolean flist_process_BRO(PurpleConnection *pc, JsonObject *root) {
     if(!character) character = GLOBAL_NAME;
 
     parsed = flist_bbcode_to_html(fla, NULL, message);
-    serv_got_im(pc, GLOBAL_NAME, parsed, PURPLE_MESSAGE_RECV, time(NULL));
+    serv_got_im(fla->pc, GLOBAL_NAME, parsed, PURPLE_MESSAGE_RECV, time(NULL));
 
     g_free(parsed);
     return TRUE;
 }
 
-static gboolean flist_process_SYS(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
-    PurpleAccount *pa = purple_connection_get_account(pc);
+static gboolean flist_process_SYS(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     const gchar *message;
     const gchar *channel, *sender;
     gchar *parsed, *final;
@@ -457,12 +445,12 @@ static gboolean flist_process_SYS(PurpleConnection *pc, JsonObject *root) {
         g_free(parsed);
     } else if(sender) {
         parsed = flist_bbcode_to_html(fla, NULL, message);
-        serv_got_im(pc, sender, parsed, PURPLE_MESSAGE_SYSTEM, time(NULL));
+        serv_got_im(fla->pc, sender, parsed, PURPLE_MESSAGE_SYSTEM, time(NULL));
         g_free(parsed);
     } else {
         parsed = flist_bbcode_to_html(fla, NULL, message);
         final = g_strdup_printf("(System) %s", parsed);
-        serv_got_im(pc, GLOBAL_NAME, final, PURPLE_MESSAGE_SYSTEM, time(NULL));
+        serv_got_im(fla->pc, GLOBAL_NAME, final, PURPLE_MESSAGE_SYSTEM, time(NULL));
         g_free(final);
         g_free(parsed);
     }
@@ -471,23 +459,21 @@ static gboolean flist_process_SYS(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-static gboolean flist_process_CON(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_CON(FListAccount *fla, JsonObject *root) {
     gboolean success;
 
     fla->characters_remaining = json_object_get_parse_int_member(root, "count", &success);
 
     if(!success) {
-        purple_connection_error_reason(pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, "Could not parse the number of users online.");
+        purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, "Could not parse the number of users online.");
         return FALSE;
     }
 
     return TRUE;
 }
 
-static gboolean flist_process_LIS(PurpleConnection *pc, JsonObject *root) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_LIS(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     JsonArray *characters;
     guint32 len;
     JsonArray *character_array;
@@ -516,15 +502,14 @@ static gboolean flist_process_LIS(PurpleConnection *pc, JsonObject *root) {
         character->status_message = g_strdup(json_array_get_string_element(character_array, 3));
 
         g_hash_table_replace(fla->all_characters, g_strdup(flist_normalize(pa, character->name)), character);
-        flist_update_friend(pc, character->name, TRUE, FALSE);
+        flist_update_friend(fla, character->name, TRUE, FALSE);
     }
 
     return TRUE;
 }
 
-static gboolean flist_process_AOP(PurpleConnection *pc, JsonObject *root) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_AOP(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     const gchar *character;
     gchar *identity;
 
@@ -534,7 +519,7 @@ static gboolean flist_process_AOP(PurpleConnection *pc, JsonObject *root) {
 
     identity = g_strdup(character);
     g_hash_table_replace(fla->global_ops, identity, identity);
-    flist_update_user_chats_rank(pc, identity);
+    flist_update_user_chats_rank(fla, identity);
 
     g_free(identity);
 
@@ -542,16 +527,15 @@ static gboolean flist_process_AOP(PurpleConnection *pc, JsonObject *root) {
 
     if (fla->receive_notifications) {
         gchar *message = g_strdup_printf("%s is now a global operator.", character);
-        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
+        serv_got_im(fla->pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
         g_free(message);
     }
 
     return TRUE;
 }
 
-static gboolean flist_process_DOP(PurpleConnection *pc, JsonObject *root) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_DOP(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     const gchar *character;
 
 
@@ -560,13 +544,13 @@ static gboolean flist_process_DOP(PurpleConnection *pc, JsonObject *root) {
     if(!fla->global_ops) fla->global_ops = flist_global_ops_new();
 
     g_hash_table_remove(fla->global_ops, character);
-    flist_update_user_chats_rank(pc, character);
+    flist_update_user_chats_rank(fla, character);
 
     purple_prpl_got_account_actions(pa);
 
     if (fla->receive_notifications) {
         gchar *message = g_strdup_printf("%s is no longer a global operator.", character);
-        serv_got_im(pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
+        serv_got_im(fla->pc, GLOBAL_NAME, message, PURPLE_MESSAGE_RECV, time(NULL));
         g_free(message);
     }
 
@@ -587,9 +571,8 @@ void flist_conversation_created_cb(PurpleConversation *conv, FListAccount *fla)
     }
 }
 
-static gboolean flist_process_ADL(PurpleConnection *pc, JsonObject *root) {
-    PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_ADL(FListAccount *fla, JsonObject *root) {
+    PurpleAccount *pa = fla->pa;
     JsonArray *ops;
     int i, len;
     GHashTable *old_table;
@@ -610,7 +593,7 @@ static gboolean flist_process_ADL(PurpleConnection *pc, JsonObject *root) {
     /* update the status of everyone in the old table */
     if(old_table) {
         GList *list = g_hash_table_get_keys(old_table);
-        flist_update_users_chats_rank(pc, list);
+        flist_update_users_chats_rank(fla, list);
         g_list_free(list);
         g_hash_table_destroy(old_table);
     }
@@ -618,7 +601,7 @@ static gboolean flist_process_ADL(PurpleConnection *pc, JsonObject *root) {
     /* update the status of everyone in the new table */
     if(fla->global_ops) { //always TRUE
         GList *list = g_hash_table_get_keys(fla->global_ops);
-        flist_update_users_chats_rank(pc, list);
+        flist_update_users_chats_rank(fla, list);
         g_list_free(list);
     }
 
@@ -626,22 +609,20 @@ static gboolean flist_process_ADL(PurpleConnection *pc, JsonObject *root) {
     return TRUE;
 }
 
-static gboolean flist_process_TPN(PurpleConnection *pc, JsonObject *root) {
+static gboolean flist_process_TPN(FListAccount *fla, JsonObject *root) {
     const gchar *character, *status;
 
     character = json_object_get_string_member(root, "character");
     status = json_object_get_string_member(root, "status");
 
-    if (!flist_ignore_character_is_ignored(pc, character))
-        serv_got_typing(pc, character, 0, flist_typing_state(status));
+    if (!flist_ignore_character_is_ignored(fla, character))
+        serv_got_typing(fla->pc, character, 0, flist_typing_state(status));
 
     return TRUE;
 }
 
-typedef gboolean(*flist_cb_fn)(PurpleConnection *, JsonObject *);
 
-static gboolean flist_process_IDN(PurpleConnection *pc, JsonObject *root) {
-    FListAccount *fla = pc->proto_data;
+static gboolean flist_process_IDN(FListAccount *fla, JsonObject *root) {
     const gchar *character;
     fla->connection_status = FLIST_ONLINE;
     character = json_object_get_string_member(root, "character");
@@ -651,9 +632,9 @@ static gboolean flist_process_IDN(PurpleConnection *pc, JsonObject *root) {
 
     return TRUE;
 }
-static gboolean flist_process_PIN(PurpleConnection *pc, JsonObject *root) {
-    flist_request(pc, "PIN", NULL);
-    flist_receive_ping(pc);
+static gboolean flist_process_PIN(FListAccount *fla, JsonObject *root) {
+    flist_request(fla, "PIN", NULL);
+    flist_receive_ping(fla);
     return TRUE;
 }
 
@@ -688,22 +669,22 @@ gboolean flist_process_receiving_im(PurpleAccount *account, char **who,
 }
 
 
-static gboolean flist_process_PRI(PurpleConnection *pc, JsonObject *root) {
+static gboolean flist_process_PRI(FListAccount *fla, JsonObject *root) {
     const gchar *character = json_object_get_string_member(root, "character");
     const gchar *message = json_object_get_string_member(root, "message");
 
     // BBcode handling is done in flist_process_receiving_im, which is called
     // when serv_got_im sends the receiving-im-msg signal
-    if (!flist_ignore_character_is_ignored(pc, character)) {
-        serv_got_im(pc, character, message, PURPLE_MESSAGE_RECV, time(NULL));
+    if (!flist_ignore_character_is_ignored(fla, character)) {
+        serv_got_im(fla->pc, character, message, PURPLE_MESSAGE_RECV, time(NULL));
     }
     return TRUE;
 }
 
-gboolean flist_callback(PurpleConnection *pc, const gchar *code, JsonObject *root) {
+gboolean flist_callback(FListAccount *fla, const gchar *code, JsonObject *root) {
     flist_cb_fn callback = g_hash_table_lookup(callbacks, code);
     if(!callback) return TRUE;
-    return callback(pc, root);
+    return callback(fla, root);
 }
 void flist_callback_init() {
     if(callbacks) return;

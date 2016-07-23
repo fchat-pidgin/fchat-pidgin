@@ -23,7 +23,9 @@
 
 #include "f-list.h"
 
-gboolean flist_callback(PurpleConnection *, const gchar *, JsonObject *);
+typedef gboolean(*flist_cb_fn)(FListAccount *, JsonObject *);
+
+gboolean flist_callback(FListAccount *, const gchar *, JsonObject *);
 void flist_conversation_created_cb(PurpleConversation *, FListAccount *);
 gboolean flist_process_receiving_im(PurpleAccount *account, char **who,
                     char **message, int *flags, void *m, FListAccount *fla);

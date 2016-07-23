@@ -37,7 +37,7 @@ typedef enum {
     Comment
 } RTB_TYPE;
 
-gboolean flist_process_RTB(PurpleConnection *, JsonObject *);
+gboolean flist_process_RTB(FListAccount *, JsonObject *);
 
 void flist_init_RTB();
 
