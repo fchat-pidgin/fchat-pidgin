@@ -150,8 +150,8 @@ GtkWidget *get_account_icon(FListAccount *fla)
 
 static void alert_staff_button_clicked_cb(GtkButton* button, gpointer func_data) {
     PurpleConversation *convo = (PurpleConversation*) func_data;
-    PurpleConnection *pc = purple_conversation_get_gc(convo);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = flist_get_account_from_conversation(convo);
+    g_return_if_fail(fla);
 
     FListReport *flr = flist_report_new(fla, convo, NULL, NULL);
     flist_report_display_ui(flr);
@@ -183,8 +183,8 @@ static void flist_text_tag_table_tag_added_cb(GtkTextTagTable *text_tag_table, G
     if (!tag)
         return;
 
-    PurpleConnection *pc = purple_conversation_get_gc(conv);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = flist_get_account_from_conversation(conv);
+    g_return_if_fail(fla);
     gboolean is_im = (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM);
 
     const char *charname;
