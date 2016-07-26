@@ -27,7 +27,6 @@ static GHashTable *callbacks = NULL;
 //WILL NOT IMPLEMENT: OPP // ???????
 //TODO: RAN // ADVERTISE PRIVATE CHANNEL
 
-#define FLIST_ERROR_PROFILE_FLOOD    7
 
 static GHashTable *flist_global_ops_new() {
     return g_hash_table_new_full((GHashFunc)flist_str_hash, (GEqualFunc)flist_str_equal, g_free, NULL);
@@ -101,6 +100,9 @@ static gboolean flist_process_ERR(FListAccount *fla, JsonObject *root) {
     switch(number) {
     case FLIST_ERROR_PROFILE_FLOOD: //too many profile requests
         flist_profile_process_flood(fla, message);
+        return TRUE;
+    case FLIST_ERROR_ALREADY_LOGGED_IN: //The user logged in somewhere else
+        purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_NAME_IN_USE, message);
         return TRUE;
     }
 

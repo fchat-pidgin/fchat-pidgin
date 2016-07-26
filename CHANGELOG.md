@@ -3,6 +3,7 @@
 ## ?.?.?
 ### Added
 ### Fixed
+- #130: Do not automatically try to re-login if kicked out from another location
 
 ## 0.6.0
 ### Added

@@ -22,6 +22,8 @@
 #define FLIST_CALLBACKS_H
 
 #include "f-list.h"
+#define FLIST_ERROR_PROFILE_FLOOD    7
+#define FLIST_ERROR_ALREADY_LOGGED_IN    31
 
 typedef gboolean(*flist_cb_fn)(FListAccount *, JsonObject *);
 
