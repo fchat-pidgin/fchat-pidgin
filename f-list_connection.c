@@ -33,7 +33,7 @@ const gchar *flist_get_ticket(FListAccount *fla) {
 
 static gboolean flist_disconnect_cb(gpointer user_data) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
 
     fla->ping_timeout_handle = 0;
 
@@ -372,7 +372,7 @@ static void flist_process_real(FListAccount *fla) {
 
 static void flist_process(gpointer data, PurpleSslConnection *ssl_con, PurpleInputCondition cond) {
     PurpleConnection *pc = data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     flist_process_real(fla);
 }
 

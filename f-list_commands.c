@@ -50,7 +50,7 @@ GList *flist_buddy_menu(PurpleBuddy *b) {
     PurpleMenuAction *act;
 
     g_return_val_if_fail((pc = purple_account_get_connection(pa)), NULL);
-    g_return_val_if_fail((fla = pc->proto_data), NULL);
+    g_return_val_if_fail((fla = purple_connection_get_protocol_data(pc)), NULL);
 
     friend_status = flist_friends_get_friend_status(fla, name);
     bookmarked = flist_friends_is_bookmarked(fla, name);
@@ -115,7 +115,7 @@ void flist_get_tooltip(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboo
     FListFriendStatus friend_status;
     gboolean bookmarked;
 
-    g_return_if_fail((fla = pc->proto_data));
+    g_return_if_fail((fla = purple_connection_get_protocol_data(pc)));
     character = flist_get_character(fla, identity);
 
     bookmarked = flist_friends_is_bookmarked(fla, identity);
@@ -146,7 +146,7 @@ gchar *flist_get_status_text(PurpleBuddy *buddy) {
     gboolean empty;
 
     g_return_val_if_fail(pc, NULL);
-    g_return_val_if_fail((fla = pc->proto_data), NULL);
+    g_return_val_if_fail((fla = purple_connection_get_protocol_data(pc)), NULL);
 
     character = flist_get_character(fla, flist_normalize(pa, buddy->name));
     if(!character) return NULL; /* user is offline, no problem here */
@@ -168,7 +168,7 @@ gchar *flist_get_status_text(PurpleBuddy *buddy) {
 
 void flist_pidgin_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group) {
     PurpleAccount *pa = buddy->account;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     const gchar *identity;
     PurpleBuddy *old_buddy;
     GSList *buddies, *cur;
@@ -191,14 +191,14 @@ void flist_pidgin_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGrou
 }
 
 void flist_pidgin_remove_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     g_return_if_fail(fla);
 
     // TODO GH issue #56
 }
 
 PurpleRoomlist *flist_get_roomlist(PurpleConnection *pc) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     PurpleAccount *pa = fla->pa;
     PurpleRoomlistField *f;
     GList *fields = NULL;
@@ -226,7 +226,7 @@ PurpleRoomlist *flist_get_roomlist(PurpleConnection *pc) {
 }
 
 guint flist_send_typing(PurpleConnection *pc, const char *name, PurpleTypingState state) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     const gchar *state_string = flist_typing_state_string(state);
     JsonObject *json;
 
@@ -246,7 +246,7 @@ guint flist_send_typing(PurpleConnection *pc, const char *name, PurpleTypingStat
 
 void flist_input_request_cancel_cb(gpointer user_data, const gchar *name) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
 
     g_return_if_fail(fla);
 
@@ -255,7 +255,7 @@ void flist_input_request_cancel_cb(gpointer user_data, const gchar *name) {
 
 void flist_create_private_channel_action_cb(gpointer user_data, const gchar *name) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     JsonObject *json;
 
     g_return_if_fail(fla);
@@ -275,7 +275,7 @@ void flist_create_private_channel_action(PurplePluginAction *action) {
     FListAccount *fla;
 
     g_return_if_fail(pc);
-    g_return_if_fail((fla = pc->proto_data));
+    g_return_if_fail((fla = purple_connection_get_protocol_data(pc)));
     if(fla->input_request) return;
 
     purple_request_input(pc, _("Create Private Channel"), _("Create a private channel on the F-List server."),
@@ -291,7 +291,7 @@ void flist_create_private_channel_action(PurplePluginAction *action) {
 
 void flist_set_status_action_cb(gpointer user_data, PurpleRequestFields *fields) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     GSList *status_list = flist_get_status_list();
     FListStatus status;
     const gchar *status_message;
@@ -359,7 +359,7 @@ void flist_set_status_action(PurplePluginAction *action) {
     FListAccount *fla;
 
     g_return_if_fail(pc);
-    g_return_if_fail((fla = pc->proto_data));
+    g_return_if_fail((fla = purple_connection_get_protocol_data(pc)));
 
     flist_set_status_dialog(fla);
 }
@@ -371,7 +371,7 @@ static guint64 flist_now() {
 }
 void flist_join_channel(PurpleConnection *pc, GHashTable *components) {
     PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     const gchar *channel;
     JsonObject *json;
     PurpleConversation *convo;
@@ -405,7 +405,7 @@ void flist_join_channel(PurpleConnection *pc, GHashTable *components) {
 }
 
 void flist_leave_channel(PurpleConnection *pc, int id) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     const gchar *channel;
     PurpleConversation *convo = purple_find_chat(pc, id);
     JsonObject *json;
@@ -430,7 +430,7 @@ void flist_cancel_roomlist(PurpleRoomlist *list) {
     FListAccount *fla;
 
     g_return_if_fail(pc);
-    g_return_if_fail((fla = pc->proto_data));
+    g_return_if_fail((fla = purple_connection_get_protocol_data(pc)));
 
     purple_roomlist_set_in_progress(list, FALSE);
 
@@ -472,7 +472,7 @@ void flist_process_sending_im(PurpleAccount *account, char *who,
 //Hopefully, this will never be used.
 #define PURPLE_MESSAGE_FLIST 0x04000000
 int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *message, PurpleMessageFlags flags) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     JsonObject *json;
     gchar *plain_message;
 
@@ -554,10 +554,10 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
 }
 
 int flist_send_channel_message(PurpleConnection *pc, int id, const char *message, PurpleMessageFlags flags) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     PurpleConversation *convo = purple_find_chat(pc, id);
 
-    g_return_val_if_fail((fla = pc->proto_data), -EINVAL);
+    g_return_val_if_fail((fla = purple_connection_get_protocol_data(pc)), -EINVAL);
 
     if (!convo) {
         purple_debug_error(FLIST_DEBUG, "We want to send a message in channel %d, but we are not in this channel.\n", id);
@@ -569,7 +569,7 @@ int flist_send_channel_message(PurpleConnection *pc, int id, const char *message
 }
 
 PurpleCmdRet flist_roll_bottle(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     JsonObject *json = json_object_new();
     const gchar *target = purple_conversation_get_name(convo);
@@ -586,7 +586,7 @@ PurpleCmdRet flist_roll_bottle(PurpleConversation *convo, const gchar *cmd, gcha
 }
 
 PurpleCmdRet flist_roll_dice(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     JsonObject *json = json_object_new();
     const gchar *target = purple_conversation_get_name(convo);
@@ -603,7 +603,7 @@ PurpleCmdRet flist_roll_dice(PurpleConversation *convo, const gchar *cmd, gchar 
 }
 
 PurpleCmdRet flist_priv_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     PurpleAccount *pa = fla->pa;
     const gchar *character = args[0];
@@ -618,7 +618,7 @@ PurpleCmdRet flist_priv_cmd(PurpleConversation *convo, const gchar *cmd, gchar *
 }
 
 PurpleCmdRet flist_channel_show_ads_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel = purple_conversation_get_name(convo);
 
@@ -637,7 +637,7 @@ PurpleCmdRet flist_channel_show_ads_cmd(PurpleConversation *convo, const gchar *
     return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_hide_ads_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_ads(fla, channel, FALSE);
@@ -646,7 +646,7 @@ PurpleCmdRet flist_channel_hide_ads_cmd(PurpleConversation *convo, const gchar *
     return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_show_chat_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel = purple_conversation_get_name(convo);
 
@@ -665,7 +665,7 @@ PurpleCmdRet flist_channel_show_chat_cmd(PurpleConversation *convo, const gchar 
     return PURPLE_CMD_RET_OK;
 }
 PurpleCmdRet flist_channel_hide_chat_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel = purple_conversation_get_name(convo);
     flist_set_channel_show_chat(fla, channel, FALSE);
@@ -675,7 +675,7 @@ PurpleCmdRet flist_channel_hide_chat_cmd(PurpleConversation *convo, const gchar 
 }
 
 PurpleCmdRet flist_channel_send_ad(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *message = args[0];
     gchar *fixed_message = flist_fix_newlines(message);
@@ -687,7 +687,7 @@ PurpleCmdRet flist_channel_send_ad(PurpleConversation *convo, const gchar *cmd, 
 }
 
 PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *message = args[0];
     gchar *fixed_message = flist_fix_newlines(message);
@@ -723,7 +723,7 @@ PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, 
 }
 
 PurpleCmdRet flist_get_profile_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *character = args[0];
     flist_get_profile(fla->pc, character);
@@ -732,7 +732,7 @@ PurpleCmdRet flist_get_profile_cmd(PurpleConversation *convo, const gchar *cmd, 
 }
 
 PurpleCmdRet flist_channels_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     PurpleAccount *pa = fla->pa;
 
@@ -753,7 +753,7 @@ void flist_convo_print_status(PurpleConversation *convo, FListStatus status, con
 }
 
 PurpleCmdRet flist_status_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     FListStatus status;
     gchar *status_message, *status_str;
@@ -788,7 +788,7 @@ PurpleCmdRet flist_status_cmd(PurpleConversation *convo, const gchar *cmd, gchar
 
 
 PurpleCmdRet flist_whoami_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     gchar *message1;
     FListStatus status = flist_get_status(fla);
@@ -816,7 +816,7 @@ PurpleCmdRet flist_version_cmd(PurpleConversation *convo, const gchar *cmd, gcha
 }
 
 PurpleCmdRet flist_greports_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     flist_request(fla, FLIST_REQUEST_PENDING_REPORTS, NULL);
     return PURPLE_CMD_RET_OK;

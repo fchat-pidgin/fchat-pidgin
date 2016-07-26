@@ -391,7 +391,7 @@ void flist_got_channel_oplist(FListAccount *fla, const gchar *channel, GList *op
 
 /*
 static void flist_got_channel_promote(PurpleConnection *pc, PurpleConversation *convo, const gchar *who) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     const gchar *name = purple_conversation_get_name(convo);
     GHashTable *ops = g_hash_table_lookup(fla->chat_ops, name);
     gchar *identity = g_strdup(who);
@@ -406,7 +406,7 @@ static void flist_got_channel_promote(PurpleConnection *pc, PurpleConversation *
 }
 
 static void flist_got_channel_demote(PurpleConnection *pc, PurpleConversation *convo, const gchar *who) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     const gchar *name = purple_conversation_get_name(convo);
     GHashTable *ops = g_hash_table_lookup(fla->chat_ops, name);
 
@@ -672,7 +672,7 @@ gboolean flist_process_CBL(FListAccount *fla, JsonObject *root) {
 
 void flist_channel_print_op_warning(PurpleConversation *convo, const gchar *character, const gchar *message)
 {
-    FListAccount *fla = convo->account->gc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     gchar *full_message = flist_bbcode_to_html(fla, convo, message);
     gchar *parsed = g_strdup_printf("<body bgcolor=\"#ff5555\">[WARNING] %s: %s</body>", character, full_message);
 
@@ -727,7 +727,7 @@ static void flist_who(FListAccount *fla, PurpleConversation *convo, GList *who, 
 }
 
 PurpleCmdRet flist_channel_who_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *name = purple_conversation_get_name(convo);
     FListChannel *fchannel = flist_channel_find(fla, name);
@@ -755,7 +755,7 @@ PurpleCmdRet flist_channel_who_cmd(PurpleConversation *convo, const gchar *cmd, 
 }
 
 PurpleCmdRet flist_channel_oplist_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *name = purple_conversation_get_name(convo);
     FListChannel *fchannel = flist_channel_find(fla, name);
@@ -792,7 +792,7 @@ PurpleCmdRet flist_channel_oplist_cmd(PurpleConversation *convo, const gchar *cm
 }
 
 PurpleCmdRet flist_channel_op_deop_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel, *character;
     JsonObject *json;
@@ -838,7 +838,7 @@ PurpleCmdRet flist_channel_code_cmd(PurpleConversation *convo, const gchar *cmd,
 }
 
 PurpleCmdRet flist_channel_join_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel = args[0];
     GHashTable* components = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
@@ -848,7 +848,7 @@ PurpleCmdRet flist_channel_join_cmd(PurpleConversation *convo, const gchar *cmd,
 }
 
 PurpleCmdRet flist_channel_make_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel = args[0];
     JsonObject *json;
@@ -862,7 +862,7 @@ PurpleCmdRet flist_channel_make_cmd(PurpleConversation *convo, const gchar *cmd,
 }
 
 PurpleCmdRet flist_channel_banlist_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel = purple_conversation_get_name(convo);
     JsonObject *json;
@@ -878,7 +878,7 @@ PurpleCmdRet flist_channel_banlist_cmd(PurpleConversation *convo, const gchar *c
 }
 
 PurpleCmdRet flist_channel_open_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel = purple_conversation_get_name(convo);
     JsonObject *json;
@@ -899,7 +899,7 @@ PurpleCmdRet flist_channel_open_cmd(PurpleConversation *convo, const gchar *cmd,
 }
 
 PurpleCmdRet flist_channel_close_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel = purple_conversation_get_name(convo);
     JsonObject *json = json_object_new();
@@ -920,7 +920,7 @@ PurpleCmdRet flist_channel_close_cmd(PurpleConversation *convo, const gchar *cmd
 }
 
 PurpleCmdRet flist_channel_show_topic_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel;
 
@@ -931,7 +931,7 @@ PurpleCmdRet flist_channel_show_topic_cmd(PurpleConversation *convo, const gchar
 }
 
 PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel;
     FListChannel *fchannel;
@@ -953,7 +953,7 @@ PurpleCmdRet flist_channel_show_raw_topic_cmd(PurpleConversation *convo, const g
 
 void flist_channel_topic_ui_ok_cb(gpointer user_data, const gchar *topic) {
     PurpleConversation *convo = (PurpleConversation*) user_data;
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_if_fail(fla);
     const gchar *channel = purple_conversation_get_name(convo);
 
@@ -965,7 +965,7 @@ void flist_channel_topic_ui_ok_cb(gpointer user_data, const gchar *topic) {
 }
 
 PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel;
     const gchar *topic;
@@ -1016,7 +1016,7 @@ PurpleCmdRet flist_channel_set_topic_cmd(PurpleConversation *convo, const gchar 
 }
 
 PurpleCmdRet flist_channel_get_mode_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel;
 
@@ -1027,7 +1027,7 @@ PurpleCmdRet flist_channel_get_mode_cmd(PurpleConversation *convo, const gchar *
 }
 
 PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel;
     const gchar *modestr = args[0];
@@ -1057,7 +1057,7 @@ PurpleCmdRet flist_channel_set_mode_cmd(PurpleConversation *convo, const gchar *
 }
 
 PurpleCmdRet flist_channel_set_owner_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel;
     const gchar *character = args[0];
@@ -1079,7 +1079,7 @@ PurpleCmdRet flist_channel_set_owner_cmd(PurpleConversation *convo, const gchar 
 }
 
 PurpleCmdRet flist_channel_get_owner_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel;
 
@@ -1104,7 +1104,7 @@ PurpleCmdRet flist_channel_get_owner_cmd(PurpleConversation *convo, const gchar 
 }
 
 PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel, *character;
     const gchar *code = NULL;
@@ -1152,7 +1152,7 @@ PurpleCmdRet flist_channel_kick_ban_unban_cmd(PurpleConversation *convo, const g
 }
 
 PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel, *character;
     JsonObject *json;
@@ -1176,7 +1176,7 @@ PurpleCmdRet flist_channel_invite_cmd(PurpleConversation *convo, const gchar *cm
 }
 
 PurpleCmdRet flist_channel_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
 
     const gchar *channel = purple_conversation_get_name(convo);

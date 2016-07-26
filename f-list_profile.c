@@ -254,7 +254,7 @@ static void flist_get_profile_cb(FListWebRequestData *req_data, gpointer user_da
 }
 
 void flist_get_profile(PurpleConnection *pc, const char *who) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     FListProfiles *flp;
     GString *link_str;
     gchar *link;

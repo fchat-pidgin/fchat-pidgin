@@ -29,13 +29,13 @@ void flist_ignore_list_request_list(FListAccount *fla)
 void flist_ignore_list_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
     g_return_if_fail(pc);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     flist_ignore_list_request_list(fla);
 }
 
 static void ignore_list_remove_cb(PurpleConnection *pc, GList *row, gpointer user_data)
 {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     flist_ignore_list_request_remove(fla, g_list_nth_data(row, 0));
 }
 
@@ -53,7 +53,7 @@ void flist_blist_node_ignore_action(PurpleBlistNode *node, gpointer data) {
     const gchar *name = purple_buddy_get_name(b);
 
     g_return_if_fail((pc = purple_account_get_connection(pa)));
-    g_return_if_fail((fla = pc->proto_data));
+    g_return_if_fail((fla = purple_connection_get_protocol_data(pc)));
 
     if (type == FLIST_NODE_IGNORE)
     {
@@ -132,7 +132,7 @@ gboolean flist_process_IGN(FListAccount *fla, JsonObject *root) {
 }
 
 PurpleCmdRet flist_ignore_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     
     if (args[0] == NULL) {

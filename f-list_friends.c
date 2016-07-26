@@ -289,7 +289,7 @@ void flist_blist_node_action(PurpleBlistNode *node, gpointer data) {
     const gchar *name = purple_buddy_get_name(b);
 
     g_return_if_fail((pc = purple_account_get_connection(pa)));
-    g_return_if_fail((fla = pc->proto_data));
+    g_return_if_fail((fla = purple_connection_get_protocol_data(pc)));
 
     flist_friend_action(fla, name, type, FALSE);
 }

@@ -23,11 +23,6 @@
 
 #include <ctype.h>
 
-FListAccount *flist_get_account_from_conversation(PurpleConversation *convo) {
-    PurpleConnection *pc = purple_conversation_get_gc(convo);
-    return pc ? pc->proto_data : NULL;
-}
-
 FListPermissionMask flist_get_permissions(FListAccount *fla, const gchar *character, const gchar *channel)
 {
     FListPermissionMask ret = FLIST_PERMISSION_NONE;

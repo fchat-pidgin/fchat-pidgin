@@ -422,12 +422,12 @@ static void flist_filter_real(FListAccount *fla, const gchar *channel) {
 void flist_filter_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
     g_return_if_fail(pc);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     flist_filter_real(fla, NULL);
 }
 
 PurpleCmdRet flist_filter_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     flist_filter_real(fla, NULL); //TODO: put the proper channel title here
 

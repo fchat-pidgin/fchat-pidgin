@@ -96,7 +96,7 @@ gboolean flist_staff_activate_real(const gchar *host, const gchar *path) {
         return FALSE;
     }
 
-    fla = pc->proto_data;
+    fla = purple_connection_get_protocol_data(pc);
     flist_send_sfc_confirm(fla, path);
 
     return TRUE;
@@ -150,7 +150,7 @@ GtkWidget *get_account_icon(FListAccount *fla)
 
 static void alert_staff_button_clicked_cb(GtkButton* button, gpointer func_data) {
     PurpleConversation *convo = (PurpleConversation*) func_data;
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_if_fail(fla);
 
     FListReport *flr = flist_report_new(fla, convo, NULL, NULL);
@@ -159,7 +159,7 @@ static void alert_staff_button_clicked_cb(GtkButton* button, gpointer func_data)
 
 static void character_button_clicked_cb(GtkButton* button, gpointer func_data) {
     PurpleConnection *pc = (PurpleConnection*) func_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     flist_get_profile(pc, fla->character);
 }
 
@@ -183,7 +183,7 @@ static void flist_text_tag_table_tag_added_cb(GtkTextTagTable *text_tag_table, G
     if (!tag)
         return;
 
-    FListAccount *fla = flist_get_account_from_conversation(conv);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(conv));
     g_return_if_fail(fla);
     gboolean is_im = (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM);
 
@@ -331,7 +331,7 @@ static void flist_pidgin_conversation_created_cb(PurpleConversation *conv, FList
 static void flist_pidgin_set_user_gender_color(PurpleConversation *conv, PurpleConvChatBuddy *buddy) {
     PurpleConnection *pc = purple_conversation_get_gc(conv);
 
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     PidginConversation *gtkconv = PIDGIN_CONVERSATION(conv);
     PidginChatPane *gtkchat = gtkconv->u.chat;
 
@@ -383,11 +383,16 @@ static void flist_pidgin_chat_add_users(PurpleConversation *conv, GList*cbuddies
     PurpleConnection *pc = purple_conversation_get_gc(conv);
 
     // Is this a conversation of our plugin's account?
-    if (!purple_strequal(pc->account->protocol_id, FLIST_PLUGIN_ID))
+    if (!purple_strequal(
+                purple_account_get_protocol_id(purple_connection_get_account(pc)),
+                FLIST_PLUGIN_ID)) {
         return;
+    }
 
-    if (!purple_account_get_bool(pc->account, "use_gender_colors", TRUE))
+    if (!purple_account_get_bool(purple_connection_get_account(pc),
+                "use_gender_colors", TRUE)) {
         return;
+    }
 
     GList *tmp = cbuddies;
     while (tmp != NULL) {
@@ -408,11 +413,16 @@ static void flist_pidgin_chat_update_user(PurpleConversation *conv, const char *
     PurpleConnection *pc = purple_conversation_get_gc(conv);
 
     // Is this a conversation of our plugin's account?
-    if (!purple_strequal(pc->account->protocol_id, FLIST_PLUGIN_ID))
+    if (!purple_strequal(
+                purple_account_get_protocol_id(purple_connection_get_account(pc)),
+                FLIST_PLUGIN_ID)) {
         return;
+    }
 
-    if (!purple_account_get_bool(pc->account, "use_gender_colors", TRUE))
+    if (!purple_account_get_bool(purple_connection_get_account(pc),
+                "use_gender_colors", TRUE)) {
         return;
+    }
 
     PurpleConvChatBuddy *buddy = purple_conv_chat_cb_find(PURPLE_CONV_CHAT(conv), user);
     g_return_if_fail(buddy);

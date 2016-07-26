@@ -35,8 +35,6 @@
 
 typedef unsigned char FListPermissionMask;
 
-FListAccount *flist_get_account_from_conversation(PurpleConversation *);
-
 FListPermissionMask flist_get_permissions(FListAccount *fla, const gchar *character, const gchar *channel);
 PurpleConvChatBuddyFlags flist_permissions_to_purple(FListPermissionMask permission);
 

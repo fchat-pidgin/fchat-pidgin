@@ -295,7 +295,7 @@ void flist_report_display_ui(FListReport *flr) {
 }
 
 PurpleCmdRet flist_report_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
 
     if (convo->type != PURPLE_CONV_TYPE_CHAT && convo->type != PURPLE_CONV_TYPE_IM)

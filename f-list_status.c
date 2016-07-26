@@ -61,7 +61,7 @@ void flist_purple_set_status(PurpleAccount *account, PurpleStatus *status) {
     g_return_if_fail(status);
 
     PurpleConnection *pc = purple_account_get_connection(account);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     g_return_if_fail(fla);
 
     if (fla->sync_status) {

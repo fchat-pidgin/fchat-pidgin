@@ -149,7 +149,7 @@ PurpleGroup *flist_get_im_group(FListAccount *fla) {
 }
 
 const gchar *flist_serialize_account(PurpleAccount *pa) {
-    const gchar *name = pa->username;
+    const gchar *name = purple_account_get_username(pa);
     const gchar *ret;
     guint32 rand;
     ret = g_hash_table_lookup(account_to_string, name);
@@ -332,7 +332,7 @@ gint json_object_get_parse_int_member(JsonObject *json, const gchar *name, gbool
 
 static GList *flist_actions(PurplePlugin *plugin, gpointer context) {
     PurpleConnection *pc = context;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     GList *list = NULL;
     PurplePluginAction *act = NULL;
 
@@ -428,7 +428,7 @@ GSList *flist_get_all_characters(FListAccount *fla) {
 }
 
 void flist_close(PurpleConnection *pc) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     if(!fla) return;
 
     if(fla->connection_status == FLIST_CONNECT) purple_proxy_connect_cancel_with_handle((void*) pc);
@@ -473,7 +473,7 @@ void flist_close(PurpleConnection *pc) {
 
     g_free(fla);
 
-    pc->proto_data = NULL;
+    purple_connection_set_protocol_data(pc, NULL);
 }
 
 static void flist_character_free(FListCharacter *character) {
@@ -600,7 +600,7 @@ void flist_login(PurpleAccount *pa) {
     fla->all_characters = g_hash_table_new_full((GHashFunc)flist_str_hash, (GEqualFunc)flist_str_equal, g_free, (GDestroyNotify)flist_character_free);
 
     fla->rx_buf = g_malloc0(256); fla->rx_len = 0;
-    pc->proto_data = fla;
+    purple_connection_set_protocol_data(pc, fla);
 
     ac_split = g_strsplit(purple_account_get_username(pa), ":", 2);
     fla->username = g_strdup(ac_split[0]);

@@ -86,7 +86,7 @@ void flist_clear_temp_groups(FListAccount *fla) {
 }
 
 void flist_convo_closed(PurpleConnection *pc, const char *who) {
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     PurpleGroup *im_group = flist_get_im_group(fla);
 
     /* Try to find if this was a temporary IM, and if it was, remove it */

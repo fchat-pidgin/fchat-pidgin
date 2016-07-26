@@ -22,7 +22,7 @@
 
 static void flist_admin_request_cancel_string_cb(gpointer user_data, const gchar *name) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
 
     g_return_if_fail(fla);
 
@@ -31,7 +31,7 @@ static void flist_admin_request_cancel_string_cb(gpointer user_data, const gchar
 
 static void flist_create_public_channel_cb(gpointer user_data, const gchar *name) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     JsonObject *json;
 
     g_return_if_fail(fla);
@@ -47,7 +47,7 @@ static void flist_create_public_channel_cb(gpointer user_data, const gchar *name
 void flist_create_public_channel_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
     PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     g_return_if_fail(fla);
     if(fla->input_request) return;
 
@@ -62,7 +62,7 @@ void flist_create_public_channel_action(PurplePluginAction *action) {
 
 static void flist_delete_public_channel_cb(gpointer user_data, const gchar *name) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     JsonObject *json;
 
     g_return_if_fail(fla);
@@ -77,7 +77,7 @@ static void flist_delete_public_channel_cb(gpointer user_data, const gchar *name
 void flist_delete_public_channel_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
     PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     g_return_if_fail(fla);
     if(fla->input_request) return;
 
@@ -92,7 +92,7 @@ void flist_delete_public_channel_action(PurplePluginAction *action) {
 
 static void flist_add_global_operator_cb(gpointer user_data, const gchar *name) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     JsonObject *json;
 
     g_return_if_fail(fla);
@@ -108,7 +108,7 @@ static void flist_add_global_operator_cb(gpointer user_data, const gchar *name) 
 void flist_add_global_operator_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
     PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     g_return_if_fail(fla);
     if(fla->input_request) return;
 
@@ -123,7 +123,7 @@ void flist_add_global_operator_action(PurplePluginAction *action) {
 
 static void flist_remove_global_operator_cb(gpointer user_data, const gchar *name) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     JsonObject *json;
 
     g_return_if_fail(fla);
@@ -139,7 +139,7 @@ static void flist_remove_global_operator_cb(gpointer user_data, const gchar *nam
 void flist_remove_global_operator_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
     PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     g_return_if_fail(fla);
     if(fla->input_request) return;
 
@@ -154,7 +154,7 @@ void flist_remove_global_operator_action(PurplePluginAction *action) {
 
 static void flist_broadcast_action_cb(gpointer user_data, const gchar *message) {
     PurpleConnection *pc = user_data;
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     JsonObject *json;
 
     g_return_if_fail(fla);
@@ -170,7 +170,7 @@ static void flist_broadcast_action_cb(gpointer user_data, const gchar *message) 
 void flist_broadcast_action(PurplePluginAction *action) {
     PurpleConnection *pc = action->context;
     PurpleAccount *pa = purple_connection_get_account(pc);
-    FListAccount *fla = pc->proto_data;
+    FListAccount *fla = purple_connection_get_protocol_data(pc);
     g_return_if_fail(fla);
     if(fla->input_request) return;
 
@@ -184,7 +184,7 @@ void flist_broadcast_action(PurplePluginAction *action) {
 }
 
 PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
 
     const gchar *character;
@@ -206,7 +206,7 @@ PurpleCmdRet flist_admin_op_deop_cmd(PurpleConversation *convo, const gchar *cmd
 }
 
 PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *character;
     const gchar *code = NULL;
@@ -234,7 +234,7 @@ PurpleCmdRet flist_global_kick_ban_unban_cmd(PurpleConversation *convo, const gc
 }
 
 PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *channel;
     const gchar *code = NULL;
@@ -260,7 +260,7 @@ PurpleCmdRet flist_create_kill_channel_cmd(PurpleConversation *convo, const gcha
 }
 
 PurpleCmdRet flist_broadcast_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *message;
     JsonObject *json;
@@ -277,7 +277,7 @@ PurpleCmdRet flist_broadcast_cmd(PurpleConversation *convo, const gchar *cmd, gc
 }
 
 PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     gchar **split; guint count;
     const gchar *character, *timestr, *reason;
@@ -325,7 +325,7 @@ PurpleCmdRet flist_timeout_cmd(PurpleConversation *convo, const gchar *cmd, gcha
 }
 
 PurpleCmdRet flist_reward_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
-    FListAccount *fla = flist_get_account_from_conversation(convo);
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *character;
     JsonObject *json;
