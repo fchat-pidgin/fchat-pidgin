@@ -137,15 +137,22 @@ void flist_request(FListAccount *fla, const gchar* type, JsonObject *object) {
 
 static gboolean flist_recv(FListAccount *fla) {
     gchar buf[4096];
+    gchar *errmsg;
     gssize len;
 
     len = purple_ssl_read(fla->ssl_con, buf, sizeof(buf) - 1);
 
     if(len <= 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) return FALSE; //try again later
-        //TODO: better error reporting
-        purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, "The connection has failed.");
-        return FALSE;
+        if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
+            //try again later
+            return FALSE;
+        } else {
+            // some other error, fail
+            errmsg = g_strdup_printf("The connection has failed : %s", g_strerror(errno));
+            purple_connection_error_reason(fla->pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, errmsg);
+            g_free(errmsg);
+            return FALSE;
+        }
     }
     buf[len] = '\0';
     fla->rx_buf = g_realloc(fla->rx_buf, fla->rx_len + len + 1);
