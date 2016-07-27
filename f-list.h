@@ -354,6 +354,15 @@ struct FListAccount_ {
 
     guint ping_timeout_handle;
 
+    /* Server variables */
+    gsize chat_max;
+    gsize priv_max;
+    gsize lfrp_max;
+    gfloat lfrp_flood;
+    gfloat msg_flood;
+    GSList *icon_blacklist;
+    guint32 permissions;
+
     /* for the channel subsystem */
     GHashTable *chat_table; /* a hash table of open PurpleConvChat */
     GHashTable *chat_timestamp; /* the last time we attempted to join the chat */

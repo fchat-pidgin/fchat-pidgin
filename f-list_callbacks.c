@@ -85,6 +85,77 @@ static void flist_got_online(FListAccount *fla) {
     flist_friends_login(fla);
 }
 
+
+static gboolean flist_process_VAR(FListAccount *fla, JsonObject *root) {
+    const gchar *variable_name;
+    JsonArray *values;
+    guint len,i;
+
+    variable_name = json_object_get_string_member(root, "variable");
+
+    //  chat_max: Maximum number of bytes allowed with MSG.
+    if (g_strcmp0(variable_name, "chat_max") == 0) {
+        fla->chat_max = (gsize)json_object_get_int_member(root, "value");
+        purple_debug_info(FLIST_DEBUG, "Received channel message size limit: %"G_GSIZE_FORMAT"\n", fla->chat_max);
+        return TRUE;
+    }
+
+    //  priv_max: Maximum number of bytes allowed with PRI.
+    if (g_strcmp0(variable_name, "priv_max") == 0) {
+        fla->priv_max = (gsize)json_object_get_int_member(root, "value");
+        purple_debug_info(FLIST_DEBUG, "Received private message size limit: %"G_GSIZE_FORMAT"\n", fla->priv_max);
+        return TRUE;
+    }
+
+    //  lfrp_max: Maximum number of bytes allowed with LRP.
+    if (g_strcmp0(variable_name, "lfrp_max") == 0) {
+        fla->lfrp_max = (gsize)json_object_get_int_member(root, "value");
+        purple_debug_info(FLIST_DEBUG, "Received ad message size limit: %"G_GSIZE_FORMAT"\n", fla->lfrp_max);
+        return TRUE;
+    }
+
+    //  lfrp_flood: Required seconds between LRP messages.
+    if (g_strcmp0(variable_name, "lfrp_flood") == 0) {
+        fla->lfrp_flood = (gfloat)json_object_get_double_member(root, "value");
+        purple_debug_info(FLIST_DEBUG, "Received ad message flood threshold: %f seconds\n", fla->lfrp_flood);
+        return TRUE;
+    }
+
+    //  msg_flood: Required seconds between MSG messages.
+    if (g_strcmp0(variable_name, "msg_flood") == 0) {
+        fla->msg_flood = (gfloat)json_object_get_double_member(root, "value");
+        purple_debug_info(FLIST_DEBUG, "Received channel message flood threshold: %f seconds\n", fla->msg_flood);
+        return TRUE;
+    }
+
+    //  permissions: Permissions mask for this character.
+    if (g_strcmp0(variable_name, "permissions") == 0) {
+        fla->permissions = (guint32)json_object_get_int_member(root, "value");
+        purple_debug_info(FLIST_DEBUG, "Received permission mask for character %s: %"G_GUINT32_FORMAT"\n", fla->character, fla->permissions);
+        return TRUE;
+    }
+
+    //  icon_blacklist: An array of channels that do not allow (e)icons.
+    if (g_strcmp0(variable_name,"icon_blacklist") == 0) {
+        values = json_object_get_array_member(root, "value");
+
+        if (fla->icon_blacklist) {
+            flist_g_slist_free_full(fla->icon_blacklist, g_free);
+            fla->icon_blacklist = NULL;
+        }
+
+        len = json_array_get_length(values);
+        for(i = 0; i < len; i++) {
+            fla->icon_blacklist = g_slist_append(fla->icon_blacklist,
+                    g_strdup(json_array_get_string_element(values, i)));
+        }
+        purple_debug_info(FLIST_DEBUG, "Received icon blacklist for server: %u channels\n", g_slist_length(fla->icon_blacklist));
+        return TRUE;
+    }
+    // Unhandled
+    return FALSE;
+}
+
 static gboolean flist_process_ERR(FListAccount *fla, JsonObject *root) {
     const gchar *message;
     long number;
@@ -705,11 +776,12 @@ void flist_callback_init() {
     //TODO:
             //HLO - server MOTD
             //KIN - kinks data
-            //VAR - server variables
-
     g_hash_table_insert(callbacks, "RTB", flist_process_RTB);
 
     g_hash_table_insert(callbacks, "TPN", flist_process_TPN);
+
+    /* Server variables */
+    g_hash_table_insert(callbacks, "VAR", flist_process_VAR);
 
     /* info on admins */
     g_hash_table_insert(callbacks, "ADL", flist_process_ADL);

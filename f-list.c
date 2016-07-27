@@ -460,6 +460,8 @@ void flist_close(PurpleConnection *pc) {
 
     if(fla->input_request) purple_request_close_with_handle((void*) pc);
 
+    if(fla->icon_blacklist) flist_g_slist_free_full(fla->icon_blacklist, g_free);
+
 #ifndef FLIST_PURPLE_ONLY
     flist_pidgin_disable_signals(fla);
 #endif
