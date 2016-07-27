@@ -28,6 +28,8 @@ typedef enum {
     FriendRequest,
     FriendAdd,
     FriendRemove,
+    BookmarkAdd,
+    BookmarkRemove,
     Note,
     BugReport,
     HelpdeskTicket,

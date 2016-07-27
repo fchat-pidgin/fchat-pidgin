@@ -280,6 +280,12 @@ void flist_friends_removed_friend(FListAccount *fla) {
     flist_friends_refresh(fla);
 }
 
+void flist_bookmarks_updated(FListAccount *fla) {
+    FListFriends *flf = _flist_friends(fla);
+    flf->bookmarks_dirty = TRUE;
+    flist_friends_refresh(fla);
+}
+
 void flist_blist_node_action(PurpleBlistNode *node, gpointer data) {
     PurpleBuddy *b = (PurpleBuddy*) node;
     PurpleAccount *pa = purple_buddy_get_account(b);

@@ -46,6 +46,10 @@ RTB_TYPE flist_rtb_get_type(const gchar *type_str)
         type = FriendAdd;
     else if(flist_str_equal(type_str, "friendremove"))
         type = FriendRemove;
+    else if(flist_str_equal(type_str, "trackadd"))
+        type = BookmarkAdd;
+    else if(flist_str_equal(type_str, "trackrem"))
+        type = BookmarkRemove;
     else if(flist_str_equal(type_str, "note"))
         type = Note;
     else if(flist_str_equal(type_str, "bugreport"))
@@ -72,10 +76,6 @@ gboolean flist_process_RTB(FListAccount *fla, JsonObject *root) {
     gint target_id; gboolean has_target_id;
     const gchar *type_str = json_object_get_string_member(root, "type");
 
-    /* Ignore notification if the user doesn't want to see it */
-    if (!fla->receive_notifications) {
-        return TRUE;
-    }
 
     purple_debug_info(FLIST_DEBUG, "Processing RTB... (Character: %s, Type: %s)\n", fla->character, type_str);
 
@@ -99,9 +99,20 @@ gboolean flist_process_RTB(FListAccount *fla, JsonObject *root) {
         case FriendRemove:
             flist_friends_removed_friend(fla);
             return TRUE;
+        case BookmarkAdd:
+            flist_bookmarks_updated(fla);
+            return TRUE;
+        case BookmarkRemove:
+            flist_bookmarks_updated(fla);
+            return TRUE;
         default:
             // We will handle other cases further below
             break;
+    }
+
+    /* Ignore notification if the user doesn't want to see it */
+    if (!fla->receive_notifications) {
+        return TRUE;
     }
 
     // --- Past this point, we're going to build a message.

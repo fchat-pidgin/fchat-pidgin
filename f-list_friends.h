@@ -43,5 +43,6 @@ void flist_friends_received_request(FListAccount*);
 void flist_friends_added_friend(FListAccount*);
 //This is received when you remove a friend or a friend removes you.
 void flist_friends_removed_friend(FListAccount*);
+void flist_bookmarks_updated(FListAccount *);
 
 #endif /* FLIST_FRIENDS_H */

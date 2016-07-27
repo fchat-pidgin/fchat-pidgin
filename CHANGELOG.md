@@ -6,6 +6,7 @@
 ### Fixed
 - #130: Do not automatically try to re-login if kicked out from another location
 - The user now gets a helpful error message instead of a popup when trying to send a message beyond server size limits
+- #119: Bookmark updates from the website are now taken into account immediately
 
 ## 0.6.0
 ### Added
