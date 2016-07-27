@@ -85,6 +85,40 @@ static void flist_got_online(FListAccount *fla) {
     flist_friends_login(fla);
 }
 
+static gboolean flist_process_HLO(FListAccount *fla, JsonObject *root) {
+    const gchar *message;
+    message = json_object_get_string_member(root, "message");
+
+    purple_debug_info(FLIST_DEBUG, "Got server hello: %s\n", message);
+    return TRUE;
+}
+
+static gboolean flist_process_UPT(FListAccount *fla, JsonObject *root) {
+    const gchar *startstring;
+    gchar *msgbuf;
+    gint64 accepted, channels, users, maxusers;
+    GString *message;
+
+    startstring = json_object_get_string_member(root, "startstring");
+    accepted = json_object_get_int_member(root, "accepted");
+    channels = json_object_get_int_member(root, "channels");
+    users = json_object_get_int_member(root, "users");
+    maxusers = json_object_get_int_member(root, "maxusers");
+
+
+    message = g_string_new("F-Chat server statistics\n");
+    if (startstring) g_string_append_printf(message, "Server start date: %s\n",startstring);
+    if (accepted) g_string_append_printf(message, "Accepted users: %" G_GINT64_FORMAT "\n",accepted);
+    if (channels) g_string_append_printf(message, "Current channels: %" G_GINT64_FORMAT "\n",channels);
+    if (users) g_string_append_printf(message, "Current users: %" G_GINT64_FORMAT "\n",users);
+    if (maxusers) g_string_append_printf(message, "Maximum users: %" G_GINT64_FORMAT "\n",maxusers);
+    msgbuf = g_string_free(message, FALSE);
+
+    serv_got_im(fla->pc, GLOBAL_NAME, msgbuf, PURPLE_MESSAGE_RECV, time(NULL));
+    g_free(msgbuf);
+
+    return TRUE;
+}
 
 static gboolean flist_process_VAR(FListAccount *fla, JsonObject *root) {
     const gchar *variable_name;
@@ -774,14 +808,15 @@ void flist_callback_init() {
     callbacks = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
     //TODO:
-            //HLO - server MOTD
             //KIN - kinks data
     g_hash_table_insert(callbacks, "RTB", flist_process_RTB);
 
     g_hash_table_insert(callbacks, "TPN", flist_process_TPN);
 
-    /* Server variables */
+    /* Server variables and info */
     g_hash_table_insert(callbacks, "VAR", flist_process_VAR);
+    g_hash_table_insert(callbacks, "HLO", flist_process_HLO);
+    g_hash_table_insert(callbacks, "UPT", flist_process_UPT);
 
     /* info on admins */
     g_hash_table_insert(callbacks, "ADL", flist_process_ADL);

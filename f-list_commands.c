@@ -843,6 +843,14 @@ PurpleCmdRet flist_whoami_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     return PURPLE_CMD_RET_OK;
 }
 
+PurpleCmdRet flist_uptime_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
+    g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
+
+    flist_request(fla, FLIST_REQUEST_UPTIME, NULL);
+    return PURPLE_CMD_RET_OK;
+}
+
 PurpleCmdRet flist_version_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
     gchar *message1;
 
@@ -994,6 +1002,9 @@ void flist_init_commands() {
 
     purple_cmd_register("greports", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_greports_cmd, "greports: Pull list of pending chat reports.", NULL);
+
+    purple_cmd_register("uptime", "", PURPLE_CMD_P_PRPL, anywhere_flags,
+        FLIST_PLUGIN_ID, flist_uptime_cmd, "uptime: Get some server statistics.", NULL);
 
     purple_cmd_register("version", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_version_cmd, "version: Display the plugin's version.", NULL);
