@@ -458,6 +458,13 @@ void flist_process_sending_im(PurpleAccount *account, char *who,
         gchar *plain_message, *local_message, *bbcode_message;
         im = PURPLE_CONV_IM(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, account));
         purple_markup_html_to_xhtml(*message, NULL, &plain_message);
+
+        // Exit here and don't actually print anything if we are above the server size limit
+        if ((fla->priv_max > 0) && (strlen(plain_message) > fla->priv_max)){
+            g_free(plain_message);
+            return;
+        }
+
         local_message = purple_markup_escape_text(plain_message, -1); /* re-escape the html entities */
         bbcode_message = flist_bbcode_to_html(fla, purple_conv_im_get_conversation(im), local_message); /* convert the bbcode to html to display locally */
         purple_conv_im_write(im, NULL, bbcode_message, PURPLE_MESSAGE_SEND, time(NULL));
@@ -484,10 +491,17 @@ int flist_send_message(PurpleConnection *pc, const gchar *who, const gchar *mess
 
     g_return_val_if_fail(fla, 0);
 
+    purple_markup_html_to_xhtml(message, NULL, &plain_message);
+
+    // Check for size according to server limits
+    // If no server limit is available yet, we try to send anyway
+    if ((fla->priv_max > 0) && (strlen(plain_message) > fla->priv_max)){
+        g_free(plain_message);
+        return -E2BIG;
+    }
+
     purple_debug_info(FLIST_DEBUG, "Sending message... (From: %s) (To: %s) (Message: %s) (Flags: %x)\n",
         fla->character, who, message, flags);
-
-    purple_markup_html_to_xhtml(message, NULL, &plain_message);
 
     json = json_object_new();
     json_object_set_string_member(json, "recipient", who);
@@ -525,14 +539,30 @@ static gchar *flist_fix_newlines(const char *html) {
     return g_string_free(ret, FALSE);
 }
 
-static void flist_send_channel_message_real(FListAccount *fla, PurpleConversation *convo, const gchar *message, gboolean ad) {
-    JsonObject *json = json_object_new();
+static int flist_send_channel_message_real(FListAccount *fla, PurpleConversation *convo, const gchar *message, gboolean ad) {
+    JsonObject *json;
     gchar *plain_message, *local_message, *bbcode_message;
     const gchar *channel = purple_conversation_get_name(convo);
+
+    purple_markup_html_to_xhtml(message, NULL, &plain_message);
+
+    // Check for size according to server limits
+    // If no server limit is available yet, we try to send anyway
+    if (ad) {
+        if ((fla->lfrp_max > 0) && (strlen(plain_message) > fla->lfrp_max)){
+            g_free(plain_message);
+            return -E2BIG;
+        }
+    } else {
+        if ((fla->chat_max > 0) && (strlen(plain_message) > fla->chat_max)){
+            g_free(plain_message);
+            return -E2BIG;
+        }
+    }
+
     purple_debug_info(FLIST_DEBUG, "Sending message to channel... (Character: %s) (Channel: %s) (Message: %s) (Ad: %s)\n",
         fla->character, channel, message, ad ? "yes" : "no");
 
-    purple_markup_html_to_xhtml(message, NULL, &plain_message);
     local_message = purple_markup_escape_text(plain_message, -1); /* re-escape the html entities */
     if(ad) {
         gchar *tmp = g_strdup_printf("<body bgcolor=\"%s\">[b](Roleplay Ad)[/b] %s</body>", purple_account_get_string(fla->pa, "ads_background", FLIST_RPAD_DEFAULT_BACKGROUND), local_message);
@@ -541,6 +571,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     }
     bbcode_message = flist_bbcode_to_html(fla, convo, local_message); /* convert the bbcode to html to display locally */
 
+    json = json_object_new();
     json_object_set_string_member(json, "message", plain_message);
     json_object_set_string_member(json, "channel", channel);
     flist_request(fla, !ad ? FLIST_REQUEST_CHANNEL_MESSAGE : FLIST_CHANNEL_ADVERSTISEMENT, json);
@@ -551,6 +582,7 @@ static void flist_send_channel_message_real(FListAccount *fla, PurpleConversatio
     g_free(bbcode_message);
     g_free(local_message);
     json_object_unref(json);
+    return 0;
 }
 
 int flist_send_channel_message(PurpleConnection *pc, int id, const char *message, PurpleMessageFlags flags) {
@@ -564,8 +596,7 @@ int flist_send_channel_message(PurpleConnection *pc, int id, const char *message
         return -EINVAL;
     }
 
-    flist_send_channel_message_real(fla, convo, message, FALSE);
-    return 0;
+    return flist_send_channel_message_real(fla, convo, message, FALSE);
 }
 
 PurpleCmdRet flist_roll_bottle(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
@@ -678,12 +709,21 @@ PurpleCmdRet flist_channel_send_ad(PurpleConversation *convo, const gchar *cmd, 
     FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
     const gchar *message = args[0];
+    int ret;
     gchar *fixed_message = flist_fix_newlines(message);
 
-    flist_send_channel_message_real(fla, convo, fixed_message, TRUE);
-
+    ret = flist_send_channel_message_real(fla, convo, fixed_message, TRUE);
     g_free(fixed_message);
-    return PURPLE_CMD_RET_OK;
+
+    if (ret < 0){
+        if (ret == -E2BIG) {
+            *error = g_strdup(_("Ad text is too long"));
+        }
+        return PURPLE_CMD_RET_FAILED;
+
+    } else {
+        return PURPLE_CMD_RET_OK;
+    }
 }
 
 PurpleCmdRet flist_channel_warning(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
