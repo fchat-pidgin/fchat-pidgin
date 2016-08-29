@@ -453,6 +453,8 @@ void flist_close(PurpleConnection *pc) {
     g_hash_table_destroy(fla->all_characters);
     if(fla->global_ops) g_hash_table_destroy(fla->global_ops);
 
+    if(fla->saved_name) g_free(fla->saved_name);
+
     /* login options */
     if(fla->server_address) g_free(fla->server_address);
 

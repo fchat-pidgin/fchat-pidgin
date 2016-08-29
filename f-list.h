@@ -397,6 +397,10 @@ struct FListAccount_ {
     /* ignore list */
     GList *ignore_list;
 
+    /* command conversation output */
+    PurpleConversationType saved_type;
+    gchar *saved_name;
+
     /* other options */
     gboolean receive_notifications;
     gboolean debug_mode;

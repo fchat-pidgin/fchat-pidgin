@@ -53,4 +53,10 @@ void flist_init_commands();
 
 void flist_process_sending_im(PurpleAccount *account, char *who, char **message, FListAccount *fla);
 
+
+// Those two fonctions are used by commands whose target window is not sent by the server
+// We save the target window when running the command, and hope that the user won't hop
+// to another window or run another command before the results get back !
+void flist_remember_conversation(FListAccount *fla, PurpleConversation *convo);
+PurpleConversation *flist_recall_conversation(FListAccount *fla);
 #endif

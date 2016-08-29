@@ -20,6 +20,25 @@
  */
 #include "f-list_commands.h"
 
+
+void flist_remember_conversation(FListAccount *fla, PurpleConversation *convo) {
+    g_return_if_fail(fla);
+    g_return_if_fail(convo);
+
+    fla->saved_type = purple_conversation_get_type(convo);
+
+    g_free(fla->saved_name);
+    fla->saved_name = g_strdup(purple_conversation_get_name(convo));
+
+    return;
+}
+
+PurpleConversation *flist_recall_conversation(FListAccount *fla) {
+    g_return_val_if_fail(fla, NULL);
+
+    return purple_find_conversation_with_account(fla->saved_type, fla->saved_name, fla->pa);
+}
+
 static gboolean is_empty_status(FListStatus status) {
     return status == FLIST_STATUS_AVAILABLE || status == FLIST_STATUS_OFFLINE;
 }
@@ -870,6 +889,36 @@ PurpleCmdRet flist_greports_cmd(PurpleConversation *convo, const gchar *cmd, gch
     return PURPLE_CMD_RET_OK;
 }
 
+
+PurpleCmdRet flist_kinks_cmd(PurpleConversation *convo, const gchar *cmd, gchar **args, gchar **error, void *data) {
+    FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
+    g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
+
+    const gchar *character;
+
+    // We allow this command to be ran into a IM window without argument
+    if (!args[0]) {
+        if (purple_conversation_get_type(convo) == PURPLE_CONV_TYPE_IM) {
+            character = purple_conversation_get_name(convo);
+        } else {
+            *error = g_strdup(_("Please specify a target character"));
+            return PURPLE_CMD_RET_FAILED;
+        }
+    } else {
+        character = args[0];
+    }
+
+    JsonObject *json = json_object_new();
+
+    json_object_set_string_member(json, "character", character);
+
+    flist_remember_conversation(fla, convo);
+    flist_request(fla, FLIST_REQUEST_CHARACTER_KINKS, json);
+    json_object_unref(json);
+
+    return PURPLE_CMD_RET_OK;
+}
+
 void flist_init_commands() {
     PurpleCmdFlag channel_flags = PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_CHAT;
     PurpleCmdFlag anywhere_flags = PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_CHAT | PURPLE_CMD_FLAG_IM;
@@ -1008,4 +1057,7 @@ void flist_init_commands() {
 
     purple_cmd_register("version", "", PURPLE_CMD_P_PRPL, anywhere_flags,
         FLIST_PLUGIN_ID, flist_version_cmd, "version: Display the plugin's version.", NULL);
+
+    purple_cmd_register("kinks", "s", PURPLE_CMD_P_PRPL, anywhere_flags | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
+        FLIST_PLUGIN_ID, flist_kinks_cmd, "kinks &lt;user&gt;: Lists the custom kinks of the requested character.", NULL);
 }

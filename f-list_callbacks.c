@@ -93,6 +93,31 @@ static gboolean flist_process_HLO(FListAccount *fla, JsonObject *root) {
     return TRUE;
 }
 
+static gboolean flist_process_KID(FListAccount *fla, JsonObject *root) {
+    const gchar *type;
+    gchar *text;
+    PurpleConversation *convo = flist_recall_conversation(fla);
+
+    type = json_object_get_string_member(root, "type");
+    if (g_strcmp0(type, "start") == 0) {
+        text = g_strdup_printf("%s", json_object_get_string_member(root, "message"));
+        purple_conversation_write(convo, NULL, text, PURPLE_MESSAGE_SYSTEM, time(NULL));
+        g_free(text);
+    } else if (g_strcmp0(type, "custom") == 0) {
+        text = g_strdup_printf("<i>%s</i>: %s",
+                json_object_get_string_member(root, "key"),
+                json_object_get_string_member(root, "value")
+                );
+        purple_conversation_write(convo, NULL, text, PURPLE_MESSAGE_SYSTEM, time(NULL));
+        g_free(text);
+    } else if (g_strcmp0(type, "end") == 0) {
+        text = g_strdup_printf("%s", json_object_get_string_member(root, "message"));
+        purple_conversation_write(convo, NULL, text, PURPLE_MESSAGE_SYSTEM, time(NULL));
+        g_free(text);
+    }
+    return TRUE;
+}
+
 static gboolean flist_process_UPT(FListAccount *fla, JsonObject *root) {
     const gchar *startstring;
     gchar *msgbuf;
@@ -807,8 +832,6 @@ void flist_callback_init() {
     if(callbacks) return;
     callbacks = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    //TODO:
-            //KIN - kinks data
     g_hash_table_insert(callbacks, "RTB", flist_process_RTB);
 
     g_hash_table_insert(callbacks, "TPN", flist_process_TPN);
@@ -848,6 +871,7 @@ void flist_callback_init() {
 
     //profile request
     g_hash_table_insert(callbacks, "PRD", flist_process_PRD);
+    g_hash_table_insert(callbacks, "KID", flist_process_KID);
 
     //channel list callbacks
     g_hash_table_insert(callbacks, "CHA", flist_process_CHA); //public channel list
