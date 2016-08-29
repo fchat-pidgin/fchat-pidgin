@@ -866,6 +866,8 @@ PurpleCmdRet flist_uptime_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     FListAccount *fla = purple_connection_get_protocol_data(purple_conversation_get_gc(convo));
     g_return_val_if_fail(fla, PURPLE_CMD_RET_FAILED);
 
+    flist_remember_conversation(fla, convo);
+
     flist_request(fla, FLIST_REQUEST_UPTIME, NULL);
     return PURPLE_CMD_RET_OK;
 }

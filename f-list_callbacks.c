@@ -139,7 +139,8 @@ static gboolean flist_process_UPT(FListAccount *fla, JsonObject *root) {
     if (maxusers) g_string_append_printf(message, "Maximum users: %" G_GINT64_FORMAT "\n",maxusers);
     msgbuf = g_string_free(message, FALSE);
 
-    serv_got_im(fla->pc, GLOBAL_NAME, msgbuf, PURPLE_MESSAGE_RECV, time(NULL));
+    PurpleConversation *convo = flist_recall_conversation(fla);
+    purple_conversation_write(convo, NULL, msgbuf, PURPLE_MESSAGE_SYSTEM, time(NULL));
     g_free(msgbuf);
 
     return TRUE;
