@@ -95,6 +95,7 @@ static gboolean flist_process_HLO(FListAccount *fla, JsonObject *root) {
 
 static gboolean flist_process_KID(FListAccount *fla, JsonObject *root) {
     const gchar *type;
+    gchar *decoded_value, *decoded_key;
     gchar *text;
     PurpleConversation *convo = flist_recall_conversation(fla);
 
@@ -104,10 +105,15 @@ static gboolean flist_process_KID(FListAccount *fla, JsonObject *root) {
         purple_conversation_write(convo, NULL, text, PURPLE_MESSAGE_SYSTEM, time(NULL));
         g_free(text);
     } else if (g_strcmp0(type, "custom") == 0) {
+        decoded_value = flist_html_unescape_utf8(json_object_get_string_member(root, "value"));
+        decoded_key = flist_html_unescape_utf8(json_object_get_string_member(root, "key"));
         text = g_strdup_printf("<i>%s</i>: %s",
-                json_object_get_string_member(root, "key"),
-                json_object_get_string_member(root, "value")
+                decoded_key,
+                decoded_value
                 );
+        g_free(decoded_key);
+        g_free(decoded_value);
+
         purple_conversation_write(convo, NULL, text, PURPLE_MESSAGE_SYSTEM, time(NULL));
         g_free(text);
     } else if (g_strcmp0(type, "end") == 0) {
