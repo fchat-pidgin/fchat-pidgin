@@ -744,7 +744,7 @@ static gboolean flist_process_ADL(FListAccount *fla, JsonObject *root) {
         g_list_free(list);
     }
 
-    purple_prpl_got_account_actions(pa);
+    if (purple_account_is_connected(pa)) purple_prpl_got_account_actions(pa);
     return TRUE;
 }
 
