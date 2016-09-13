@@ -487,8 +487,8 @@ gboolean flist_process_kickban(FListAccount *fla, JsonObject *root, gboolean ban
 
     if(!purple_utf8_strcasecmp(character, fla->character)) { //we just got kicked
         gchar *message = operator
-                ? g_strdup_printf("You have been %s from the channel!", ban ? "kicked and banned" : "kicked")
-                : g_strdup_printf("%s has %s you from the channel!", operator, ban ? "kicked and banned" : "kicked");
+                ? g_strdup_printf("%s has %s you from the channel!", operator, ban ? "kicked and banned" : "kicked")
+                : g_strdup_printf("You have been %s from the channel!", ban ? "kicked and banned" : "kicked");
         purple_conv_chat_write(PURPLE_CONV_CHAT(convo), "System", message, PURPLE_MESSAGE_SYSTEM, time(NULL));
         g_free(message);
         flist_got_channel_left(fla, channel);
