@@ -260,7 +260,7 @@ static void flist_filter_done(FListAccount *fla) {
     purple_account_set_int(fla->pa, LAST_KINK1, flk->kink1);
     purple_account_set_int(fla->pa, LAST_KINK2, flk->kink2);
     purple_account_set_int(fla->pa, LAST_KINK3, flk->kink3);
-    purple_account_set_int(fla->pa, LAST_LOOKING, flk->looking);
+    purple_account_set_bool(fla->pa, LAST_LOOKING, flk->looking);
     purple_account_set_int(fla->pa, LAST_ROLES, flk->roles);
 
     fla->input_request = FALSE;
