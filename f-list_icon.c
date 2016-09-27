@@ -121,6 +121,8 @@ void flist_fetch_icon(FListAccount *fla, const gchar *character) {
     fli->url = g_strdup_printf(ICON_AVATAR_URL, purple_url_encode(character_lower));
     fli->fla = fla;
 
+    g_free(character_lower);
+
     len = g_slist_length(fla->icon_requests);
     if(len < FLIST_MAX_ICON_REQUESTS) {
         flist_fetch_icon_real(fla, fli);
@@ -145,6 +147,8 @@ void flist_fetch_avatar(FListAccount *fla, const gchar *smiley, const gchar *cha
     fli->fla = fla;
     fli->convo = g_strdup(purple_conversation_get_name(convo));
     fli->smiley = g_strdup(smiley);
+
+    g_free(character_lower);
 
     len = g_slist_length(fla->icon_requests);
     if(len < FLIST_MAX_ICON_REQUESTS) {
