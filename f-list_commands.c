@@ -827,10 +827,10 @@ PurpleCmdRet flist_status_cmd(PurpleConversation *convo, const gchar *cmd, gchar
     g_free(status_str);
 
     status_message = args[1];
-    if (status_message == NULL) 
+    if (status_message == NULL)
         status_message = "";
 
-    if (status == FLIST_STATUS_AVAILABLE 
+    if (status == FLIST_STATUS_AVAILABLE
             || status == FLIST_STATUS_LOOKING
             || status == FLIST_STATUS_BUSY
             || status == FLIST_STATUS_DND

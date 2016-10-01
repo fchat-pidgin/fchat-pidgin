@@ -496,7 +496,7 @@ void flist_update_notify_closed_cb(gpointer user_data) {
   g_free(text);
 }
 
-void flist_check_update_version(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message) 
+void flist_check_update_version(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message)
 {
   // In case we failed the request, fail gracefully - we don't want to disturb users
   if (url_text == NULL)
