@@ -731,9 +731,9 @@ static PurplePluginProtocolInfo prpl_info = {
     flist_purple_set_status,                            /* set_status */
     NULL,                                               /* set_idle */
     NULL,                                               /* change_passwd */
-    flist_pidgin_add_buddy,                             /* add_buddy */
+    flist_buddy_add,                                    /* add_buddy */
     NULL,                                               /* add_buddies */
-    flist_pidgin_remove_buddy,                          /* remove_buddy */
+    flist_buddy_remove,                                 /* remove_buddy */
     NULL,                                               /* remove_buddies */
     NULL,                                               /* add_permit */
     NULL,                                               /* add_deny */

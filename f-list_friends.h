@@ -45,4 +45,9 @@ void flist_friends_added_friend(FListAccount*);
 void flist_friends_removed_friend(FListAccount*);
 void flist_bookmarks_updated(FListAccount *);
 
+// Buddy operations
+void flist_buddy_add(PurpleConnection *, PurpleBuddy *, PurpleGroup *);
+void flist_buddy_remove(PurpleConnection *, PurpleBuddy *, PurpleGroup *);
+
+
 #endif /* FLIST_FRIENDS_H */

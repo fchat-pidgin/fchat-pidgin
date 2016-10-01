@@ -31,9 +31,6 @@ void flist_set_status_action(PurplePluginAction *action);
 int flist_send_message(PurpleConnection *, const gchar *who, const gchar *message, PurpleMessageFlags flags);
 int flist_send_channel_message(PurpleConnection *, int id, const char *message, PurpleMessageFlags flags);
 
-void flist_pidgin_add_buddy(PurpleConnection *, PurpleBuddy *, PurpleGroup *);
-void flist_pidgin_remove_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group);
-
 void flist_join_channel(PurpleConnection *, GHashTable *components);
 void flist_leave_channel(PurpleConnection *, int id);
 

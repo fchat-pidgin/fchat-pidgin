@@ -185,37 +185,6 @@ gchar *flist_get_status_text(PurpleBuddy *buddy) {
     return g_string_free(ret, FALSE);
 }
 
-void flist_pidgin_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group) {
-    PurpleAccount *pa = buddy->account;
-    FListAccount *fla = purple_connection_get_protocol_data(pc);
-    const gchar *identity;
-    PurpleBuddy *old_buddy;
-    GSList *buddies, *cur;
-
-    g_return_if_fail(fla);
-
-    identity = purple_buddy_get_name(buddy);
-    buddies = purple_find_buddies(pa, identity);
-    cur = buddies;
-    while(cur) {
-        old_buddy = cur->data;
-        if(old_buddy != buddy) {
-            purple_blist_remove_buddy(old_buddy); //no duplicate buddies, please
-        }
-        cur = g_slist_next(cur);
-    }
-    g_slist_free(buddies);
-
-    flist_update_friend(fla, identity, TRUE, TRUE);
-}
-
-void flist_pidgin_remove_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group) {
-    FListAccount *fla = purple_connection_get_protocol_data(pc);
-    g_return_if_fail(fla);
-
-    // TODO GH issue #56
-}
-
 PurpleRoomlist *flist_get_roomlist(PurpleConnection *pc) {
     FListAccount *fla = purple_connection_get_protocol_data(pc);
     PurpleAccount *pa = fla->pa;
