@@ -344,32 +344,26 @@ static void flist_auth_deny_cb(gpointer user_data) {
  */
 static void flist_friends_add_buddies(FListAccount *fla) {
     FListFriends *flf = _flist_friends(fla);
-    PurpleGroup *f_group;
+    PurpleGroup *f_group, *b_group;
     GList *friends, *cur;
 
     f_group = flist_get_friends_group(fla);
+    b_group = flist_get_bookmarks_group(fla);
     friends = g_hash_table_get_values(flf->friends);
     cur = friends;
 
     while(cur) {
         FListFriend *friend = (FListFriend *) cur->data;
         PurpleBuddy *buddy = purple_find_buddy(fla->pa, friend->name);
-        PurpleGroup *group = f_group;
         gboolean bookmarked = fla->sync_bookmarks && friend->bookmarked;
         gboolean friended = fla->sync_friends && friend->status != FLIST_NOT_FRIEND;
         gboolean requests_auth = friend->status == FLIST_PENDING_IN_FRIEND;
 
-        /* Check to make sure we haven't already asked the Pidgin user ... */
-        if(requests_auth) {
-            GList *list = flf->auth_requests;
-            while(list) {
-                FListFriendAuth *auth = list->data;
-                if(!purple_utf8_strcasecmp(auth->name, friend->name)) {
-                    requests_auth = FALSE;
-                    break;
-                }
-                list = list->next;
-            }
+        /* Check to make sure we don't already have a pending authorization request */
+        if(requests_auth && g_list_find_custom(
+                    flf->auth_requests, friend->name,
+                    (GCompareFunc) flist_friend_auth_find_name)) {
+            requests_auth = FALSE;
         }
 
         /* If this is a new request, notify the user! */
@@ -383,12 +377,30 @@ static void flist_friends_add_buddies(FListAccount *fla) {
             flf->auth_requests = g_list_append(flf->auth_requests, auth);
         }
 
-        if(!buddy && (bookmarked || friended)) {
-            buddy = purple_buddy_new(fla->pa, friend->name, NULL);
-            purple_blist_add_buddy(buddy, NULL, group, NULL);
-            flist_update_friend(fla, friend->name, TRUE, TRUE);
-        }
+        if(buddy) {
+            // We already know this buddy, make sure it's not in the wrong group
 
+            if (friended) {
+                if (purple_buddy_get_group(buddy) == b_group){
+                    purple_blist_add_buddy(buddy, NULL, f_group, NULL);
+                }
+            } else if (bookmarked) {
+                if (purple_buddy_get_group(buddy) == f_group) {
+                    purple_blist_add_buddy(buddy, NULL, b_group, NULL);
+                }
+            }
+        } else {
+            // Add this buddy if we didn't know it or if it wasn't in the right group
+            if (friended) {
+                buddy = purple_buddy_new(fla->pa, friend->name, NULL);
+                purple_blist_add_buddy(buddy, NULL, f_group, NULL);
+                flist_update_friend(fla, friend->name, TRUE, TRUE);
+            } else if (bookmarked) {
+                buddy = purple_buddy_new(fla->pa, friend->name, NULL);
+                purple_blist_add_buddy(buddy, NULL, b_group, NULL);
+                flist_update_friend(fla, friend->name, TRUE, TRUE);
+            }
+        }
         cur = cur->next;
     }
 
