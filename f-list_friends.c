@@ -339,6 +339,60 @@ static void flist_auth_deny_cb(gpointer user_data) {
     g_free(auth);
 }
 
+static gboolean _unused_friend(gchar *key, FListFriend *value, gpointer *user_data){
+    if (!value->bookmarked && (value->status == FLIST_NOT_FRIEND)){
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+static void flist_cleanup_friends(FListFriends *flf){
+    g_return_if_fail(flf);
+    GHashTable *friends = flf->friends;
+    g_return_if_fail(friends);
+
+    g_hash_table_foreach_remove(friends, (GHRFunc)_unused_friend, NULL);
+}
+
+static void flist_friends_remove_former(FListFriends *flf, PurpleGroup *group) {
+    // Clean up friends and bookmark groups
+    PurpleBlistNode *iter = purple_blist_node_get_first_child(PURPLE_BLIST_NODE(group));
+    PurpleBuddy *buddy;
+
+    // We need to build a list, because removing a node from the buddy list
+    // while traversing it leads to funny things
+    GList *removelist = NULL;
+    GList *cur = NULL;
+
+    while(iter) {
+        buddy = NULL;
+        if (PURPLE_BLIST_NODE_IS_BUDDY(iter)) {
+            buddy = PURPLE_BUDDY(iter);
+        } else if (PURPLE_BLIST_NODE_IS_CONTACT(iter)) {
+            buddy = purple_contact_get_priority_buddy(PURPLE_CONTACT(iter));
+        }
+
+        if (buddy) {
+            // If the buddy's name isn't a known FList friend or bookmark, remember him
+            if (g_hash_table_lookup(flf->friends, purple_buddy_get_name(buddy)) == NULL) {
+               removelist =  g_list_append(removelist, buddy);
+            }
+        }
+        iter = purple_blist_node_get_sibling_next(iter);
+    }
+
+    for (cur = removelist; cur; cur = cur->next) {
+        PurpleBuddy *buddy = cur->data;
+        purple_debug_info(FLIST_DEBUG, "Removing former contact %s from the buddy list\n",
+                purple_buddy_get_name(buddy));
+
+        purple_blist_remove_buddy(buddy);
+    }
+    g_list_free(removelist);
+}
+
+
 /* This is the callback after every friends response from the server.
  * We sync the Pidgin friends list with what we received.
  */
@@ -347,6 +401,8 @@ static void flist_friends_add_buddies(FListAccount *fla) {
     PurpleGroup *f_group, *b_group;
     GList *friends, *cur;
 
+
+    // Add all f-list friends as pidgin buddies
     f_group = flist_get_friends_group(fla);
     b_group = flist_get_bookmarks_group(fla);
     friends = g_hash_table_get_values(flf->friends);
@@ -405,7 +461,12 @@ static void flist_friends_add_buddies(FListAccount *fla) {
     }
 
     g_list_free(friends);
+
+    // Remove people who are no longer friends or bookmarks from their groups
+    flist_friends_remove_former(flf, f_group);
+    flist_friends_remove_former(flf, b_group);
 }
+
 
 static void flist_friends_reset_status(GHashTable *friends, FListFriendStatus status) {
     GHashTableIter iter;
@@ -528,6 +589,7 @@ static void flist_friends_update_cb(FListWebRequestData *req_data, gpointer user
         flf->outgoing_requests_dirty = FALSE;
     }
 
+    flist_cleanup_friends(flf);
     flist_friends_add_buddies(fla);
 }
 
