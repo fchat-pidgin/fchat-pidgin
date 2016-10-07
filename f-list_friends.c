@@ -108,7 +108,7 @@ static void _clear_requests(FListFriends *flf) {
 }
 
 static void _clear_updates(FListFriends *flf) {
-    if(flf->update_timer) {
+    if(flf->update_timer_active) {
         flf->update_timer_active = FALSE;
         purple_timeout_remove(flf->update_timer);
     }
