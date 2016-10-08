@@ -4,6 +4,7 @@
 ### Added
 - #55: New /uptime command : get server start date and some statistics
 - #143: New /kinks command : list user custom kinks
+- #56 : Removing a friend in pidgin now removes them from the F-List friend list or bookmark list in when the account is configured to synchronize friends or bookmarks
 ### Fixed
 - #130: Do not automatically try to re-login if kicked out from another location
 - The user now gets a helpful error message instead of a popup when trying to send a message beyond server size limits

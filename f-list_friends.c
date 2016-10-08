@@ -77,6 +77,10 @@ static void flist_friends_request_delete(FListFriendsRequest *req) {
     g_free(req);
 }
 
+static gint flist_friend_auth_find_name(FListFriendAuth *a, gchar *name) {
+    return !flist_str_equal(a->name, name);
+}
+
 static void flist_friends_request_cancel(FListFriendsRequest *req) {
     flist_web_request_cancel(req->req_data);
     flist_friends_request_delete(req);
@@ -621,8 +625,53 @@ void flist_buddy_add(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *grou
 
 void flist_buddy_remove(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group) {
     FListAccount *fla = purple_connection_get_protocol_data(pc);
+    GList *existing_auth_list;
+    const gchar *name = purple_buddy_get_name(buddy);
+
     g_return_if_fail(fla);
 
-    // TODO GH issue #56
+    if(fla->sync_bookmarks && flist_friends_is_bookmarked(fla, name)) {
+            purple_debug_warning(FLIST_DEBUG,
+                    "Removing F-List bookmark for %s\n", name);
+            flist_friend_action(fla, name, FLIST_BOOKMARK_REMOVE, FALSE);
+    }
+
+    if (fla->sync_friends) {
+
+        FListFriendStatus friend_status;
+
+        friend_status = flist_friends_get_friend_status(fla, name);
+
+        switch(friend_status) {
+            case FLIST_MUTUAL_FRIEND :
+                purple_debug_warning(FLIST_DEBUG,
+                        "Removing F-List friend %s\n", name);
+                flist_friend_action(fla, name, FLIST_FRIEND_REMOVE, FALSE);
+                break;
+            case FLIST_PENDING_OUT_FRIEND :
+                purple_debug_warning(FLIST_DEBUG,
+                        "Canceling F-List friend request with %s\n", name);
+                flist_friend_action(fla, name, FLIST_FRIEND_CANCEL, FALSE);
+                break;
+            case FLIST_PENDING_IN_FRIEND :
+                // Cancel a pending invitation we might have
+                existing_auth_list = g_list_find_custom(
+                        _flist_friends(fla)->auth_requests, name,
+                        (GCompareFunc) flist_friend_auth_find_name);
+                if (existing_auth_list) {
+                    FListFriendAuth *auth = existing_auth_list->data;
+                    purple_account_request_close(auth->handle);
+                }
+                purple_debug_warning(FLIST_DEBUG,
+                        "Denying F-List friend request with %s\n", name);
+                flist_friend_action(fla, name, FLIST_FRIEND_DENY, FALSE);
+                break;
+            case FLIST_NOT_FRIEND :
+            case FLIST_FRIEND_STATUS_UNKNOWN :
+            default:
+                // Nothing to do
+                break;
+        }
+    }
 }
 
