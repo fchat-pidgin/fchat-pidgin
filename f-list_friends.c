@@ -50,6 +50,7 @@ typedef struct FListFriend_ {
 typedef struct FListFriendAuth_ {
     FListAccount *fla;
     gchar *name;
+    void *handle;
 } FListFriendAuth;
 
 struct FListFriendsRequest_ {
@@ -102,9 +103,9 @@ static void _clear_requests(FListFriends *flf) {
         flist_friends_request_cancel((FListFriendsRequest*) flf->requests->data);
         flf->requests = g_list_delete_link(flf->requests, flf->requests);
     }
-    //TODO: This may be dangerous. If Pidgin uses the callback after we delete the objects, the program will crash.
     while(flf->auth_requests) {
         FListFriendAuth *req = flf->auth_requests->data;
+        purple_account_request_close(req->handle);
         g_free(req->name);
         g_free(req);
         flf->auth_requests = g_list_delete_link(flf->auth_requests, flf->auth_requests);
@@ -376,7 +377,8 @@ static void flist_friends_add_buddies(FListAccount *fla) {
             FListFriendAuth *auth = g_new0(FListFriendAuth, 1);
             auth->fla = fla;
             auth->name = g_strdup(friend->name);
-            purple_account_request_authorization(fla->pa, friend->name, NULL, NULL, NULL, buddy || friended || bookmarked,
+            auth->handle = purple_account_request_authorization(
+                fla->pa, friend->name, NULL, NULL, NULL, buddy || friended || bookmarked,
                 flist_auth_accept_cb, flist_auth_deny_cb, auth);
             flf->auth_requests = g_list_append(flf->auth_requests, auth);
         }
