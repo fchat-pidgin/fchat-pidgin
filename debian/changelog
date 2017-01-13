@@ -1,4 +1,10 @@
-fchat-pidgin (0.4.0-1) unstable; urgency=low
+fchat-pidgin (0.6.0-1ppa3) unstable; urgency=medium
+
+  * Updated dependancies
+
+ -- Vobe Jackal <vobe@no-email>  Fri, 13 Jan 2017 13:53:53 +0100
+
+fchat-pidgin (0.6.0-1ppa2) unstable; urgency=low
 
   * Initial Release
 

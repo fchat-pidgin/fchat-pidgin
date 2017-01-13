@@ -8,7 +8,7 @@ PACKAGE	 := fchat-pidgin
 
 
 build/$(PACKAGE)::
-	$(MAKE)
+	$(MAKE) DISABLE_NSSFIX=1
 
 install/$(PACKAGE)::
 	$(MAKE) DESTDIR=debian/$(PACKAGE)/ install
