@@ -845,7 +845,11 @@ PurpleCmdRet flist_version_cmd(PurpleConversation *convo, const gchar *cmd, gcha
     gchar *message1;
 
     // GIT_VERSION is set via compiler flag
+#ifdef GIT_VERSION
     message1 = g_strdup_printf("You are running %s (%s).", USER_AGENT, GIT_VERSION);
+#else
+    message1 = g_strdup_printf("You are running %s.", USER_AGENT);
+#endif
     purple_conversation_write(convo, NULL, message1, PURPLE_MESSAGE_SYSTEM, time(NULL));
 
     g_free(message1);

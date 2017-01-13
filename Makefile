@@ -77,7 +77,9 @@ NSS_CFLAGS = `pkg-config nss --cflags --libs`
 FLIST_ADDITIONAL_SOURCES=
 
 GIT_VERSION := $(shell git describe --dirty --always --tags)
-FLIST_ADDITIONAL_CFLAGS = -DGIT_VERSION=\"$(GIT_VERSION)\"
+ifneq ($(GIT_VERSION),)
+	FLIST_ADDITIONAL_CFLAGS = -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
 
 ifdef FLIST_PURPLE_ONLY
 FLIST_ADDITIONAL_CFLAGS += -DFLIST_PURPLE_ONLY
@@ -166,5 +168,5 @@ prepare_cross:
 win_installer: ${WIN32_TARGET}
 	makensis -DPRODUCT_VERSION=${PLUGIN_VERSION} flist.nsi > /dev/null
 
-${WIN32_TARGET}: ${FLIST_SOURCES} 
+${WIN32_TARGET}: ${FLIST_SOURCES}
 	${WIN32_COMPILER} -Werror -Wall -I. -g -std=c99 -O2 -pipe ${FLIST_SOURCES} -o $@ -shared ${WIN32_CFLAGS} ${WIN32_LIBS} ${WIN32_ADDITIONAL_CFLAGS} ${FLIST_ADDITIONAL_CFLAGS}
