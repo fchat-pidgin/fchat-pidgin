@@ -68,10 +68,18 @@ static void g_string_append_cgi(GString *str, GHashTable *table) {
     gboolean first = TRUE;
     g_hash_table_iter_init(&iter, table);
     while(g_hash_table_iter_next(&iter, &key, &value)) {
-        purple_debug_info(FLIST_DEBUG, "cgi writing key, value: %s, %s\n", (gchar *)key, (gchar *)value);
+
+        // Passwords may be logged here
+        if (!purple_debug_is_unsafe()) {
+            purple_debug_info(FLIST_DEBUG, "cgi writing key: %s\n", (gchar *)key);
+        } else {
+            purple_debug_info(FLIST_DEBUG, "cgi writing key, value: %s, %s\n",
+                    (gchar *)key, (gchar *)value);
+        }
+
         if(!first) g_string_append(str, "&");
 
-        // We use g_uri_escape_string instead of purple_url_encode 
+        // We use g_uri_escape_string instead of purple_url_encode
         // because the latter only supports strings up to 2048 bytes
         // (depending on BUF_LEN)
         gchar *encoded_key = g_uri_escape_string(key, NULL, FALSE);
@@ -131,8 +139,6 @@ gchar *http_request(const gchar *url, gboolean http11, gboolean post, const gcha
         if(req_table) g_string_append_cgi(post_str, req_table);
 
         post = g_string_free(post_str, FALSE);
-
-        purple_debug_info(FLIST_DEBUG, "posting (len: %" G_GSIZE_FORMAT "): %s\n", strlen(post), post);
 
         g_string_append(request_str, "Content-Type: application/x-www-form-urlencoded\r\n");
         g_string_append_printf(request_str, "Content-Length: %" G_GSIZE_FORMAT "\r\n", strlen(post));

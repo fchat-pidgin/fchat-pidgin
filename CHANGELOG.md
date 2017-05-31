@@ -12,6 +12,7 @@
 - The user now gets a helpful error message instead of a popup when trying to send a message beyond server size limits
 - #119: Bookmark updates from the website are now taken into account immediately
 - #146: When a user is kicked or banned from a channel, the operator is now correctly reported to them
+- #157: Only show passwords in debug logs when unsafe debugging is active
 
 ## 0.6.0
 ### Added
