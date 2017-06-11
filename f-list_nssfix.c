@@ -28,6 +28,7 @@
 
 /* NSSSSL */
 #include <ssl.h>
+#include <sslproto.h>
 
 /* This should match the PurpleSslNssData structure in the ssl-nss plugin. */
 typedef struct {
@@ -57,11 +58,66 @@ static void hooked_connectfunc(PurpleSslConnection *gsc) {
         // discussed here : https://bugzil.la/1202264
         SSL_SetSockPeerID(nss_data->in, gsc->host); } }
 
-gboolean flist_nssfix_enable() {
-    if(strcmp(NSSSSL_GetVersion(), "3.23") >= 0) {
-        purple_debug_info(FLIST_DEBUG, "nssfix: Doing nothing - NSS is version 3.23 or later\n");
+
+#ifdef SSL_LIBRARY_VERSION_TLS_1_3
+gboolean flist_nssfix_forbid_tls13() {
+
+    SSLVersionRange enabled;
+    if (SSL_VersionRangeGetDefault(ssl_variant_stream, &enabled) == SECSuccess) {
+        if (enabled.max>=SSL_LIBRARY_VERSION_TLS_1_3){
+                purple_debug_info(FLIST_DEBUG, "nssfix: Disabling TLS 1.3 support\n");
+            enabled.max = SSL_LIBRARY_VERSION_TLS_1_2;
+            if (SSL_VersionRangeSetDefault(ssl_variant_stream, &enabled) == SECSuccess) {
+                purple_debug_info(FLIST_DEBUG, "nssfix: Maximum version set to TLS 1.2\n");
+                return TRUE;
+            } else {
+                purple_debug_info(FLIST_DEBUG, "nssfix: error disabling TLS 1.3 support\n");
+                return FALSE;
+            }
+        } else {
+            purple_debug_info(FLIST_DEBUG, "nssfix: Maximum TLS supported version is 0x%04hx\n", enabled.max);
+            return TRUE;
+        }
+    } else {
+        purple_debug_info(FLIST_DEBUG, "nssfix: could not obtain list of supported TLS versions\n");
         return FALSE;
     }
+}
+#endif
+
+
+gboolean flist_nssfix_hook_ops() {
+
+    if ( strcmp(NSSSSL_GetVersion(), "3.23") >= 0) {
+        purple_debug_info(FLIST_DEBUG, "nssfix: NSS is version 3.23 or later, no need to hook ops\n");
+        return FALSE;
+    }
+
+    PurpleSslOps *current_opts = purple_ssl_get_ops();
+
+    if(!current_opts) {
+        purple_debug_info(FLIST_DEBUG, "nssfix: Doing nothing - SSL operations were not set\n");
+        return FALSE;
+    }
+
+    memcpy(&new_ops, current_opts, sizeof(PurpleSslOps));
+
+
+    if(original_connectfunc != NULL || new_ops.connectfunc == hooked_connectfunc) {
+        purple_debug_info(FLIST_DEBUG, "nssfix: Doing nothing - SSL operations were already hooked\n");
+        return FALSE;
+    }
+
+    original_connectfunc = new_ops.connectfunc;
+    new_ops.connectfunc = hooked_connectfunc;
+
+    purple_debug_info(FLIST_DEBUG, "nssfix: Hooking SSL operations\n");
+    purple_ssl_set_ops(&new_ops);
+
+    return TRUE;
+}
+
+gboolean flist_nssfix_enable() {
 
     gboolean using_nss_ssl = FALSE;
     int num_ssl_plugins = 0;
@@ -74,7 +130,7 @@ gboolean flist_nssfix_enable() {
 
             if (purple_plugin_is_loaded(plugin)) {
                 ++num_ssl_plugins;
-                
+
                 if (is_nss_ssl) {
                     if (num_ssl_plugins == 1) {
                         purple_debug_info(FLIST_DEBUG, "nssfix: ssl-nss appears to be the active SSL plugin\n");
@@ -103,26 +159,12 @@ gboolean flist_nssfix_enable() {
         purple_debug_warning(FLIST_DEBUG, "nssfix: There is more than one SSL plugin loaded! There is a small chance something could go wrong here.\n");
     }
 
-    PurpleSslOps *current_opts = purple_ssl_get_ops();
 
-    if(!current_opts) {
-        purple_debug_info(FLIST_DEBUG, "nssfix: Doing nothing - SSL operations were not set\n");
-        return FALSE;
-    }
+    flist_nssfix_hook_ops();
 
-    memcpy(&new_ops, current_opts, sizeof(PurpleSslOps));
-
-    if(original_connectfunc != NULL || new_ops.connectfunc == hooked_connectfunc) {
-        purple_debug_info(FLIST_DEBUG, "nssfix: Doing nothing - SSL operations were already hooked\n");
-        return FALSE;
-    }
-
-    original_connectfunc = new_ops.connectfunc;
-    new_ops.connectfunc = hooked_connectfunc;
-
-    purple_debug_info(FLIST_DEBUG, "nssfix: Hooking SSL operations\n");
-    purple_ssl_set_ops(&new_ops);
-
+#ifdef SSL_LIBRARY_VERSION_TLS_1_3
+    flist_nssfix_forbid_tls13();
+#endif
     return TRUE;
 }
 

@@ -26,7 +26,7 @@ To build the plugin for other libpurple clients (Finch, Spectrum 2, Minbif, Bitl
 
     make FLIST_PURPLE_ONLY=1
 
-The plugin currently hacks around NSS to circumvent this bug https://bugzil.la/1202264, if you are using NSS>=3.23, you do not need to build the hack in :
+The plugin currently hacks around NSS to circumvent this bug https://bugzil.la/1202264 (only affecting NSS<3.23) as well as issue #156 . You may disable all NSS hacks by building with this option :
 
     make DISABLE_NSSFIX=1
 
