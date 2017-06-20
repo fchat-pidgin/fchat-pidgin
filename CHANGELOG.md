@@ -8,7 +8,7 @@
 - #56 : Removing a friend in pidgin now removes them from the F-List friend list or bookmark list in when the account is configured to synchronize friends or bookmarks
 - Removing a f-list friend or bookmark now removes them from the pidgin group automatically
 ### Fixed
-- #156 : Force NSS to stick to TLS 1.2 to circumvent a pidgin/nss/cloudflare cipher selection issue with TLS 1.3
+- #156 : Force NSS to stick to TLS 1.2 on libpurple versions that manually select TLS ciphers
 - #130: Do not automatically try to re-login if kicked out from another location
 - The user now gets a helpful error message instead of a popup when trying to send a message beyond server size limits
 - #119: Bookmark updates from the website are now taken into account immediately

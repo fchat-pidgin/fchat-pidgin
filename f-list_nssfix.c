@@ -19,12 +19,14 @@
  * along with F-List Pidgin.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* This file attemmpts to hook the ssl_ops of the ssl-nss plugin to inject a
- * work-around for a bug in libnss versions below 3.23 causing sessions to be
- * incorrectly reused across domains, and causing HTTPS requests to fail.
+/* This file contains various workarounds for bugs surrounding NSS.
+ * It should not be part of the plugin in the long run, but is still built by
+ * default until those issues are fixed upstream and available in all current
+ * distros
  */
 
 #include "f-list.h"
+#include <version.h>
 
 /* NSSSSL */
 #include <ssl.h>
@@ -86,12 +88,11 @@ gboolean flist_nssfix_forbid_tls13() {
 #endif
 
 
+/* This function attempts to hook the ssl_ops of the ssl-nss plugin to inject a
+ * work-around for a bug in libnss versions below 3.23 causing sessions to be
+ * incorrectly reused across domains, and causing HTTPS requests to fail.
+ */
 gboolean flist_nssfix_hook_ops() {
-
-    if ( strcmp(NSSSSL_GetVersion(), "3.23") >= 0) {
-        purple_debug_info(FLIST_DEBUG, "nssfix: NSS is version 3.23 or later, no need to hook ops\n");
-        return FALSE;
-    }
 
     PurpleSslOps *current_opts = purple_ssl_get_ops();
 
@@ -160,11 +161,24 @@ gboolean flist_nssfix_enable() {
     }
 
 
-    flist_nssfix_hook_ops();
+// NSS<3.23 has a bug that causes error when reusing SSL sessions across requests
+// see #98
+    if ( strcmp(NSSSSL_GetVersion(), "3.23") >= 0) {
+        purple_debug_info(FLIST_DEBUG, "nssfix: NSS is version 3.23 or later, no need to hook ops\n");
+    } else {
+        flist_nssfix_hook_ops();
+    }
 
+//TLS 1.3 is buggy with Pidgin <2.12.1, see #156
 #ifdef SSL_LIBRARY_VERSION_TLS_1_3
-    flist_nssfix_forbid_tls13();
+    if (purple_version_check(2, 12, 1) == NULL) {
+        purple_debug_info(FLIST_DEBUG, "nssfix: Pidgin is version 2.12.1 or later, no need to force TLS1.2\n");
+    } else {
+        flist_nssfix_forbid_tls13();
+    }
 #endif
+
+
     return TRUE;
 }
 
