@@ -244,9 +244,6 @@ static void flist_filter_done(FListAccount *fla) {
         flist_request(fla, FLIST_KINK_SEARCH, json);
 
         /* unreference the json */
-        json_array_unref(kinks);
-        json_array_unref(genders);
-        json_array_unref(roles);
         json_object_unref(json);
     } else {
         // Doing an internal search, we must make sure there are not too many
