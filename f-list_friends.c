@@ -512,7 +512,11 @@ static void flist_handle_friends_list(FListAccount *fla, JsonArray *array, FList
         JsonObject *o = json_array_get_object_element(array, index);
         const gchar *source = json_object_get_string_member(o, !in ? "source" : "dest");
         const gchar *dest = json_object_get_string_member(o, !in ? "dest" : "source");
-        gint id = json_object_get_int_member(o, "id");
+
+        gint id = 0;
+        if (json_object_has_member(o, "id")) {
+            id = json_object_has_member(o, "id");
+        }
 
         FListFriend *friend;
 
