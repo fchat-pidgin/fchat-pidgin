@@ -154,6 +154,7 @@ gboolean flist_process_FKS(FListAccount *fla, JsonObject *root) {
     JsonArray *characters;
     int i, len;
     GSList *character_list = NULL;
+    GSList *filter_characters = NULL;
 
     characters = json_object_get_array_member(root, "characters");
 
@@ -165,8 +166,10 @@ gboolean flist_process_FKS(FListAccount *fla, JsonObject *root) {
 
     purple_debug_info(FLIST_DEBUG, "There are %d results to our kink search.\n", g_slist_length(character_list));
 
-    flist_apply_filter(fla, flist_get_filter_characters(fla, TRUE, character_list));
+    filter_characters = flist_get_filter_characters(fla, TRUE, character_list);
+    flist_apply_filter(fla, filter_characters);
 
+    g_slist_free(filter_characters);
     g_slist_free(character_list);
 
     return TRUE;
@@ -254,6 +257,7 @@ static void flist_filter_done(FListAccount *fla) {
         } else {
             purple_notify_warning(fla->pc, "F-List Error", "An error has occurred on F-List.", FLIST_MESSAGE_TOO_MANY_RESULTS);
         }
+        g_slist_free(results);
     }
 
     purple_account_set_int(fla->pa, LAST_GENDERS, flk->genders);
