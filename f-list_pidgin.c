@@ -158,8 +158,18 @@ static void alert_staff_button_clicked_cb(GtkButton* button, gpointer func_data)
 }
 
 static void character_button_clicked_cb(GtkButton* button, gpointer func_data) {
-    PurpleConnection *pc = (PurpleConnection*) func_data;
+    PurpleConversation *conv = (PurpleConversation*) func_data;
+    PurpleConnection *pc = purple_conversation_get_gc(conv);
+
+    // This can happen if we're clicking on the character button while being offline
+    if (pc == NULL ) {
+        return;
+    }
+
     FListAccount *fla = purple_connection_get_protocol_data(pc);
+
+    g_return_if_fail(fla);
+
     flist_get_profile(pc, fla->character);
 }
 
@@ -273,7 +283,7 @@ static void flist_pidgin_conversation_created_cb(PurpleConversation *conv, FList
         gtk_box_pack_end(GTK_BOX(toolbar), char_button, FALSE, FALSE, 0);
 
         gtk_widget_show_all(char_button);
-        gtk_signal_connect(GTK_OBJECT(char_button), "clicked", GTK_SIGNAL_FUNC(character_button_clicked_cb), pc);
+        gtk_signal_connect(GTK_OBJECT(char_button), "clicked", GTK_SIGNAL_FUNC(character_button_clicked_cb), conv);
         purple_conversation_set_data(conv, FLIST_CONV_ACCOUNT_BUTTON, char_button);
     }
 

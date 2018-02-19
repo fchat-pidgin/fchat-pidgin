@@ -15,6 +15,7 @@
 - #119: Bookmark updates from the website are now taken into account immediately
 - #146: When a user is kicked or banned from a channel, the operator is now correctly reported to them
 - #157: Only show passwords in debug logs when unsafe debugging is active
+- Fix a crash when clicking the "own character" button while offline of after reconnecting
 
 ## 0.6.0
 ### Added
