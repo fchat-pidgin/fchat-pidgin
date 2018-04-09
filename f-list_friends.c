@@ -515,7 +515,7 @@ static void flist_handle_friends_list(FListAccount *fla, JsonArray *array, FList
 
         gint id = 0;
         if (json_object_has_member(o, "id")) {
-            id = json_object_has_member(o, "id");
+            id = json_object_get_int_member(o, "id");
         }
 
         FListFriend *friend;
