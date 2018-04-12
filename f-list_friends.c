@@ -355,8 +355,16 @@ static void flist_cleanup_friends(FListFriends *flf){
     g_hash_table_foreach_remove(friends, (GHRFunc)_unused_friend, NULL);
 }
 
+/*
+ * This functionality should be disabled by default and enabled via a checkbox in account options.
+ * Some people, like me, use non-friend non-bookmark contacts to keep track of people we're RPing with
+ * but that we don't have friended due to clutter/preference/etc. Failing it being optional, it should
+ * move contacts from the 'CharacterName - Friends' section of the buddy list into a
+ * 'CharacterName - Contacts' section or the like to allow the user to remove if they desire.
+ */
 static void flist_friends_remove_former(FListFriends *flf, PurpleGroup *group) {
     // Clean up friends and bookmark groups
+	/*
     PurpleBlistNode *iter = purple_blist_node_get_first_child(PURPLE_BLIST_NODE(group));
     PurpleBuddy *buddy;
 
@@ -390,6 +398,7 @@ static void flist_friends_remove_former(FListFriends *flf, PurpleGroup *group) {
         purple_blist_remove_buddy(buddy);
     }
     g_list_free(removelist);
+    */
 }
 
 
