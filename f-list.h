@@ -64,10 +64,9 @@ typedef struct FListWebRequestData_ FListWebRequestData;
 typedef struct FListFriends_ FListFriends;
 
 #define FLIST_CLIENT_NAME       "F-List Pidgin"
-#define FLIST_PLUGIN_VERSION    "0.6.0"
+#define FLIST_PLUGIN_VERSION    "0.7.0"
 #define USER_AGENT              "Pidgin F-Chat " FLIST_PLUGIN_VERSION
 #define FLIST_PLUGIN_ID         "prpl-flist"
-#define FLIST_PORT_SECURE       9799
 #define GLOBAL_NAME             "#FList"
 #define FLIST_DEBUG             "flist"
 #define FLIST_PIDGIN_CHANNEL    "ADH-1509b63f1b1a98c79ab9"
@@ -137,7 +136,7 @@ typedef struct FListFriends_ FListFriends;
 
 #define FLIST_SCHEME "https://"
 #define FLIST_DOMAIN "www.f-list.net"
-#define FLIST_CHAT_SERVER "chat.f-list.net"
+#define FLIST_SERVER_URL "wss://chat.f-list.net/chat2"
 #define FLIST_SUFFIX_DOMAIN "f-list.net"
 #define FLIST_URL FLIST_SCHEME FLIST_DOMAIN "/"
 
@@ -375,6 +374,7 @@ struct FListAccount_ {
     /* connection options */
     gchar *server_address;
     gint server_port;
+    gchar *server_path;
 
     /* filter subsystem */
     gchar *filter_channel;

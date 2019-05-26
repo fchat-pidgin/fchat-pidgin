@@ -457,6 +457,7 @@ void flist_close(PurpleConnection *pc) {
 
     /* login options */
     if(fla->server_address) g_free(fla->server_address);
+    if(fla->server_path) g_free(fla->server_path);
 
     if (fla->ignore_list) flist_g_list_free_full(fla->ignore_list, g_free);
 
@@ -616,14 +617,36 @@ void flist_login(PurpleAccount *pa) {
         purple_account_set_alias(pa, fla->character);
     }
 
-    /* login options */
-    fla->server_address = g_strdup(purple_account_get_string(pa, "server_address", FLIST_CHAT_SERVER));
+    /* Chat server options */
+    const gchar *option_url = purple_account_get_string(pa, "server_url", FLIST_SERVER_URL);
+    gchar *protocolless_url, *https_url;
 
+    // purple_url_parse expects https:// URLS instead of wss://
+    protocolless_url = g_strrstr(option_url, "://");
+    if (protocolless_url) {
+        https_url = g_strdup_printf("https%s", protocolless_url);
+    } else {
+        https_url = g_strdup_printf("https://%s", option_url);
+    }
+
+    if (!purple_url_parse(
+                https_url,
+                &fla->server_address,
+                &fla->server_port,
+                &fla->server_path,
+                NULL,
+                NULL)
+        ) {
+        /* TODO ERROR */
+        g_free(https_url);
+    }
+    g_free(https_url);
+
+    /* login options */
     fla->sync_bookmarks = purple_account_get_bool(pa, "sync_bookmarks", FALSE);
     fla->sync_friends = purple_account_get_bool(pa, "sync_friends", TRUE);
     fla->sync_status = purple_account_get_bool(pa, "sync_status", TRUE);
 
-    fla->server_port = purple_account_get_int(pa, "server_port_secure", FLIST_PORT_SECURE);
 
     fla->receive_notifications = purple_account_get_bool(pa, "receive_notifications", TRUE);
     fla->debug_mode = purple_account_get_bool(pa, "debug_mode", FALSE);
@@ -816,10 +839,7 @@ static void plugin_init(PurplePlugin *plugin) {
     split = purple_account_user_split_new("Character", "", ':');
     prpl_info.user_splits = g_list_append(prpl_info.user_splits, split);
 
-    option = purple_account_option_string_new("Server Address", "server_address", FLIST_CHAT_SERVER);
-    prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-
-    option = purple_account_option_int_new("Server Port", "server_port_secure", FLIST_PORT_SECURE);
+    option = purple_account_option_string_new("Chat server URL", "server_url", FLIST_SERVER_URL);
     prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
     option = purple_account_option_bool_new("Automatically check for updates", "check_for_updates", TRUE);
