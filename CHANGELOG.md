@@ -1,7 +1,8 @@
 # Change Log
 
-## ?.?.?
+## 0.7.0
 ### Added
+- #164: Allow users to specify the server endpoint as an URL
 - #117:  Bookmarks are now in their own separate contact group
 - #55: New /uptime command : get server start date and some statistics
 - #143: New /kinks command : list user custom kinks
