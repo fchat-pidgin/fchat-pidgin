@@ -538,6 +538,7 @@ void flist_global_kinks_load(FListAccount *fla) {
 
 void flist_global_kinks_unload(FListAccount *fla) {
     FListKinks *flk = _flist_kinks(fla);
+    g_return_if_fail(flk);
 
     if(flk->global_kinks_request) {
         flist_web_request_cancel(flk->global_kinks_request);

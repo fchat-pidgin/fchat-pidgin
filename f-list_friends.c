@@ -668,6 +668,7 @@ void flist_friends_load(FListAccount *fla) {
 
 void flist_friends_unload(FListAccount *fla) {
     FListFriends *flf = _flist_friends(fla);
+    g_return_if_fail(flf);
 
     if(flf->cannot_bookmark) g_hash_table_destroy(flf->cannot_bookmark);
     if(flf->friends) g_hash_table_destroy(flf->friends);

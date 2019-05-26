@@ -422,6 +422,7 @@ void flist_profile_load(FListAccount *fla) {
 
 void flist_profile_unload(FListAccount *fla) {
     FListProfiles *flp = _flist_profiles(fla);
+    g_return_if_fail(flp);
 
     if(flp->global_profile_request) {
         flist_web_request_cancel(flp->global_profile_request);

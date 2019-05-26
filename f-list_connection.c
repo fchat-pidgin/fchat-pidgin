@@ -395,7 +395,9 @@ static void flist_handshake(FListAccount *fla) {
 
     fla->ping_timeout_handle = purple_timeout_add_seconds(FLIST_TIMEOUT, flist_disconnect_cb, fla->pc);
 
-    g_string_append(headers_str, "GET / HTTP/1.1\r\n");
+    g_string_append(headers_str, "GET /");
+    g_string_append(headers_str, fla->server_path);
+    g_string_append(headers_str, " HTTP/1.1\r\n");
     g_string_append(headers_str, "Upgrade: WebSocket\r\n");
     g_string_append(headers_str, "Connection: Upgrade\r\n");
     g_string_append_printf(headers_str, "Host: %s:%d\r\n", fla->server_address, fla->server_port);
