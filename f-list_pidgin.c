@@ -205,6 +205,8 @@ static void flist_text_tag_table_tag_added_cb(GtkTextTagTable *text_tag_table, G
         charname = fla->character;
     else if (is_im && strcmp(tag->name, "receive-name") == 0)
         charname = purple_conversation_get_name(conv);
+    else if (is_im && strcmp(tag->name, "action-name") == 0)
+        charname = purple_conversation_get_name(conv);
     else
         return;
 
@@ -330,7 +332,17 @@ static void flist_pidgin_conversation_created_cb(PurpleConversation *conv, FList
 
             flist_update_tag_color(buddy_tag, fla, buddy_name);
         }
+        if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM) {
+            GtkTextTag *buddy_tag = gtk_text_tag_table_lookup(
+                                        gtk_text_buffer_get_tag_table(buffer), "action-name");
 
+            const char *buddy_name = purple_conversation_get_name(conv);
+
+            if (!buddy_tag || !buddy_name)
+                return;
+
+            flist_update_tag_color(buddy_tag, fla, buddy_name);
+        }
         GtkTextTagTable *text_tag_table = gtk_text_buffer_get_tag_table(buffer);
 
         g_signal_connect_after(text_tag_table, "tag-added", (GCallback)flist_text_tag_table_tag_added_cb, conv);
