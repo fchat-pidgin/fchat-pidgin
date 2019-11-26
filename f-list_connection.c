@@ -354,6 +354,43 @@ static gboolean flist_handle_handshake(FListAccount *fla) {
     gchar *last = fla->rx_buf;
     gchar *read = strstr(last, "\r\n");
 
+    if(read == NULL) return FALSE;
+    gchar *status = g_strndup(last, (gsize) (read-last));
+
+    purple_debug_info(FLIST_DEBUG, "Received handshake response\n");
+    purple_debug_info(FLIST_DEBUG, "Handshake status line : %s\n", status);
+
+    // Check status line
+
+    gchar *status_pos = status;
+    if (g_strstr_len(status_pos, 4, "HTTP") == NULL) {
+        purple_connection_error_reason(fla->pc,
+                PURPLE_CONNECTION_ERROR_NETWORK_ERROR,
+                "Invalid HTTP response from remote server");
+        g_free(status);
+        return FALSE;
+    }
+    status_pos = strstr(status, " ");
+    if (status_pos == NULL) {
+        purple_connection_error_reason(fla->pc,
+                PURPLE_CONNECTION_ERROR_NETWORK_ERROR,
+                "Could not find HTTP status code in response from remote server");
+        g_free(status);
+        return FALSE;
+    }
+    gint64 code = g_ascii_strtoll(status_pos+1, NULL, 10);
+    g_free(status);
+
+    if (code != 101) {
+        purple_debug_info(FLIST_DEBUG, "Unexpected status code : %ld\n", code);
+        purple_connection_error_reason(fla->pc,
+                PURPLE_CONNECTION_ERROR_NETWORK_ERROR,
+                "Remote server refused Websocket handshake");
+        return FALSE;
+    }
+
+    // Good status line, continue
+
     while(read != NULL && read > last) {
         last = read + 2;
         read = strstr(last, "\r\n");
