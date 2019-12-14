@@ -1,0 +1,22 @@
+name: Nightly windows build
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: dependencies
+      run: sudo apt-get update && sudo apt-get -y install build-essential gcc-mingw-w64-i686 make nsis 
+    - name: make installer
+      run: make prepare_cross && make win_installer
+    - name: Upload artifact windows
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: windowsinstaller
+        # Directory containing files to upload
+        path: fchat-pidgin-setup.exe
