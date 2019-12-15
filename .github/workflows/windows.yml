@@ -13,10 +13,17 @@ jobs:
       run: sudo apt-get update && sudo apt-get -y install build-essential gcc-mingw-w64-i686 make nsis 
     - name: make installer
       run: make prepare_cross && make win_installer
-    - name: Upload artifact windows
+    - name: Save windows installer artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         # Artifact name
         name: windowsinstaller
         # Directory containing files to upload
         path: fchat-pidgin-setup.exe
+    - name: Save windows plugin (dll)
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: windowsdll
+        # Directory containing files to upload
+        path: libflist.dll
