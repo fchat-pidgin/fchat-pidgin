@@ -1,5 +1,11 @@
 # Change Log
 
+## ???
+
+### Fixed
+- #174: Better logging when receiving an invalid server handshake
+- #182: Crowned buddies no longer appear offline
+
 ## 0.7.0
 ### Added
 - #164: Allow users to specify the server endpoint as an URL
