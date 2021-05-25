@@ -28,6 +28,7 @@
 //libpurple headers
 #include "accountopt.h"
 #include "connection.h"
+#include "core.h"
 #include "debug.h"
 #include "dnsquery.h"
 #include "proxy.h"
@@ -497,6 +498,63 @@ void flist_update_notify_closed_cb(gpointer user_data) {
   g_free(text);
 }
 
+// Copy pasted from prpl-irc
+static PurpleAccount *find_acct(const char *prpl, const char *acct_id)
+{
+	PurpleAccount *acct = NULL;
+
+	/* If we have a specific acct, use it */
+	if (acct_id) {
+		acct = purple_accounts_find(acct_id, prpl);
+		if (acct && !purple_account_is_connected(acct))
+			acct = NULL;
+	} else { /* Otherwise find an active account for the protocol */
+		GList *l = purple_accounts_get_all();
+		while (l) {
+			if (purple_strequal(prpl, purple_account_get_protocol_id(l->data))
+					&& purple_account_is_connected(l->data)) {
+				acct = l->data;
+				break;
+			}
+			l = l->next;
+		}
+	}
+
+	return acct;
+}
+
+static gboolean flist_uri_handler(const char *proto, const char *argument, GHashTable *params)
+{
+	char *acct_id = params ? g_hash_table_lookup(params, "account") : NULL;
+	PurpleAccount *acct;
+
+
+    // For now, only channel URLs are supported
+    // eg https://www.f-list.net/fchat/?joinChannel=ADH-2b5c804cabc154006a57
+	if (g_ascii_strcasecmp(proto, "https"))
+		return FALSE;
+
+
+	if (g_ascii_strcasecmp(argument, "//www.f-list.net/fchat/"))
+		return FALSE;
+
+	acct = find_acct(FLIST_PLUGIN_ID, acct_id);
+
+	if (!acct) {
+        purple_debug_info(FLIST_DEBUG, "No connected account on %s\n", FLIST_PLUGIN_ID);
+		return FALSE;
+    }
+
+    // Get channel name
+	if (!params || g_hash_table_lookup_extended(params, "joinchannel", NULL, NULL)) {
+        char *channel = g_hash_table_lookup(params, "joinchannel");
+
+        g_hash_table_insert(params, g_strdup(CHANNEL_COMPONENTS_NAME), g_strdup(channel));
+        serv_join_chat(purple_account_get_connection(acct), params);
+    }
+    return FALSE;
+}
+
 void flist_check_update_version(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message)
 {
   // In case we failed the request, fail gracefully - we don't want to disturb users
@@ -958,6 +1016,9 @@ static void plugin_init(PurplePlugin *plugin) {
 #endif
     flist_web_requests_init();
     flist_ticket_init();
+
+    purple_signal_connect(purple_get_core(), "uri-handler", plugin,
+            PURPLE_CALLBACK(flist_uri_handler), NULL);
 }
 
 PURPLE_INIT_PLUGIN(flist, plugin_init, info);
