@@ -528,8 +528,12 @@ static gboolean flist_uri_handler(const char *proto, const char *argument, GHash
 	char *acct_id = params ? g_hash_table_lookup(params, "account") : NULL;
 	PurpleAccount *acct;
 
-    // Accept the channel even if the "https://www.f-list.net/fchat/" part of the URL does not match
-    // as long as the joinChannel parameter exists
+	// For now, only channel URLs are supported
+	// eg https://www.f-list.net/fchat/?joinChannel=ADH-2b5c804cabc154006a57
+	// The protocol part is not checked to allow forwarding from browser by rewriting the scheme
+
+	if (g_ascii_strcasecmp(argument, "//www.f-list.net/fchat/"))
+		return FALSE;
 
 	acct = find_acct(FLIST_PLUGIN_ID, acct_id);
 
@@ -544,7 +548,9 @@ static gboolean flist_uri_handler(const char *proto, const char *argument, GHash
 
         g_hash_table_insert(params, g_strdup(CHANNEL_COMPONENTS_NAME), g_strdup(channel));
         serv_join_chat(purple_account_get_connection(acct), params);
+		return TRUE;
     }
+	
     return FALSE;
 }
 
