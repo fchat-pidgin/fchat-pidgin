@@ -528,17 +528,10 @@ static gboolean flist_uri_handler(const char *proto, const char *argument, GHash
 	char *acct_id = params ? g_hash_table_lookup(params, "account") : NULL;
 	PurpleAccount *acct;
 
+    // Accept the channel even if the "https://www.f-list.net/fchat/" part of the URL does not match
+    // as long as the joinChannel parameter exists
 
-    // For now, only channel URLs are supported
-    // eg https://www.f-list.net/fchat/?joinChannel=ADH-2b5c804cabc154006a57
-	if (g_ascii_strcasecmp(proto, "https"))
-		return FALSE;
-
-
-	if (g_ascii_strcasecmp(argument, "//www.f-list.net/fchat/"))
-		return FALSE;
-
-	acct = find_acct(FLIST_PLUGIN_ID, acct_id);
+    acct = find_acct(FLIST_PLUGIN_ID, acct_id);
 
 	if (!acct) {
         purple_debug_info(FLIST_DEBUG, "No connected account on %s\n", FLIST_PLUGIN_ID);
