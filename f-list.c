@@ -531,7 +531,7 @@ static gboolean flist_uri_handler(const char *proto, const char *argument, GHash
     // Accept the channel even if the "https://www.f-list.net/fchat/" part of the URL does not match
     // as long as the joinChannel parameter exists
 
-    acct = find_acct(FLIST_PLUGIN_ID, acct_id);
+	acct = find_acct(FLIST_PLUGIN_ID, acct_id);
 
 	if (!acct) {
         purple_debug_info(FLIST_DEBUG, "No connected account on %s\n", FLIST_PLUGIN_ID);
