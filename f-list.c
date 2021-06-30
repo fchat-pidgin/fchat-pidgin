@@ -525,32 +525,33 @@ static PurpleAccount *find_acct(const char *prpl, const char *acct_id)
 
 static gboolean flist_uri_handler(const char *proto, const char *argument, GHashTable *params)
 {
-	char *acct_id = params ? g_hash_table_lookup(params, "account") : NULL;
-	PurpleAccount *acct;
+    char *acct_id = params ? g_hash_table_lookup(params, "account") : NULL;
+    PurpleAccount *acct;
 
-	// For now, only channel URLs are supported
-	// eg https://www.f-list.net/fchat/?joinChannel=ADH-2b5c804cabc154006a57
-	// The protocol part is not checked to allow forwarding from browser by rewriting the scheme
+    // For now, only channel URLs are supported
+    // eg xxxx://www.f-list.net/fchat/?joinChannel=ADH-2b5c804cabc154006a57
+    // The protocol part is not checked to allow forwarding from browser by
+    // rewriting the scheme,
 
-	if (g_ascii_strcasecmp(argument, "//www.f-list.net/fchat/"))
-		return FALSE;
+    if (g_ascii_strcasecmp(argument, "//www.f-list.net/fchat/"))
+        return FALSE;
 
-	acct = find_acct(FLIST_PLUGIN_ID, acct_id);
+    acct = find_acct(FLIST_PLUGIN_ID, acct_id);
 
-	if (!acct) {
+    if (!acct) {
         purple_debug_info(FLIST_DEBUG, "No connected account on %s\n", FLIST_PLUGIN_ID);
-		return FALSE;
+        return FALSE;
     }
 
     // Get channel name
-	if (!params || g_hash_table_lookup_extended(params, "joinchannel", NULL, NULL)) {
+    if (!params || g_hash_table_lookup_extended(params, "joinchannel", NULL, NULL)) {
         char *channel = g_hash_table_lookup(params, "joinchannel");
 
         g_hash_table_insert(params, g_strdup(CHANNEL_COMPONENTS_NAME), g_strdup(channel));
         serv_join_chat(purple_account_get_connection(acct), params);
-		return TRUE;
+        return TRUE;
     }
-	
+
     return FALSE;
 }
 

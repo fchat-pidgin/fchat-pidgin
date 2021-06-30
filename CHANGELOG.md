@@ -6,6 +6,9 @@
 - #174: Better logging when receiving an invalid server handshake
 - #182: Crowned buddies no longer appear offline
 
+### Added
+- #145: Handle pidgin.exe --protocolhandler https://www.f-list.net/fchat/?joinChannel=ADH-xxx
+
 ## 0.7.0
 ### Added
 - #164: Allow users to specify the server endpoint as an URL
